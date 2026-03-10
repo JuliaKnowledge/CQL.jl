@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="CQL.jl">
+
+<title>Semantic Interoperability across Building Lifecycle</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="semantic_interop_files/libs/clipboard/clipboard.min.js"></script>
+<script src="semantic_interop_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="semantic_interop_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="semantic_interop_files/libs/quarto-html/popper.min.js"></script>
+<script src="semantic_interop_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="semantic_interop_files/libs/quarto-html/anchor.min.js"></script>
+<link href="semantic_interop_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="semantic_interop_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="semantic_interop_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="semantic_interop_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="semantic_interop_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#the-schemas" id="toc-the-schemas" class="nav-link" data-scroll-target="#the-schemas">The Schemas</a>
+  <ul class="collapse">
+  <li><a href="#ifc-design" id="toc-ifc-design" class="nav-link" data-scroll-target="#ifc-design">IFC (Design)</a></li>
+  <li><a href="#brick-operations" id="toc-brick-operations" class="nav-link" data-scroll-target="#brick-operations">BRICK (Operations)</a></li>
+  <li><a href="#rec-property-management" id="toc-rec-property-management" class="nav-link" data-scroll-target="#rec-property-management">REC (Property Management)</a></li>
+  </ul></li>
+  <li><a href="#example-1-schema-colimit-and-data-migration" id="toc-example-1-schema-colimit-and-data-migration" class="nav-link" data-scroll-target="#example-1-schema-colimit-and-data-migration">Example 1: Schema Colimit and Data Migration</a>
+  <ul class="collapse">
+  <li><a href="#step-1-schema-colimit" id="toc-step-1-schema-colimit" class="nav-link" data-scroll-target="#step-1-schema-colimit">Step 1: Schema Colimit</a></li>
+  <li><a href="#step-2-sigma-coproduct" id="toc-step-2-sigma-coproduct" class="nav-link" data-scroll-target="#step-2-sigma-coproduct">Step 2: Sigma + Coproduct</a></li>
+  <li><a href="#step-3-delta-projection-to-brick" id="toc-step-3-delta-projection-to-brick" class="nav-link" data-scroll-target="#step-3-delta-projection-to-brick">Step 3: Delta Projection to BRICK</a></li>
+  </ul></li>
+  <li><a href="#example-2-device-id-transfer-via-observation-equations" id="toc-example-2-device-id-transfer-via-observation-equations" class="nav-link" data-scroll-target="#example-2-device-id-transfer-via-observation-equations">Example 2: Device ID Transfer via Observation Equations</a></li>
+  <li><a href="#example-3-constraints-and-the-chase-algorithm" id="toc-example-3-constraints-and-the-chase-algorithm" class="nav-link" data-scroll-target="#example-3-constraints-and-the-chase-algorithm">Example 3: Constraints and the Chase Algorithm</a></li>
+  <li><a href="#example-4-three-way-integration-with-rec" id="toc-example-4-three-way-integration-with-rec" class="nav-link" data-scroll-target="#example-4-three-way-integration-with-rec">Example 4: Three-Way Integration with REC</a>
+  <ul class="collapse">
+  <li><a href="#combined-schema" id="toc-combined-schema" class="nav-link" data-scroll-target="#combined-schema">Combined Schema</a></li>
+  <li><a href="#cross-ontology-query-tenant-billing" id="toc-cross-ontology-query-tenant-billing" class="nav-link" data-scroll-target="#cross-ontology-query-tenant-billing">Cross-Ontology Query: Tenant Billing</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a>
+  <ul class="collapse">
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Semantic Interoperability across Building Lifecycle</h1>
+<p class="subtitle lead">Integrating IFC, BRICK, and REC with Schema Colimits and the Chase</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>CQL.jl </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Buildings generate data across their entire lifecycle — design, construction, commissioning, operations, and property management — but each phase uses its own metadata schema. <strong>IFC</strong> (Industry Foundation Classes) describes building geometry and MEP systems at design time, <strong>BRICK</strong> captures operational sensor topology and equipment for building management, and <strong>REC</strong> (RealEstateCore) tracks leases, tenants, and property data.</p>
+<p>Integrating these schemas is challenging. Point-to-point mappings between <span class="math inline">\(n\)</span> schemas require <span class="math inline">\(O(n^2)\)</span> specifications, and a monolithic universal ontology becomes unwieldy and lossy. The <strong>categorical approach</strong> described in <a href="https://arxiv.org/abs/2601.16663">Nagy et al.&nbsp;(2025)</a> solves this with <span class="math inline">\(O(n)\)</span> specifications: each schema is mapped into a shared <em>colimit</em> schema, and functorial data migration (<span class="math inline">\(\Sigma\)</span>, <span class="math inline">\(\Delta\)</span>) plus the <em>Chase</em> algorithm automatically handle data exchange.</p>
+<p>This vignette demonstrates the full pipeline using CQL.jl:</p>
+<ol type="1">
+<li><strong>Schema colimit</strong> — merge IFC and BRICK schemas by identifying shared entities</li>
+<li><strong>Sigma migration</strong> — push each dataset into the combined schema</li>
+<li><strong>Coproduct</strong> — merge the migrated instances</li>
+<li><strong>Observation equations</strong> — propagate BMS device identifiers from IFC sensors to BRICK points</li>
+<li><strong>Constraints + Chase</strong> — apply integration rules after the fact</li>
+<li><strong>Three-way integration</strong> — extend the pipeline to include REC lease data</li>
+<li><strong>Cross-ontology query</strong> — join data that spans schema boundaries</li>
+</ol>
+<div id="2" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="the-schemas" class="level2">
+<h2 class="anchored" data-anchor-id="the-schemas">The Schemas</h2>
+<p>We work with simplified versions of IFC, BRICK, and REC that capture the essential structure from the paper. The paper’s schemas use typed attributes (<code>String</code>, <code>Double</code>, <code>UUID</code>) and external Java functions; since CQL.jl supports only symbolic constants in the typeside, we encode all data values as string constants. We also abbreviate some entity and FK names (e.g., <code>IfcElement</code> for the paper’s <code>IfcDistributionElement</code>, <code>sensorAttachedTo</code> for <code>sensorOf</code>).</p>
+<p>All schemas share a common typeside with constants representing room names, equipment identifiers, areas, and BMS device IDs.</p>
+<section id="ifc-design" class="level3">
+<h3 class="anchored" data-anchor-id="ifc-design">IFC (Design)</h3>
+<p>The IFC schema models the building as designed: spaces contain distribution elements (HVAC equipment), sensors are attached to elements, and each sensor has a property set carrying its BMS device identifier.</p>
+<div id="4" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>typeside_str <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types Str</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="st">        R240 R260 R200 R440 R460 : Str</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="st">        area_18_68 area_17_12 area_18_32 : Str</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="st">        AC_R240 AC_R260 AC_R200 AC_R440 AC_R460 : Str</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="st">        TUC_R240 TUC_R260 TUC_R200 TUC_R440 TUC_R460 : Str</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="st">        Vacant PersonB PersonC PersonD PersonE : Str</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="st">        rent_350 : Str</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="st">        kwh_145 kwh_132 kwh_158 kwh_167 kwh_125 : Str</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>ifc_schema_str <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="st">schema IFC = literal : Ty {</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="st">        IfcSpace IfcElement IfcSensor IfcPropertySet</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="st">        elementInSpace : IfcElement -&gt; IfcSpace</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="st">        sensorAttachedTo : IfcSensor -&gt; IfcElement</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="st">        hasPropertySet : IfcSensor -&gt; IfcPropertySet</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="st">        spaceName : IfcSpace -&gt; Str</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="st">        spaceArea : IfcSpace -&gt; Str</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="st">        elementName : IfcElement -&gt; Str</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="st">        deviceId : IfcPropertySet -&gt; Str</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="brick-operations" class="level3">
+<h3 class="anchored" data-anchor-id="brick-operations">BRICK (Operations)</h3>
+<p>The BRICK schema models operational building systems: equipment has a location and measurement points, each point carrying a timeseries identifier for the BMS.</p>
+<div id="6" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>brick_schema_str <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema BRICK = literal : Ty {</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="st">        Location Equipment Point</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="st">        hasLocation : Equipment -&gt; Location</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="st">        hasPoint : Equipment -&gt; Point</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="st">        locationName : Location -&gt; Str</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="st">        equipmentName : Equipment -&gt; Str</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="st">        timeseriesId : Point -&gt; Str</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="rec-property-management" class="level3">
+<h3 class="anchored" data-anchor-id="rec-property-management">REC (Property Management)</h3>
+<p>The REC schema tracks real estate data: rooms, tenants (persons), and leases linking them.</p>
+<div id="8" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>rec_schema_str <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema REC = literal : Ty {</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">        Room Person Lease</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="st">        leaseOf : Lease -&gt; Room</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="st">        leasee : Lease -&gt; Person</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="st">        roomName : Room -&gt; Str</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="st">        roomArea : Room -&gt; Str</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="st">        personName : Person -&gt; Str</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="st">        monthlyRent : Lease -&gt; Str</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="example-1-schema-colimit-and-data-migration" class="level2">
+<h2 class="anchored" data-anchor-id="example-1-schema-colimit-and-data-migration">Example 1: Schema Colimit and Data Migration</h2>
+<p>At building commissioning, the design team hands off IFC data to the operations team who need BRICK models. The first step is to merge the two schemas via a <strong>schema colimit</strong>.</p>
+<section id="step-1-schema-colimit" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-schema-colimit">Step 1: Schema Colimit</h3>
+<p>We merge IFC and BRICK by identifying corresponding entities:</p>
+<ul>
+<li><code>IFC.IfcSpace = BRICK.Location</code> (rooms are rooms)</li>
+<li><code>IFC.IfcElement = BRICK.Equipment</code> (distribution elements are equipment)</li>
+</ul>
+<p>We also assert that the spatial relationship is preserved: <code>elementInSpace</code> (IFC) and <code>hasLocation</code> (BRICK) denote the same foreign key path.</p>
+<div id="10" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>colimit_str <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema_colimit C = quotient IFC + BRICK : Ty {</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="st">    entity_equations</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="st">        IFC.IfcSpace = BRICK.Location</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="st">        IFC.IfcElement = BRICK.Equipment</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="st">    path_equations</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="st">        IFC_elementInSpace.IFC_IfcElement = BRICK_hasLocation.BRICK_Equipment</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="st">schema Combined = getSchema C</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="st">mapping IfcM = getMapping C IFC</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="st">mapping BrickM = getMapping C BRICK</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The colimit automatically generates:</p>
+<ul>
+<li>A <strong>combined schema</strong> with merged entities (IfcSpace/Location become one entity, IfcElement/Equipment become one) and the union of all foreign keys and attributes</li>
+<li>An <strong>inclusion mapping</strong> from each source schema into the combined schema</li>
+</ul>
+</section>
+<section id="step-2-sigma-coproduct" class="level3">
+<h3 class="anchored" data-anchor-id="step-2-sigma-coproduct">Step 2: Sigma + Coproduct</h3>
+<p>We create IFC and BRICK datasets for five rooms in a university building, push each into the combined schema via <span class="math inline">\(\Sigma\)</span> (sigma) migration, then take their coproduct (disjoint union).</p>
+<div id="12" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>ifc_instance_str <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance IfcData = literal : IFC {</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="st">    generators</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">        sp1 sp2 sp3 sp4 sp5 : IfcSpace</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="st">        el1 el2 el3 el4 el5 : IfcElement</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="st">        se1 se2 se3 se4 se5 : IfcSensor</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="st">        ps1 ps2 ps3 ps4 ps5 : IfcPropertySet</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="st">    multi_equations</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="st">        spaceName -&gt; {sp1 R240, sp2 R260, sp3 R200, sp4 R440, sp5 R460}</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="st">        spaceArea -&gt; {sp1 area_18_68, sp2 area_17_12, sp3 area_18_32, sp4 area_18_68, sp5 area_17_12}</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="st">        elementName -&gt; {el1 AC_R240, el2 AC_R260, el3 AC_R200, el4 AC_R440, el5 AC_R460}</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="st">        elementInSpace -&gt; {el1 sp1, el2 sp2, el3 sp3, el4 sp4, el5 sp5}</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="st">        sensorAttachedTo -&gt; {se1 el1, se2 el2, se3 el3, se4 el4, se5 el5}</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="st">        hasPropertySet -&gt; {se1 ps1, se2 ps2, se3 ps3, se4 ps4, se5 ps5}</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="st">        deviceId -&gt; {ps1 TUC_R240, ps2 TUC_R260, ps3 TUC_R200, ps4 TUC_R440, ps5 TUC_R460}</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>brick_instance_str <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="st">instance BrickData = literal : BRICK {</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="st">    generators</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="st">        loc1 loc2 loc3 loc4 loc5 : Location</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="st">        eq1 eq2 eq3 eq4 eq5 : Equipment</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="st">        pt1 pt2 pt3 pt4 pt5 : Point</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="st">    multi_equations</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="st">        locationName -&gt; {loc1 R240, loc2 R260, loc3 R200, loc4 R440, loc5 R460}</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="st">        equipmentName -&gt; {eq1 AC_R240, eq2 AC_R260, eq3 AC_R200, eq4 AC_R440, eq5 AC_R460}</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="st">        hasLocation -&gt; {eq1 loc1, eq2 loc2, eq3 loc3, eq4 loc4, eq5 loc5}</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="st">        hasPoint -&gt; {eq1 pt1, eq2 pt2, eq3 pt3, eq4 pt4, eq5 pt5}</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="st">        timeseriesId -&gt; {pt1 TUC_R240, pt2 TUC_R260, pt3 TUC_R200, pt4 TUC_R440, pt5 TUC_R460}</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>sigma_coprod_str <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a><span class="st">instance I_ifc = sigma IfcM IfcData {</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a><span class="st">    options allow_empty_sorts_unsafe = true</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a><span class="st">instance I_brick = sigma BrickM BrickData {</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a><span class="st">    options allow_empty_sorts_unsafe = true</span></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a><span class="st">instance Merged = coproduct I_ifc + I_brick : Combined</span></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>env1 <span class="op">=</span> <span class="fu">run_program</span>(</span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>    typeside_str <span class="op">*</span> ifc_schema_str <span class="op">*</span> brick_schema_str <span class="op">*</span></span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>    colimit_str <span class="op">*</span> ifc_instance_str <span class="op">*</span> brick_instance_str <span class="op">*</span> sigma_coprod_str</span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Combined schema entities (after coproduct):"</span>)</span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> en <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(env1.Combined.ens))</span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> <span class="fu">length</span>(<span class="fu">carrier</span>(env1.Merged.algebra, en))</span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>en<span class="st">: </span><span class="sc">$</span>n<span class="st"> elements"</span>)</span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Combined schema entities (after coproduct):
+  BRICK_Point: 10 elements
+  IFC_IfcElement: 10 elements
+  IFC_IfcPropertySet: 5 elements
+  IFC_IfcSensor: 5 elements
+  IFC_IfcSpace: 10 elements</code></pre>
+</div>
+</div>
+<p>The merged instance contains data from both sources. The Location/IfcSpace entity has 10 elements (5 from IFC + 5 from BRICK) because the two datasets describe the same physical rooms but have not yet been deduplicated — the coproduct is a disjoint union. The paper’s full pipeline uses additional EGDs (equality-generating dependencies) to merge matching entities.</p>
+</section>
+<section id="step-3-delta-projection-to-brick" class="level3">
+<h3 class="anchored" data-anchor-id="step-3-delta-projection-to-brick">Step 3: Delta Projection to BRICK</h3>
+<p>We can extract a BRICK-schema view by pulling back along the BRICK mapping with <span class="math inline">\(\Delta\)</span> (delta) migration:</p>
+<div id="14" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>delta_str <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance BrickView = delta BrickM Merged</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>env1b <span class="op">=</span> <span class="fu">run_program</span>(</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    typeside_str <span class="op">*</span> ifc_schema_str <span class="op">*</span> brick_schema_str <span class="op">*</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    colimit_str <span class="op">*</span> ifc_instance_str <span class="op">*</span> brick_instance_str <span class="op">*</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    sigma_coprod_str <span class="op">*</span> delta_str</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>alg_b <span class="op">=</span> env1b.BrickView.algebra</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"BRICK view (delta projection from merged):"</span>)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> en <span class="kw">in</span> [<span class="op">:</span>Location, <span class="op">:</span>Equipment, <span class="op">:</span>Point]</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> <span class="fu">length</span>(<span class="fu">carrier</span>(alg_b, en))</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>en<span class="st">: </span><span class="sc">$</span>n<span class="st"> elements"</span>)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>BRICK view (delta projection from merged):
+  Location: 10 elements
+  Equipment: 10 elements
+  Point: 10 elements</code></pre>
+</div>
+</div>
+<p>The BRICK view sees all elements visible through the BRICK inclusion mapping, including those that originated from IFC data.</p>
+</section>
+</section>
+<section id="example-2-device-id-transfer-via-observation-equations" class="level2">
+<h2 class="anchored" data-anchor-id="example-2-device-id-transfer-via-observation-equations">Example 2: Device ID Transfer via Observation Equations</h2>
+<p>The key interoperability challenge is transferring BMS device identifiers. In IFC, the <code>deviceId</code> lives on <code>IfcPropertySet</code> (attached to sensors); in BRICK, the <code>timeseriesId</code> lives on <code>Point</code> (attached to equipment). An <strong>observation equation</strong> on the combined schema expresses the rule from the paper (Formula 2):</p>
+<blockquote class="blockquote">
+<p>For every sensor <span class="math inline">\(s\)</span>, <code>timeseriesId(hasPoint(sensorAttachedTo(s))) = deviceId(hasPropertySet(s))</code></p>
+</blockquote>
+<p>This forces the BRICK <code>timeseriesId</code> to equal the IFC <code>deviceId</code> for every sensor–equipment–point chain.</p>
+<div id="16" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>env2 <span class="op">=</span> cql<span class="st">"""</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types Str</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="st">        R240 R260 R200 R440 R460 : Str</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="st">        area_18_68 area_17_12 area_18_32 : Str</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="st">        AC_R240 AC_R260 AC_R200 AC_R440 AC_R460 : Str</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="st">        TUC_R240 TUC_R260 TUC_R200 TUC_R440 TUC_R460 : Str</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="st">schema Combined = literal : Ty {</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="st">        Location Equipment Point Sensor PropertySet</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="st">        hasLocation : Equipment -&gt; Location</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="st">        hasPoint : Equipment -&gt; Point</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="st">        sensorAttachedTo : Sensor -&gt; Equipment</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="st">        hasPropertySet : Sensor -&gt; PropertySet</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="st">        spaceName : Location -&gt; Str</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="st">        spaceArea : Location -&gt; Str</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="st">        equipmentName : Equipment -&gt; Str</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="st">        timeseriesId : Point -&gt; Str</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="st">        deviceId : PropertySet -&gt; Str</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="st">    observation_equations</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="st">        forall s:Sensor . timeseriesId(hasPoint(sensorAttachedTo(s))) = deviceId(hasPropertySet(s))</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="st">instance Data = literal : Combined {</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a><span class="st">    generators</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="st">        loc1 loc2 loc3 loc4 loc5 : Location</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a><span class="st">        eq1 eq2 eq3 eq4 eq5 : Equipment</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a><span class="st">        pt1 pt2 pt3 pt4 pt5 : Point</span></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a><span class="st">        se1 se2 se3 se4 se5 : Sensor</span></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a><span class="st">        ps1 ps2 ps3 ps4 ps5 : PropertySet</span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a><span class="st">    multi_equations</span></span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a><span class="st">        spaceName -&gt; {loc1 R240, loc2 R260, loc3 R200, loc4 R440, loc5 R460}</span></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a><span class="st">        spaceArea -&gt; {loc1 area_18_68, loc2 area_17_12, loc3 area_18_32, loc4 area_18_68, loc5 area_17_12}</span></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a><span class="st">        equipmentName -&gt; {eq1 AC_R240, eq2 AC_R260, eq3 AC_R200, eq4 AC_R440, eq5 AC_R460}</span></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a><span class="st">        hasLocation -&gt; {eq1 loc1, eq2 loc2, eq3 loc3, eq4 loc4, eq5 loc5}</span></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a><span class="st">        hasPoint -&gt; {eq1 pt1, eq2 pt2, eq3 pt3, eq4 pt4, eq5 pt5}</span></span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a><span class="st">        sensorAttachedTo -&gt; {se1 eq1, se2 eq2, se3 eq3, se4 eq4, se5 eq5}</span></span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a><span class="st">        hasPropertySet -&gt; {se1 ps1, se2 ps2, se3 ps3, se4 ps4, se5 ps5}</span></span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a><span class="st">        deviceId -&gt; {ps1 TUC_R240, ps2 TUC_R260, ps3 TUC_R200, ps4 TUC_R440, ps5 TUC_R460}</span></span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Reproduce the paper's Table 1</span></span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>alg2 <span class="op">=</span> env2.Data.algebra</span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Table 1: IFC–BRICK Integration Result (cf. paper Table 1)"</span>)</span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"="</span> <span class="op">^</span> <span class="fl">50</span>)</span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">rpad</span>(<span class="st">"spaceName"</span>, <span class="fl">14</span>), <span class="fu">rpad</span>(<span class="st">"spaceArea"</span>, <span class="fl">14</span>), <span class="st">"timeseriesId"</span>)</span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"-"</span> <span class="op">^</span> <span class="fl">50</span>)</span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a><span class="co"># Collect and sort rows by spaceName for deterministic output</span></span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> loc <span class="kw">in</span> <span class="fu">carrier</span>(alg2, <span class="op">:</span>Location)</span>
+<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a>    sname <span class="op">=</span> <span class="fu">eval_att</span>(alg2, <span class="op">:</span>spaceName, loc)</span>
+<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a>    sarea <span class="op">=</span> <span class="fu">eval_att</span>(alg2, <span class="op">:</span>spaceArea, loc)</span>
+<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Find the equipment at this location and its point</span></span>
+<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> eq <span class="kw">in</span> <span class="fu">carrier</span>(alg2, <span class="op">:</span>Equipment)</span>
+<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="fu">eval_fk</span>(alg2, <span class="op">:</span>hasLocation, eq) <span class="op">==</span> loc</span>
+<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a>            pt <span class="op">=</span> <span class="fu">eval_fk</span>(alg2, <span class="op">:</span>hasPoint, eq)</span>
+<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a>            tsid <span class="op">=</span> <span class="fu">eval_att</span>(alg2, <span class="op">:</span>timeseriesId, pt)</span>
+<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a>            <span class="fu">push!</span>(rows, (<span class="fu">string</span>(sname), <span class="fu">string</span>(sarea), <span class="fu">string</span>(tsid)))</span>
+<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a><span class="fu">sort!</span>(rows, by <span class="op">=</span> r <span class="op">-&gt;</span> r[<span class="fl">1</span>])</span>
+<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (sname, sarea, tsid) <span class="kw">in</span> rows</span>
+<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="fu">rpad</span>(sname, <span class="fl">14</span>), <span class="fu">rpad</span>(sarea, <span class="fl">14</span>), tsid)</span>
+<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Table 1: IFC–BRICK Integration Result (cf. paper Table 1)
+==================================================
+spaceName     spaceArea     timeseriesId
+--------------------------------------------------
+R200          area_18_32    TUC_R200
+R240          area_18_68    TUC_R240
+R260          area_17_12    TUC_R260
+R440          area_18_68    TUC_R440
+R460          area_17_12    TUC_R460</code></pre>
+</div>
+</div>
+<p>The observation equation automatically propagates the concrete device identifiers to the BRICK points. No explicit data transformation code is needed — the mathematical structure of the term model handles it.</p>
+</section>
+<section id="example-3-constraints-and-the-chase-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="example-3-constraints-and-the-chase-algorithm">Example 3: Constraints and the Chase Algorithm</h2>
+<p>Instead of encoding the device-ID rule as a schema-level observation equation, we can express it as a <strong>constraint</strong> (equality-generating dependency) and apply the <strong>Chase</strong> algorithm. This is more flexible: constraints can be applied to any instance after the fact, rather than baked into the schema definition.</p>
+<div id="18" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>env3 <span class="op">=</span> cql<span class="st">"""</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types Str</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="st">        R240 R260 : Str</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="st">        AC_R240 AC_R260 : Str</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="st">        TUC_R240 TUC_R260 : Str</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="st">schema Combined = literal : Ty {</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="st">        Location Equipment Point Sensor PropertySet</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="st">        hasLocation : Equipment -&gt; Location</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="st">        hasPoint : Equipment -&gt; Point</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="st">        sensorAttachedTo : Sensor -&gt; Equipment</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="st">        hasPropertySet : Sensor -&gt; PropertySet</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="st">        spaceName : Location -&gt; Str</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="st">        equipmentName : Equipment -&gt; Str</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="st">        timeseriesId : Point -&gt; Str</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="st">        deviceId : PropertySet -&gt; Str</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="st">instance Data = literal : Combined {</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="st">    generators</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="st">        loc1 loc2 : Location</span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a><span class="st">        eq1 eq2 : Equipment</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a><span class="st">        pt1 pt2 : Point</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="st">        se1 se2 : Sensor</span></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a><span class="st">        ps1 ps2 : PropertySet</span></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a><span class="st">    multi_equations</span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a><span class="st">        spaceName -&gt; {loc1 R240, loc2 R260}</span></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a><span class="st">        equipmentName -&gt; {eq1 AC_R240, eq2 AC_R260}</span></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a><span class="st">        hasLocation -&gt; {eq1 loc1, eq2 loc2}</span></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a><span class="st">        hasPoint -&gt; {eq1 pt1, eq2 pt2}</span></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a><span class="st">        sensorAttachedTo -&gt; {se1 eq1, se2 eq2}</span></span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a><span class="st">        hasPropertySet -&gt; {se1 ps1, se2 ps2}</span></span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a><span class="st">        deviceId -&gt; {ps1 TUC_R240, ps2 TUC_R260}</span></span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a><span class="st">constraints DeviceIdRule = literal : Combined {</span></span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a><span class="st">    forall s:Sensor</span></span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a><span class="st">    -&gt; where timeseriesId(hasPoint(sensorAttachedTo(s))) = deviceId(hasPropertySet(s))</span></span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a><span class="st">instance Chased = chase DeviceIdRule Data</span></span>
+<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Before chase — timeseriesId on Points:"</span>)</span>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a>alg_before <span class="op">=</span> env3.Data.algebra</span>
+<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> pt <span class="kw">in</span> <span class="fu">carrier</span>(alg_before, <span class="op">:</span>Point)</span>
+<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a>    tsid <span class="op">=</span> <span class="fu">eval_att</span>(alg_before, <span class="op">:</span>timeseriesId, pt)</span>
+<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">repr_x</span>(alg_before, pt), <span class="st">" → "</span>, tsid)</span>
+<span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">After chase — timeseriesId on Points:"</span>)</span>
+<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a>alg_after <span class="op">=</span> env3.Chased.algebra</span>
+<span id="cb12-59"><a href="#cb12-59" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> pt <span class="kw">in</span> <span class="fu">carrier</span>(alg_after, <span class="op">:</span>Point)</span>
+<span id="cb12-60"><a href="#cb12-60" aria-hidden="true" tabindex="-1"></a>    tsid <span class="op">=</span> <span class="fu">eval_att</span>(alg_after, <span class="op">:</span>timeseriesId, pt)</span>
+<span id="cb12-61"><a href="#cb12-61" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">repr_x</span>(alg_after, pt), <span class="st">" → "</span>, tsid)</span>
+<span id="cb12-62"><a href="#cb12-62" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Before chase — timeseriesId on Points:
+  eq2.hasPoint → eq2.hasPoint.timeseriesId
+  eq1.hasPoint → eq1.hasPoint.timeseriesId
+
+After chase — timeseriesId on Points:
+  eq2.hasPoint → TUC_R260
+  eq1.hasPoint → TUC_R240</code></pre>
+</div>
+</div>
+<p>Before the chase, <code>timeseriesId</code> is a Skolem (unknown value). After the chase, the constraint forces it to equal the corresponding <code>deviceId</code>, and the concrete BMS identifiers appear.</p>
+</section>
+<section id="example-4-three-way-integration-with-rec" class="level2">
+<h2 class="anchored" data-anchor-id="example-4-three-way-integration-with-rec">Example 4: Three-Way Integration with REC</h2>
+<p>Following the paper’s second example, we extend the integration to include REC (property management) data. The key insight: we only specify IFC–BRICK and IFC–REC correspondences; the BRICK–REC relationship <em>emerges automatically</em> through the shared colimit.</p>
+<section id="combined-schema" class="level3">
+<h3 class="anchored" data-anchor-id="combined-schema">Combined Schema</h3>
+<p>We build a three-way combined schema that unifies all three ontologies and includes two observation equations:</p>
+<ol type="1">
+<li><strong>Device-ID propagation</strong>: the BRICK <code>timeseriesId</code> equals the IFC <code>deviceId</code> for every sensor–equipment–point chain (as in Example 2).</li>
+<li><strong>Zone setpoint derivation</strong>: the <code>setPointValue</code> for each room’s zone is determined by the occupant’s name via a typeside function <code>setpointFor</code>. The paper uses external Java comparison functions; we encode the conditional rule as ground typeside equations:
+<ul>
+<li><code>setpointFor(Vacant) = temp_26</code> (vacant rooms get energy-saving 26°C)</li>
+<li><code>setpointFor(PersonX) = temp_22</code> (occupied rooms get comfort 22°C)</li>
+</ul></li>
+</ol>
+<p>The schema includes <code>Zone</code> and <code>SetPoint</code> entities (from BRICK), connected by <code>inZone : Location -&gt; Zone</code> and <code>zoneSetPoint : Zone -&gt; SetPoint</code>, plus a <code>Meter</code> entity for per-room energy consumption.</p>
+<div id="20" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>three_way_str <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types Str</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="st">        R240 R260 R200 R440 R460 : Str</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="st">        area_18_68 area_17_12 area_18_32 : Str</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="st">        AC_R240 AC_R260 AC_R200 AC_R440 AC_R460 : Str</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="st">        TUC_R240 TUC_R260 TUC_R200 TUC_R440 TUC_R460 : Str</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="st">        Vacant PersonB PersonC PersonD PersonE : Str</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="st">        rent_350 : Str</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="st">        kwh_145 kwh_132 kwh_158 kwh_167 kwh_125 : Str</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="st">        temp_22 temp_26 : Str</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="st">    functions</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="st">        setpointFor : Str -&gt; Str</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="st">    equations</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="st">        setpointFor(Vacant) = temp_26</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="st">        setpointFor(PersonB) = temp_22</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="st">        setpointFor(PersonC) = temp_22</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="st">        setpointFor(PersonD) = temp_22</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="st">        setpointFor(PersonE) = temp_22</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a><span class="st">schema Combined3 = literal : Ty {</span></span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a><span class="st">        Location Equipment Point Sensor PropertySet</span></span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a><span class="st">        Person Lease Meter Zone SetPoint</span></span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a><span class="st">        hasLocation : Equipment -&gt; Location</span></span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a><span class="st">        hasPoint : Equipment -&gt; Point</span></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a><span class="st">        sensorAttachedTo : Sensor -&gt; Equipment</span></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a><span class="st">        hasPropertySet : Sensor -&gt; PropertySet</span></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a><span class="st">        leaseOf : Lease -&gt; Location</span></span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a><span class="st">        leasee : Lease -&gt; Person</span></span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a><span class="st">        meterAt : Meter -&gt; Location</span></span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a><span class="st">        inZone : Location -&gt; Zone</span></span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a><span class="st">        zoneSetPoint : Zone -&gt; SetPoint</span></span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a><span class="st">        spaceName : Location -&gt; Str</span></span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a><span class="st">        spaceArea : Location -&gt; Str</span></span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a><span class="st">        equipmentName : Equipment -&gt; Str</span></span>
+<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a><span class="st">        timeseriesId : Point -&gt; Str</span></span>
+<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a><span class="st">        deviceId : PropertySet -&gt; Str</span></span>
+<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a><span class="st">        personName : Person -&gt; Str</span></span>
+<span id="cb14-44"><a href="#cb14-44" aria-hidden="true" tabindex="-1"></a><span class="st">        monthlyRent : Lease -&gt; Str</span></span>
+<span id="cb14-45"><a href="#cb14-45" aria-hidden="true" tabindex="-1"></a><span class="st">        energyUsed : Meter -&gt; Str</span></span>
+<span id="cb14-46"><a href="#cb14-46" aria-hidden="true" tabindex="-1"></a><span class="st">        setPointValue : SetPoint -&gt; Str</span></span>
+<span id="cb14-47"><a href="#cb14-47" aria-hidden="true" tabindex="-1"></a><span class="st">    observation_equations</span></span>
+<span id="cb14-48"><a href="#cb14-48" aria-hidden="true" tabindex="-1"></a><span class="st">        forall s:Sensor . timeseriesId(hasPoint(sensorAttachedTo(s))) = deviceId(hasPropertySet(s))</span></span>
+<span id="cb14-49"><a href="#cb14-49" aria-hidden="true" tabindex="-1"></a><span class="st">        forall l:Lease . setPointValue(zoneSetPoint(inZone(leaseOf(l)))) = setpointFor(personName(leasee(l)))</span></span>
+<span id="cb14-50"><a href="#cb14-50" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb14-51"><a href="#cb14-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-52"><a href="#cb14-52" aria-hidden="true" tabindex="-1"></a><span class="st">instance ThreeWayData = literal : Combined3 {</span></span>
+<span id="cb14-53"><a href="#cb14-53" aria-hidden="true" tabindex="-1"></a><span class="st">    generators</span></span>
+<span id="cb14-54"><a href="#cb14-54" aria-hidden="true" tabindex="-1"></a><span class="st">        loc_r240 loc_r260 loc_r200 loc_r440 loc_r460 : Location</span></span>
+<span id="cb14-55"><a href="#cb14-55" aria-hidden="true" tabindex="-1"></a><span class="st">        eq_r240 eq_r260 eq_r200 eq_r440 eq_r460 : Equipment</span></span>
+<span id="cb14-56"><a href="#cb14-56" aria-hidden="true" tabindex="-1"></a><span class="st">        pt_r240 pt_r260 pt_r200 pt_r440 pt_r460 : Point</span></span>
+<span id="cb14-57"><a href="#cb14-57" aria-hidden="true" tabindex="-1"></a><span class="st">        sens_r240 sens_r260 sens_r200 sens_r440 sens_r460 : Sensor</span></span>
+<span id="cb14-58"><a href="#cb14-58" aria-hidden="true" tabindex="-1"></a><span class="st">        ps_r240 ps_r260 ps_r200 ps_r440 ps_r460 : PropertySet</span></span>
+<span id="cb14-59"><a href="#cb14-59" aria-hidden="true" tabindex="-1"></a><span class="st">        p_vacant p_b p_c p_d p_e : Person</span></span>
+<span id="cb14-60"><a href="#cb14-60" aria-hidden="true" tabindex="-1"></a><span class="st">        lease_r240 lease_r260 lease_r200 lease_r440 lease_r460 : Lease</span></span>
+<span id="cb14-61"><a href="#cb14-61" aria-hidden="true" tabindex="-1"></a><span class="st">        meter_r240 meter_r260 meter_r200 meter_r440 meter_r460 : Meter</span></span>
+<span id="cb14-62"><a href="#cb14-62" aria-hidden="true" tabindex="-1"></a><span class="st">        z_r240 z_r260 z_r200 z_r440 z_r460 : Zone</span></span>
+<span id="cb14-63"><a href="#cb14-63" aria-hidden="true" tabindex="-1"></a><span class="st">        sp_r240 sp_r260 sp_r200 sp_r440 sp_r460 : SetPoint</span></span>
+<span id="cb14-64"><a href="#cb14-64" aria-hidden="true" tabindex="-1"></a><span class="st">    multi_equations</span></span>
+<span id="cb14-65"><a href="#cb14-65" aria-hidden="true" tabindex="-1"></a><span class="st">        spaceName -&gt; {loc_r240 R240, loc_r260 R260, loc_r200 R200, loc_r440 R440, loc_r460 R460}</span></span>
+<span id="cb14-66"><a href="#cb14-66" aria-hidden="true" tabindex="-1"></a><span class="st">        spaceArea -&gt; {loc_r240 area_18_68, loc_r260 area_17_12, loc_r200 area_18_32, loc_r440 area_18_68, loc_r460 area_17_12}</span></span>
+<span id="cb14-67"><a href="#cb14-67" aria-hidden="true" tabindex="-1"></a><span class="st">        equipmentName -&gt; {eq_r240 AC_R240, eq_r260 AC_R260, eq_r200 AC_R200, eq_r440 AC_R440, eq_r460 AC_R460}</span></span>
+<span id="cb14-68"><a href="#cb14-68" aria-hidden="true" tabindex="-1"></a><span class="st">        hasLocation -&gt; {eq_r240 loc_r240, eq_r260 loc_r260, eq_r200 loc_r200, eq_r440 loc_r440, eq_r460 loc_r460}</span></span>
+<span id="cb14-69"><a href="#cb14-69" aria-hidden="true" tabindex="-1"></a><span class="st">        hasPoint -&gt; {eq_r240 pt_r240, eq_r260 pt_r260, eq_r200 pt_r200, eq_r440 pt_r440, eq_r460 pt_r460}</span></span>
+<span id="cb14-70"><a href="#cb14-70" aria-hidden="true" tabindex="-1"></a><span class="st">        sensorAttachedTo -&gt; {sens_r240 eq_r240, sens_r260 eq_r260, sens_r200 eq_r200, sens_r440 eq_r440, sens_r460 eq_r460}</span></span>
+<span id="cb14-71"><a href="#cb14-71" aria-hidden="true" tabindex="-1"></a><span class="st">        hasPropertySet -&gt; {sens_r240 ps_r240, sens_r260 ps_r260, sens_r200 ps_r200, sens_r440 ps_r440, sens_r460 ps_r460}</span></span>
+<span id="cb14-72"><a href="#cb14-72" aria-hidden="true" tabindex="-1"></a><span class="st">        deviceId -&gt; {ps_r240 TUC_R240, ps_r260 TUC_R260, ps_r200 TUC_R200, ps_r440 TUC_R440, ps_r460 TUC_R460}</span></span>
+<span id="cb14-73"><a href="#cb14-73" aria-hidden="true" tabindex="-1"></a><span class="st">        personName -&gt; {p_vacant Vacant, p_b PersonB, p_c PersonC, p_d PersonD, p_e PersonE}</span></span>
+<span id="cb14-74"><a href="#cb14-74" aria-hidden="true" tabindex="-1"></a><span class="st">        leaseOf -&gt; {lease_r240 loc_r240, lease_r260 loc_r260, lease_r200 loc_r200, lease_r440 loc_r440, lease_r460 loc_r460}</span></span>
+<span id="cb14-75"><a href="#cb14-75" aria-hidden="true" tabindex="-1"></a><span class="st">        leasee -&gt; {lease_r240 p_vacant, lease_r260 p_b, lease_r200 p_c, lease_r440 p_d, lease_r460 p_e}</span></span>
+<span id="cb14-76"><a href="#cb14-76" aria-hidden="true" tabindex="-1"></a><span class="st">        monthlyRent -&gt; {lease_r240 Vacant, lease_r260 rent_350, lease_r200 rent_350, lease_r440 rent_350, lease_r460 rent_350}</span></span>
+<span id="cb14-77"><a href="#cb14-77" aria-hidden="true" tabindex="-1"></a><span class="st">        meterAt -&gt; {meter_r240 loc_r240, meter_r260 loc_r260, meter_r200 loc_r200, meter_r440 loc_r440, meter_r460 loc_r460}</span></span>
+<span id="cb14-78"><a href="#cb14-78" aria-hidden="true" tabindex="-1"></a><span class="st">        energyUsed -&gt; {meter_r240 kwh_145, meter_r260 kwh_132, meter_r200 kwh_158, meter_r440 kwh_167, meter_r460 kwh_125}</span></span>
+<span id="cb14-79"><a href="#cb14-79" aria-hidden="true" tabindex="-1"></a><span class="st">        inZone -&gt; {loc_r240 z_r240, loc_r260 z_r260, loc_r200 z_r200, loc_r440 z_r440, loc_r460 z_r460}</span></span>
+<span id="cb14-80"><a href="#cb14-80" aria-hidden="true" tabindex="-1"></a><span class="st">        zoneSetPoint -&gt; {z_r240 sp_r240, z_r260 sp_r260, z_r200 sp_r200, z_r440 sp_r440, z_r460 sp_r460}</span></span>
+<span id="cb14-81"><a href="#cb14-81" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb14-82"><a href="#cb14-82" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb14-83"><a href="#cb14-83" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="cross-ontology-query-tenant-billing" class="level3">
+<h3 class="anchored" data-anchor-id="cross-ontology-query-tenant-billing">Cross-Ontology Query: Tenant Billing</h3>
+<p>The power of categorical integration is that we can write queries that <em>span schema boundaries</em>. This tenant billing query joins REC lease data with BRICK energy meters and IFC device identifiers — a query that would be impossible without the unified schema, since BRICK and REC were never explicitly mapped to each other.</p>
+<div id="22" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>query_str <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema BillingResult = literal : Ty {</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="st">    entities Row</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="st">        tenant : Row -&gt; Str</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="st">        room : Row -&gt; Str</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="st">        area : Row -&gt; Str</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="st">        rent : Row -&gt; Str</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="st">        equipment : Row -&gt; Str</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="st">        energy : Row -&gt; Str</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="st">        device : Row -&gt; Str</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="st">        zoneSetPoint : Row -&gt; Str</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="st">query TenantBilling = literal : Combined3 -&gt; BillingResult {</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="st">    entity Row -&gt; {</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="st">        from</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="st">            l : Lease</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a><span class="st">            m : Meter</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a><span class="st">            e : Equipment</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a><span class="st">        where</span></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a><span class="st">            l.leaseOf = m.meterAt</span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a><span class="st">            e.hasLocation = l.leaseOf</span></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a><span class="st">        attributes</span></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a><span class="st">            tenant -&gt; l.leasee.personName</span></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a><span class="st">            room -&gt; l.leaseOf.spaceName</span></span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a><span class="st">            area -&gt; l.leaseOf.spaceArea</span></span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a><span class="st">            rent -&gt; l.monthlyRent</span></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a><span class="st">            equipment -&gt; e.equipmentName</span></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a><span class="st">            energy -&gt; m.energyUsed</span></span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a><span class="st">            device -&gt; e.hasPoint.timeseriesId</span></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a><span class="st">            zoneSetPoint -&gt; l.leaseOf.inZone.zoneSetPoint.setPointValue</span></span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a><span class="st">instance BillingOutput = eval TenantBilling ThreeWayData</span></span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>env4 <span class="op">=</span> <span class="fu">run_program</span>(three_way_str <span class="op">*</span> query_str)</span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Reproduce the paper's Table 2</span></span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Table 2: Tenant Billing Report (cf. paper Table 2)"</span>)</span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"="</span> <span class="op">^</span> <span class="fl">110</span>)</span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">rpad</span>(<span class="st">"Tenant"</span>, <span class="fl">12</span>), <span class="fu">rpad</span>(<span class="st">"Room"</span>, <span class="fl">8</span>), <span class="fu">rpad</span>(<span class="st">"Area"</span>, <span class="fl">12</span>),</span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="st">"Rent"</span>, <span class="fl">10</span>), <span class="fu">rpad</span>(<span class="st">"Equipment"</span>, <span class="fl">12</span>), <span class="fu">rpad</span>(<span class="st">"Energy"</span>, <span class="fl">10</span>),</span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="st">"Device"</span>, <span class="fl">12</span>), <span class="st">"SetPoint"</span>)</span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"-"</span> <span class="op">^</span> <span class="fl">110</span>)</span>
+<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a>alg4 <span class="op">=</span> env4.BillingOutput.algebra</span>
+<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb15-50"><a href="#cb15-50" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg4, <span class="op">:</span>Row)</span>
+<span id="cb15-51"><a href="#cb15-51" aria-hidden="true" tabindex="-1"></a>    t <span class="op">=</span> <span class="fu">string</span>(<span class="fu">eval_att</span>(alg4, <span class="op">:</span>tenant, x))</span>
+<span id="cb15-52"><a href="#cb15-52" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> <span class="fu">string</span>(<span class="fu">eval_att</span>(alg4, <span class="op">:</span>room, x))</span>
+<span id="cb15-53"><a href="#cb15-53" aria-hidden="true" tabindex="-1"></a>    a <span class="op">=</span> <span class="fu">string</span>(<span class="fu">eval_att</span>(alg4, <span class="op">:</span>area, x))</span>
+<span id="cb15-54"><a href="#cb15-54" aria-hidden="true" tabindex="-1"></a>    rent <span class="op">=</span> <span class="fu">string</span>(<span class="fu">eval_att</span>(alg4, <span class="op">:</span>rent, x))</span>
+<span id="cb15-55"><a href="#cb15-55" aria-hidden="true" tabindex="-1"></a>    eq <span class="op">=</span> <span class="fu">string</span>(<span class="fu">eval_att</span>(alg4, <span class="op">:</span>equipment, x))</span>
+<span id="cb15-56"><a href="#cb15-56" aria-hidden="true" tabindex="-1"></a>    en <span class="op">=</span> <span class="fu">string</span>(<span class="fu">eval_att</span>(alg4, <span class="op">:</span>energy, x))</span>
+<span id="cb15-57"><a href="#cb15-57" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> <span class="fu">string</span>(<span class="fu">eval_att</span>(alg4, <span class="op">:</span>device, x))</span>
+<span id="cb15-58"><a href="#cb15-58" aria-hidden="true" tabindex="-1"></a>    sp <span class="op">=</span> <span class="fu">string</span>(<span class="fu">eval_att</span>(alg4, <span class="op">:</span>zoneSetPoint, x))</span>
+<span id="cb15-59"><a href="#cb15-59" aria-hidden="true" tabindex="-1"></a>    <span class="fu">push!</span>(rows, (t, r, a, rent, eq, en, d, sp))</span>
+<span id="cb15-60"><a href="#cb15-60" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb15-61"><a href="#cb15-61" aria-hidden="true" tabindex="-1"></a><span class="co"># Sort by room name to match paper's table order</span></span>
+<span id="cb15-62"><a href="#cb15-62" aria-hidden="true" tabindex="-1"></a><span class="fu">sort!</span>(rows, by <span class="op">=</span> r <span class="op">-&gt;</span> r[<span class="fl">2</span>])</span>
+<span id="cb15-63"><a href="#cb15-63" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (t, r, a, rent, eq, en, d, sp) <span class="kw">in</span> rows</span>
+<span id="cb15-64"><a href="#cb15-64" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="fu">rpad</span>(t, <span class="fl">12</span>), <span class="fu">rpad</span>(r, <span class="fl">8</span>), <span class="fu">rpad</span>(a, <span class="fl">12</span>), <span class="fu">rpad</span>(rent, <span class="fl">10</span>),</span>
+<span id="cb15-65"><a href="#cb15-65" aria-hidden="true" tabindex="-1"></a>            <span class="fu">rpad</span>(eq, <span class="fl">12</span>), <span class="fu">rpad</span>(en, <span class="fl">10</span>), <span class="fu">rpad</span>(d, <span class="fl">12</span>), sp)</span>
+<span id="cb15-66"><a href="#cb15-66" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Table 2: Tenant Billing Report (cf. paper Table 2)
+==============================================================================================================
+Tenant      Room    Area        Rent      Equipment   Energy    Device      SetPoint
+--------------------------------------------------------------------------------------------------------------
+PersonC     R200    area_18_32  rent_350  AC_R200     kwh_158   TUC_R200    temp_22
+Vacant      R240    area_18_68  Vacant    AC_R240     kwh_145   TUC_R240    temp_26
+PersonB     R260    area_17_12  rent_350  AC_R260     kwh_132   TUC_R260    temp_22
+PersonD     R440    area_18_68  rent_350  AC_R440     kwh_167   TUC_R440    temp_22
+PersonE     R460    area_17_12  rent_350  AC_R460     kwh_125   TUC_R460    temp_22</code></pre>
+</div>
+</div>
+<p>Each row joins a lease (REC), a meter (BRICK), and equipment (BRICK/IFC) through their shared <code>Location</code> entity — an entity that exists because the colimit identified <code>IfcSpace</code>, <code>Location</code>, and <code>Room</code> as the same concept. The <code>device</code> column shows the BMS identifier propagated from IFC’s <code>deviceId</code> to BRICK’s <code>timeseriesId</code> by the first observation equation. The <code>SetPoint</code> column shows the zone temperature setpoint derived from occupancy status by the second observation equation and the typeside function <code>setpointFor</code>: vacant rooms get 26°C (energy saving) while occupied rooms get 22°C (comfort).</p>
+<p>Comparing with the paper’s Table 2:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 29%">
+<col style="width: 34%">
+<col style="width: 17%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Paper value</th>
+<th>CQL.jl value</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>personName</td>
+<td>Person B</td>
+<td>PersonB</td>
+<td>CQL.jl constants cannot contain spaces</td>
+</tr>
+<tr class="even">
+<td>roomName</td>
+<td>Room 200</td>
+<td>R200</td>
+<td>Abbreviated constant name</td>
+</tr>
+<tr class="odd">
+<td>roomArea</td>
+<td>18.32</td>
+<td>area_18_32</td>
+<td>No numeric types; encoded as symbolic constant</td>
+</tr>
+<tr class="even">
+<td>monthlyRent</td>
+<td>350.00</td>
+<td>rent_350</td>
+<td>Encoded as symbolic constant</td>
+</tr>
+<tr class="odd">
+<td>equipmentName</td>
+<td>Split AC Room 200</td>
+<td>AC_R200</td>
+<td>Abbreviated</td>
+</tr>
+<tr class="even">
+<td>energyUsed</td>
+<td>158.3</td>
+<td>kwh_158</td>
+<td>Encoded as symbolic constant</td>
+</tr>
+<tr class="odd">
+<td>device</td>
+<td>TUC.245.77.R200</td>
+<td>TUC_R200</td>
+<td>Abbreviated (dots not valid in identifiers)</td>
+</tr>
+<tr class="even">
+<td>zoneSetPoint</td>
+<td>26.0 / 22.0</td>
+<td>temp_26 / temp_22</td>
+<td>Encoded as symbolic constant</td>
+</tr>
+</tbody>
+</table>
+<p>The paper uses external Java comparison functions (checking <code>personName == "Vacant"</code>) to determine the setpoint. CQL.jl achieves the same result using a typeside function <code>setpointFor</code> with ground equations, which is evaluated during algebra simplification.</p>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>This vignette demonstrated the categorical approach to building data integration from <a href="https://arxiv.org/abs/2601.16663">Nagy et al.&nbsp;(2025)</a>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 48%">
+<col style="width: 31%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Step</th>
+<th>CQL Operation</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Schema merging</td>
+<td><code>schema_colimit</code> (quotient)</td>
+<td>Identify corresponding entities across schemas</td>
+</tr>
+<tr class="even">
+<td>Schema/mapping extraction</td>
+<td><code>getSchema</code>, <code>getMapping</code></td>
+<td>Obtain the combined schema and inclusion mappings</td>
+</tr>
+<tr class="odd">
+<td>Data migration</td>
+<td><code>sigma</code></td>
+<td>Push source data into the combined schema</td>
+</tr>
+<tr class="even">
+<td>Instance merging</td>
+<td><code>coproduct</code></td>
+<td>Disjoint union of migrated instances</td>
+</tr>
+<tr class="odd">
+<td>Rule application</td>
+<td><code>observation_equations</code> or <code>constraints</code> + <code>chase</code></td>
+<td>Propagate derived data (e.g., device IDs)</td>
+</tr>
+<tr class="even">
+<td>View extraction</td>
+<td><code>delta</code></td>
+<td>Pull enriched data back to a source schema</td>
+</tr>
+<tr class="odd">
+<td>Cross-domain query</td>
+<td><code>query</code> + <code>eval</code></td>
+<td>Join data spanning schema boundaries</td>
+</tr>
+</tbody>
+</table>
+<p>The key advantage is <strong>compositional scaling</strong>: adding a new schema (e.g., REC) requires only one mapping into the colimit, not separate mappings to every existing schema. The BRICK–REC relationship emerges automatically through the shared <code>Location</code> entity, enabling cross-ontology queries (like tenant billing) without explicit BRICK–REC integration code.</p>
+<section id="references" class="level3">
+<h3 class="anchored" data-anchor-id="references">References</h3>
+<ul>
+<li>Nagy, G. et al.&nbsp;(2025). “A Categorical Approach to Semantic Interoperability across Building Lifecycle.” <em>arXiv:2601.16663</em>. <a href="https://arxiv.org/abs/2601.16663">https://arxiv.org/abs/2601.16663</a></li>
+<li>Spivak, D. I. (2012). “Functorial Data Migration.” <em>Information and Computation</em>, 217, 31–51.</li>
+<li>Wisnesky, R. et al.&nbsp;(2017). “Algebraic Data Integration.” <em>Journal of Functional Programming</em>, 27, e24.</li>
+</ul>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

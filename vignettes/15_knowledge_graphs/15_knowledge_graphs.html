@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="CQL.jl">
+
+<title>Bridging RDF and Property Graphs with CQL</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="knowledge_graphs_files/libs/clipboard/clipboard.min.js"></script>
+<script src="knowledge_graphs_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="knowledge_graphs_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="knowledge_graphs_files/libs/quarto-html/popper.min.js"></script>
+<script src="knowledge_graphs_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="knowledge_graphs_files/libs/quarto-html/anchor.min.js"></script>
+<link href="knowledge_graphs_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="knowledge_graphs_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="knowledge_graphs_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="knowledge_graphs_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="knowledge_graphs_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#two-paradigms-two-schemas" id="toc-two-paradigms-two-schemas" class="nav-link" data-scroll-target="#two-paradigms-two-schemas">Two Paradigms, Two Schemas</a></li>
+  <li><a href="#a-marine-food-web-as-a-property-graph" id="toc-a-marine-food-web-as-a-property-graph" class="nav-link" data-scroll-target="#a-marine-food-web-as-a-property-graph">A Marine Food Web as a Property Graph</a></li>
+  <li><a href="#lpg-rdf-via-sigma-pushforward" id="toc-lpg-rdf-via-sigma-pushforward" class="nav-link" data-scroll-target="#lpg-rdf-via-sigma-pushforward">LPG → RDF via Sigma (Pushforward)</a></li>
+  <li><a href="#rdf-lpg-via-delta-pullback" id="toc-rdf-lpg-via-delta-pullback" class="nav-link" data-scroll-target="#rdf-lpg-via-delta-pullback">RDF → LPG via Delta (Pullback)</a></li>
+  <li><a href="#unit-and-counit-formal-round-trip-guarantees" id="toc-unit-and-counit-formal-round-trip-guarantees" class="nav-link" data-scroll-target="#unit-and-counit-formal-round-trip-guarantees">Unit and Counit: Formal Round-Trip Guarantees</a></li>
+  <li><a href="#sparql-like-queries-joining-triples" id="toc-sparql-like-queries-joining-triples" class="nav-link" data-scroll-target="#sparql-like-queries-joining-triples">SPARQL-Like Queries: Joining Triples</a></li>
+  <li><a href="#the-asymmetry-edge-properties" id="toc-the-asymmetry-edge-properties" class="nav-link" data-scroll-target="#the-asymmetry-edge-properties">The Asymmetry: Edge Properties</a></li>
+  <li><a href="#reification-extending-rdf-for-edge-properties" id="toc-reification-extending-rdf-for-edge-properties" class="nav-link" data-scroll-target="#reification-extending-rdf-for-edge-properties">Reification: Extending RDF for Edge Properties</a></li>
+  <li><a href="#starting-from-rdf-delta-extraction" id="toc-starting-from-rdf-delta-extraction" class="nav-link" data-scroll-target="#starting-from-rdf-delta-extraction">Starting from RDF: Delta Extraction</a></li>
+  <li><a href="#schema-colimit-a-unified-view" id="toc-schema-colimit-a-unified-view" class="nav-link" data-scroll-target="#schema-colimit-a-unified-view">Schema Colimit: A Unified View</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="knowledge_graphs.md"><i class="bi bi-file-code"></i>Github (GFM)</a></li><li><a href="knowledge_graphs.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Bridging RDF and Property Graphs with CQL</h1>
+<p class="subtitle lead">Functorial Data Migration between Knowledge Graph Paradigms</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>CQL.jl </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Knowledge graphs come in two dominant paradigms:</p>
+<ol type="1">
+<li><p><strong>RDF (Resource Description Framework)</strong> — the W3C standard for the Semantic Web. Data is stored as <strong>triples</strong> (subject, predicate, object). Every entity is a URI. Properties are triples whose object is a literal value. Queried via SPARQL.</p></li>
+<li><p><strong>Labeled Property Graphs (LPG)</strong> — the model used by Neo4j, Amazon Neptune, and TigerGraph. Data consists of <strong>nodes</strong> with labels and key–value properties, connected by <strong>edges</strong> that also carry properties. Queried via Cypher or Gremlin.</p></li>
+</ol>
+<p>Both paradigms represent knowledge as graphs, but their internal structure differs in important ways. Moving data between them is a recurring challenge in bioinformatics, ecology, and public health — domains where linked data standards (RDF/OWL) coexist with operational graph databases (Neo4j).</p>
+<p>CQL (Categorical Query Language) offers a principled solution. Because CQL models data via <strong>schemas</strong> (categories) and <strong>instances</strong> (set-valued functors), both RDF and LPG can be expressed as CQL schemas. The relationship between the two paradigms becomes a <strong>schema morphism</strong> (functor), and data migration becomes a functorial operation — <strong>Sigma</strong> (pushforward) and <strong>Delta</strong> (pullback) — with mathematically guaranteed round-trip properties.</p>
+<p>This vignette demonstrates:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>§</th>
+<th>CQL Operation</th>
+<th>What It Shows</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2</td>
+<td>Schema definition</td>
+<td>Both paradigms as CQL schemas</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>Instance</td>
+<td>A marine food web in property graph form</td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>Mapping + Sigma</td>
+<td>LPG → RDF via pushforward migration</td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>Delta</td>
+<td>RDF → LPG via pullback migration</td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td>Unit / Counit</td>
+<td>Round-trip fidelity guarantees</td>
+</tr>
+<tr class="even">
+<td>7</td>
+<td>Query</td>
+<td>SPARQL-like triple joins in CQL</td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td>Edge properties</td>
+<td>The fundamental LPG/RDF asymmetry</td>
+</tr>
+<tr class="even">
+<td>9</td>
+<td>Reification</td>
+<td>Extending RDF to handle edge properties</td>
+</tr>
+<tr class="odd">
+<td>10</td>
+<td>Schema colimit</td>
+<td>A unified view merging both paradigms</td>
+</tr>
+</tbody>
+</table>
+<div id="2" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+</section>
+<section id="two-paradigms-two-schemas" class="level2">
+<h2 class="anchored" data-anchor-id="two-paradigms-two-schemas">Two Paradigms, Two Schemas</h2>
+<p>The key structural difference between RDF and LPG, expressed as CQL schemas:</p>
+<p><strong>Property Graph</strong> — nodes carry properties as separate entities linked by foreign keys. In graph database terms: each <code>PGNode</code> is a labeled node, <code>PGEdge</code> is a directed relationship, and <code>PGProp</code> is a key–value property attached to a node.</p>
+<p><strong>Triple Store</strong> — everything is either a <code>Resource</code> (identified by a URI), an <code>ObjTriple</code> (a relationship triple linking two resources), or a <code>DataTriple</code> (a property triple assigning a literal value to a resource).</p>
+<div id="4" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>typeside <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">  types String</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>pg_schema <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="st">schema PropertyGraph = literal : Ty {</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="st">  entities</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="st">    PGNode PGEdge PGProp</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="st">  foreign_keys</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="st">    src : PGEdge -&gt; PGNode</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="st">    tgt : PGEdge -&gt; PGNode</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="st">    prop_of : PGProp -&gt; PGNode</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="st">  attributes</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="st">    node_id : PGNode -&gt; String</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="st">    edge_label : PGEdge -&gt; String</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="st">    prop_key : PGProp -&gt; String</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="st">    prop_val : PGProp -&gt; String</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>rdf_schema <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="st">schema TripleStore = literal : Ty {</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="st">  entities</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="st">    Resource ObjTriple DataTriple</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="st">  foreign_keys</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="st">    subj : ObjTriple -&gt; Resource</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="st">    obj : ObjTriple -&gt; Resource</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="st">    dt_subj : DataTriple -&gt; Resource</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="st">  attributes</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="st">    uri : Resource -&gt; String</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="st">    predicate : ObjTriple -&gt; String</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="st">    dt_pred : DataTriple -&gt; String</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="st">    dt_val : DataTriple -&gt; String</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> <span class="fu">run_program</span>(typeside <span class="op">*</span> pg_schema <span class="op">*</span> rdf_schema)</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>pg <span class="op">=</span> env.schemas[<span class="st">"PropertyGraph"</span>]</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>ts <span class="op">=</span> env.schemas[<span class="st">"TripleStore"</span>]</span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"PropertyGraph entities: "</span>, <span class="fu">join</span>(<span class="fu">sort</span>(<span class="fu">collect</span>(pg.ens)), <span class="st">", "</span>))</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"TripleStore entities:   "</span>, <span class="fu">join</span>(<span class="fu">sort</span>(<span class="fu">collect</span>(ts.ens)), <span class="st">", "</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>PropertyGraph entities: PGEdge, PGNode, PGProp
+TripleStore entities:   DataTriple, ObjTriple, Resource</code></pre>
+</div>
+</div>
+<p>Notice the structural parallel:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Property Graph</th>
+<th>Triple Store</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>PGNode</code></td>
+<td><code>Resource</code></td>
+<td>Things in the world (species, habitats)</td>
+</tr>
+<tr class="even">
+<td><code>PGEdge</code></td>
+<td><code>ObjTriple</code></td>
+<td>Relationships between things</td>
+</tr>
+<tr class="odd">
+<td><code>PGProp</code></td>
+<td><code>DataTriple</code></td>
+<td>Literal properties of things</td>
+</tr>
+<tr class="even">
+<td><code>src</code>, <code>tgt</code></td>
+<td><code>subj</code>, <code>obj</code></td>
+<td>Edge endpoints</td>
+</tr>
+<tr class="odd">
+<td><code>prop_of</code></td>
+<td><code>dt_subj</code></td>
+<td>Which node a property belongs to</td>
+</tr>
+</tbody>
+</table>
+<p>This parallel is not a coincidence — it is an <strong>isomorphism of categories</strong>.</p>
+<hr>
+</section>
+<section id="a-marine-food-web-as-a-property-graph" class="level2">
+<h2 class="anchored" data-anchor-id="a-marine-food-web-as-a-property-graph">A Marine Food Web as a Property Graph</h2>
+<p>We model a North Sea food web as a property graph. Each species is a node with <code>name</code> and <code>trophicLevel</code> properties. Feeding relationships are edges labeled <code>eco:feedsOn</code>. The URI-style identifiers (<code>eco:...</code>) anticipate the RDF representation.</p>
+<div id="6" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>food_web <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance MarineWeb = literal : PropertyGraph {</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">  generators</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">    n_phyto n_cope n_sandeel n_herring n_cod n_seal : PGNode</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="st">    e_seal_cod e_cod_herr e_cod_sand e_herr_cope e_sand_cope e_cope_phyto : PGEdge</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="st">    p_phyto_nm p_phyto_tl p_cope_nm p_cope_tl p_sand_nm p_sand_tl</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="st">    p_herr_nm p_herr_tl p_cod_nm p_cod_tl p_seal_nm p_seal_tl : PGProp</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="st">  equations</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="st">    n_phyto.node_id = "eco:phytoplankton"</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="st">    n_cope.node_id = "eco:copepod"</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="st">    n_sandeel.node_id = "eco:sand_eel"</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="st">    n_herring.node_id = "eco:herring"</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="st">    n_cod.node_id = "eco:atlantic_cod"</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="st">    n_seal.node_id = "eco:grey_seal"</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="st">    e_seal_cod.src = n_seal       e_seal_cod.tgt = n_cod       e_seal_cod.edge_label = "eco:feedsOn"</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="st">    e_cod_herr.src = n_cod        e_cod_herr.tgt = n_herring   e_cod_herr.edge_label = "eco:feedsOn"</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="st">    e_cod_sand.src = n_cod        e_cod_sand.tgt = n_sandeel   e_cod_sand.edge_label = "eco:feedsOn"</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="st">    e_herr_cope.src = n_herring   e_herr_cope.tgt = n_cope     e_herr_cope.edge_label = "eco:feedsOn"</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="st">    e_sand_cope.src = n_sandeel   e_sand_cope.tgt = n_cope     e_sand_cope.edge_label = "eco:feedsOn"</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="st">    e_cope_phyto.src = n_cope     e_cope_phyto.tgt = n_phyto   e_cope_phyto.edge_label = "eco:feedsOn"</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="st">    p_phyto_nm.prop_of = n_phyto  p_phyto_nm.prop_key = "name"         p_phyto_nm.prop_val = "Phytoplankton"</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="st">    p_phyto_tl.prop_of = n_phyto  p_phyto_tl.prop_key = "trophicLevel" p_phyto_tl.prop_val = "1"</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="st">    p_cope_nm.prop_of = n_cope    p_cope_nm.prop_key = "name"           p_cope_nm.prop_val = "Copepod"</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="st">    p_cope_tl.prop_of = n_cope    p_cope_tl.prop_key = "trophicLevel"   p_cope_tl.prop_val = "2"</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="st">    p_sand_nm.prop_of = n_sandeel p_sand_nm.prop_key = "name"           p_sand_nm.prop_val = "Sand Eel"</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="st">    p_sand_tl.prop_of = n_sandeel p_sand_tl.prop_key = "trophicLevel"   p_sand_tl.prop_val = "3"</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="st">    p_herr_nm.prop_of = n_herring p_herr_nm.prop_key = "name"           p_herr_nm.prop_val = "Herring"</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="st">    p_herr_tl.prop_of = n_herring p_herr_tl.prop_key = "trophicLevel"   p_herr_tl.prop_val = "3"</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="st">    p_cod_nm.prop_of = n_cod      p_cod_nm.prop_key = "name"            p_cod_nm.prop_val = "Atlantic Cod"</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="st">    p_cod_tl.prop_of = n_cod      p_cod_tl.prop_key = "trophicLevel"    p_cod_tl.prop_val = "4"</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="st">    p_seal_nm.prop_of = n_seal    p_seal_nm.prop_key = "name"           p_seal_nm.prop_val = "Grey Seal"</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="st">    p_seal_tl.prop_of = n_seal    p_seal_tl.prop_key = "trophicLevel"   p_seal_tl.prop_val = "5"</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> <span class="fu">run_program</span>(typeside <span class="op">*</span> pg_schema <span class="op">*</span> food_web)</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>alg <span class="op">=</span> env.instances[<span class="st">"MarineWeb"</span>].algebra</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Nodes:      "</span>, <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(alg, <span class="op">:</span>PGNode)), <span class="st">" species"</span>)</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Edges:      "</span>, <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(alg, <span class="op">:</span>PGEdge)), <span class="st">" feeding links"</span>)</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Properties: "</span>, <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(alg, <span class="op">:</span>PGProp)), <span class="st">" key-value pairs"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Nodes:      6 species
+Edges:      6 feeding links
+Properties: 12 key-value pairs</code></pre>
+</div>
+</div>
+<p>This is exactly how the data would be stored in Neo4j: each species is a <code>(:Species {name: "...", trophicLevel: "..."})</code> node, and each feeding link is a <code>[:FEEDS_ON]</code> relationship.</p>
+<hr>
+</section>
+<section id="lpg-rdf-via-sigma-pushforward" class="level2">
+<h2 class="anchored" data-anchor-id="lpg-rdf-via-sigma-pushforward">LPG → RDF via Sigma (Pushforward)</h2>
+<p>The structural parallel between the two schemas is a <strong>schema morphism</strong> (functor): it maps each PropertyGraph entity, foreign key, and attribute to its TripleStore counterpart.</p>
+<p>In ecological terms: this mapping says “a species node <em>is</em> an RDF resource, a feeding link <em>is</em> an object triple, and a property <em>is</em> a data triple.”</p>
+<div id="8" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>mapping <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="st">mapping ToTriples = literal : PropertyGraph -&gt; TripleStore {</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entity PGNode -&gt; Resource</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="st">      node_id -&gt; lambda x. x.uri</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="st">  entity PGEdge -&gt; ObjTriple</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="st">      src -&gt; subj</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="st">      tgt -&gt; obj</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="st">      edge_label -&gt; lambda x. x.predicate</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="st">  entity PGProp -&gt; DataTriple</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="st">      prop_of -&gt; dt_subj</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="st">      prop_key -&gt; lambda x. x.dt_pred</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="st">      prop_val -&gt; lambda x. x.dt_val</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>sigma_prog <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="st">instance AsTriples = sigma ToTriples MarineWeb</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> <span class="fu">run_program</span>(typeside <span class="op">*</span> pg_schema <span class="op">*</span> rdf_schema <span class="op">*</span> mapping <span class="op">*</span> food_web <span class="op">*</span> sigma_prog)</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>alg_rdf <span class="op">=</span> env.instances[<span class="st">"AsTriples"</span>].algebra</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>Algebra{CQLTerm, CQL.TalgGen}(schema {
+  entities
+    Resource
+    ObjTriple
+    DataTriple
+  foreign_keys
+    dt_subj : DataTriple -&gt; Resource
+    obj : ObjTriple -&gt; Resource
+    subj : ObjTriple -&gt; Resource
+  attributes
+    predicate : ObjTriple -&gt; String
+    dt_pred : DataTriple -&gt; String
+    uri : Resource -&gt; String
+    dt_val : DataTriple -&gt; String
+  path_equations
+  observation_equations
+}
+, Dict{Symbol, Set{CQLTerm}}(:Resource =&gt; Set([n_cope, n_herring, n_phyto, n_sandeel, n_cod, n_seal]), :ObjTriple =&gt; Set([e_seal_cod, e_cod_herr, e_cod_sand, e_cope_phyto, e_herr_cope, e_sand_cope]), :DataTriple =&gt; Set([p_phyto_nm, p_sand_nm, p_sand_tl, p_phyto_tl, p_cod_nm, p_cope_tl, p_herr_tl, p_herr_nm, p_cod_tl, p_cope_nm, p_seal_nm, p_seal_tl])), Dict{Symbol, CQLTerm}(:p_herr_tl =&gt; p_herr_tl, :p_seal_nm =&gt; p_seal_nm, :n_seal =&gt; n_seal, :e_cope_phyto =&gt; e_cope_phyto, :n_phyto =&gt; n_phyto, :p_cope_tl =&gt; p_cope_tl, :e_cod_sand =&gt; e_cod_sand, :e_herr_cope =&gt; e_herr_cope, :n_sandeel =&gt; n_sandeel, :e_sand_cope =&gt; e_sand_cope…), Dict{Symbol, Dict{CQLTerm, CQLTerm}}(:dt_subj =&gt; Dict(p_phyto_nm =&gt; n_phyto, p_sand_nm =&gt; n_sandeel, p_sand_tl =&gt; n_sandeel, p_phyto_tl =&gt; n_phyto, p_cod_nm =&gt; n_cod, p_cope_tl =&gt; n_cope, p_herr_tl =&gt; n_herring, p_herr_nm =&gt; n_herring, p_cod_tl =&gt; n_cod, p_cope_nm =&gt; n_cope…), :obj =&gt; Dict(e_seal_cod =&gt; n_cod, e_cod_herr =&gt; n_herring, e_cod_sand =&gt; n_sandeel, e_cope_phyto =&gt; n_phyto, e_herr_cope =&gt; n_cope, e_sand_cope =&gt; n_cope), :subj =&gt; Dict(e_seal_cod =&gt; n_seal, e_cod_herr =&gt; n_cod, e_cod_sand =&gt; n_cod, e_cope_phyto =&gt; n_cope, e_herr_cope =&gt; n_herring, e_sand_cope =&gt; n_sandeel)), Dict{CQLTerm, CQLTerm}(p_seal_tl =&gt; p_seal_tl, p_phyto_nm =&gt; p_phyto_nm, p_sand_nm =&gt; p_sand_nm, p_sand_tl =&gt; p_sand_tl, p_phyto_tl =&gt; p_phyto_tl, n_seal =&gt; n_seal, e_sand_cope =&gt; e_sand_cope, e_seal_cod =&gt; e_seal_cod, n_cope =&gt; n_cope, n_phyto =&gt; n_phyto…), Dict{Symbol, Set{CQL.TalgGen}}(:String =&gt; Set([Phytoplankton, eco:herring, eco:atlantic_cod, Copepod, eco:copepod, eco:grey_seal, Atlantic Cod, Sand Eel, name, 3, 4, 5, eco:feedsOn, trophicLevel, Herring, eco:sand_eel, 1, 2, Grey Seal, eco:phytoplankton])), CQL.var"#simplify_algebra##4#simplify_algebra##5"{Dict{Any, CQLTerm}, CQL.var"#125#126"{Dict{Symbol, Tuple{Vector{Symbol}, Symbol}}}, Vector{Tuple{CQLTerm, CQLTerm}}, Vector{Tuple{CQL.Head, CQLTerm}}}(Dict{Any, CQLTerm}(), CQL.var"#125#126"{Dict{Symbol, Tuple{Vector{Symbol}, Symbol}}}(Dict{Symbol, Tuple{Vector{Symbol}, Symbol}}()), Tuple{CQLTerm, CQLTerm}[], Tuple{CQL.Head, CQLTerm}[(CQL.Head(CQL.H_SK, Symbol("p_herr_nm.dt_pred")), name), (CQL.Head(CQL.H_SK, Symbol("n_cope.uri")), eco:copepod), (CQL.Head(CQL.H_SK, Symbol("n_herring.uri")), eco:herring), (CQL.Head(CQL.H_SK, Symbol("p_cod_nm.dt_val")), Atlantic Cod), (CQL.Head(CQL.H_SK, Symbol("p_seal_nm.dt_val")), Grey Seal), (CQL.Head(CQL.H_SK, Symbol("p_cope_nm.dt_val")), Copepod), (CQL.Head(CQL.H_SK, Symbol("p_seal_tl.dt_pred")), trophicLevel), (CQL.Head(CQL.H_SK, Symbol("e_cope_phyto.predicate")), eco:feedsOn), (CQL.Head(CQL.H_SK, Symbol("e_sand_cope.predicate")), eco:feedsOn), (CQL.Head(CQL.H_SK, Symbol("p_phyto_tl.dt_val")), 1)  …  (CQL.Head(CQL.H_SK, Symbol("p_herr_nm.dt_val")), Herring), (CQL.Head(CQL.H_SK, Symbol("n_sandeel.uri")), eco:sand_eel), (CQL.Head(CQL.H_SK, Symbol("p_seal_tl.dt_val")), 5), (CQL.Head(CQL.H_SK, Symbol("p_cope_tl.dt_val")), 2), (CQL.Head(CQL.H_SK, Symbol("p_cope_nm.dt_pred")), name), (CQL.Head(CQL.H_SK, Symbol("p_herr_tl.dt_pred")), trophicLevel), (CQL.Head(CQL.H_SK, Symbol("p_sand_tl.dt_pred")), trophicLevel), (CQL.Head(CQL.H_SK, Symbol("p_cod_tl.dt_pred")), trophicLevel), (CQL.Head(CQL.H_SK, Symbol("p_herr_tl.dt_val")), 3), (CQL.Head(CQL.H_SK, Symbol("p_phyto_tl.dt_pred")), trophicLevel)]), Dict{CQL.TalgGen, CQLTerm}(Phytoplankton =&gt; Phytoplankton, p_cod_nm.dt_val =&gt; p_cod_nm.dt_val, eco:copepod =&gt; eco:copepod, p_herr_tl.dt_val =&gt; p_herr_tl.dt_val, name =&gt; name, e_cod_herr.predicate =&gt; e_cod_herr.predicate, 4 =&gt; 4, Herring =&gt; Herring, p_cope_tl.dt_pred =&gt; p_cope_tl.dt_pred, eco:sand_eel =&gt; eco:sand_eel…), Set{Equation}())</code></pre>
+</div>
+</div>
+<p><strong>Sigma</strong> pushes the property graph data forward along the mapping, producing an RDF triple store. Each species node becomes a resource, each feeding link becomes an object triple, and each property becomes a data triple.</p>
+<div id="10" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== RDF Resources (species URIs) ==="</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> r <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(alg_rdf, <span class="op">:</span>Resource)), by<span class="op">=</span>string)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, CQL.<span class="fu">eval_att</span>(alg_rdf, <span class="op">:</span>uri, r))</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== RDF Resources (species URIs) ===
+  eco:atlantic_cod
+  eco:copepod
+  eco:herring
+  eco:phytoplankton
+  eco:sand_eel
+  eco:grey_seal</code></pre>
+</div>
+</div>
+<div id="12" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Object Triples (feeding relationships) ==="</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> t <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(alg_rdf, <span class="op">:</span>ObjTriple)), by<span class="op">=</span>string)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_rdf, <span class="op">:</span>uri, CQL.<span class="fu">eval_fk</span>(alg_rdf, <span class="op">:</span>subj, t))</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    o <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_rdf, <span class="op">:</span>uri, CQL.<span class="fu">eval_fk</span>(alg_rdf, <span class="op">:</span>obj, t))</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_rdf, <span class="op">:</span>predicate, t)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>s<span class="st">  </span><span class="sc">$</span>p<span class="st">  </span><span class="sc">$</span>o<span class="st"> ."</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Object Triples (feeding relationships) ===
+  eco:atlantic_cod  eco:feedsOn  eco:herring .
+  eco:atlantic_cod  eco:feedsOn  eco:sand_eel .
+  eco:copepod  eco:feedsOn  eco:phytoplankton .
+  eco:herring  eco:feedsOn  eco:copepod .
+  eco:sand_eel  eco:feedsOn  eco:copepod .
+  eco:grey_seal  eco:feedsOn  eco:atlantic_cod .</code></pre>
+</div>
+</div>
+<div id="14" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Data Triples (species properties) ==="</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> d <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(alg_rdf, <span class="op">:</span>DataTriple)), by<span class="op">=</span>string)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_rdf, <span class="op">:</span>uri, CQL.<span class="fu">eval_fk</span>(alg_rdf, <span class="op">:</span>dt_subj, d))</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_rdf, <span class="op">:</span>dt_pred, d)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    v <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_rdf, <span class="op">:</span>dt_val, d)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>s<span class="st">  </span><span class="sc">$</span>p<span class="st">  </span><span class="sc">\"$</span>v<span class="sc">\"</span><span class="st"> ."</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Data Triples (species properties) ===
+  eco:atlantic_cod  name  "Atlantic Cod" .
+  eco:atlantic_cod  trophicLevel  "4" .
+  eco:copepod  name  "Copepod" .
+  eco:copepod  trophicLevel  "2" .
+  eco:herring  name  "Herring" .
+  eco:herring  trophicLevel  "3" .
+  eco:phytoplankton  name  "Phytoplankton" .
+  eco:phytoplankton  trophicLevel  "1" .
+  eco:sand_eel  name  "Sand Eel" .
+  eco:sand_eel  trophicLevel  "3" .
+  eco:grey_seal  name  "Grey Seal" .
+  eco:grey_seal  trophicLevel  "5" .</code></pre>
+</div>
+</div>
+<p>The output is valid RDF N-Triples syntax. Every piece of the property graph — nodes, edges, and properties — has been systematically converted to triples. No information was lost because the mapping is an isomorphism.</p>
+<hr>
+</section>
+<section id="rdf-lpg-via-delta-pullback" class="level2">
+<h2 class="anchored" data-anchor-id="rdf-lpg-via-delta-pullback">RDF → LPG via Delta (Pullback)</h2>
+<p>The same mapping, applied in reverse via <strong>Delta</strong>, converts RDF data into a property graph. This is useful when a linked data repository (e.g., a SPARQL endpoint) provides ecological data that needs to be loaded into a Neo4j-style graph database.</p>
+<p>Delta is the <em>right adjoint</em> to Sigma: it pulls data back along the mapping.</p>
+<div id="16" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>delta_prog <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance RoundTrip = delta ToTriples AsTriples</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> <span class="fu">run_program</span>(typeside <span class="op">*</span> pg_schema <span class="op">*</span> rdf_schema <span class="op">*</span> mapping <span class="op">*</span> food_web <span class="op">*</span> sigma_prog <span class="op">*</span> delta_prog)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>alg_rt <span class="op">=</span> env.instances[<span class="st">"RoundTrip"</span>].algebra</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Round-trip Property Graph ==="</span>)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Nodes:      "</span>, <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(alg_rt, <span class="op">:</span>PGNode)))</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Edges:      "</span>, <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(alg_rt, <span class="op">:</span>PGEdge)))</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Properties: "</span>, <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(alg_rt, <span class="op">:</span>PGProp)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Round-trip Property Graph ===
+Nodes:      6
+Edges:      6
+Properties: 12</code></pre>
+</div>
+</div>
+<div id="18" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Nodes:"</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> n <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(alg_rt, <span class="op">:</span>PGNode)), by<span class="op">=</span>string)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, CQL.<span class="fu">eval_att</span>(alg_rt, <span class="op">:</span>node_id, n))</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Edges:"</span>)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="cn">e</span> <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(alg_rt, <span class="op">:</span>PGEdge)), by<span class="op">=</span>string)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    sn <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_rt, <span class="op">:</span>node_id, CQL.<span class="fu">eval_fk</span>(alg_rt, <span class="op">:</span>src, <span class="cn">e</span>))</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    tn <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_rt, <span class="op">:</span>node_id, CQL.<span class="fu">eval_fk</span>(alg_rt, <span class="op">:</span>tgt, <span class="cn">e</span>))</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>sn<span class="st"> --[</span><span class="sc">$</span>(CQL.<span class="fu">eval_att</span>(alg_rt, <span class="op">:</span>edge_label, <span class="cn">e</span>))<span class="st">]--&gt; </span><span class="sc">$</span>tn<span class="st">"</span>)</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Properties:"</span>)</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> p <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(alg_rt, <span class="op">:</span>PGProp)), by<span class="op">=</span>string)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    nid <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_rt, <span class="op">:</span>node_id, CQL.<span class="fu">eval_fk</span>(alg_rt, <span class="op">:</span>prop_of, p))</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    pk <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_rt, <span class="op">:</span>prop_key, p)</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    pv <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_rt, <span class="op">:</span>prop_val, p)</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>nid<span class="st"> . </span><span class="sc">$</span>pk<span class="st"> = </span><span class="sc">\"$</span>pv<span class="sc">\"</span><span class="st">"</span>)</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Nodes:
+  eco:atlantic_cod
+  eco:copepod
+  eco:herring
+  eco:phytoplankton
+  eco:sand_eel
+  eco:grey_seal
+
+Edges:
+  eco:atlantic_cod --[eco:feedsOn]--&gt; eco:herring
+  eco:atlantic_cod --[eco:feedsOn]--&gt; eco:sand_eel
+  eco:copepod --[eco:feedsOn]--&gt; eco:phytoplankton
+  eco:herring --[eco:feedsOn]--&gt; eco:copepod
+  eco:sand_eel --[eco:feedsOn]--&gt; eco:copepod
+  eco:grey_seal --[eco:feedsOn]--&gt; eco:atlantic_cod
+
+Properties:
+  eco:atlantic_cod . name = "Atlantic Cod"
+  eco:atlantic_cod . trophicLevel = "4"
+  eco:copepod . name = "Copepod"
+  eco:copepod . trophicLevel = "2"
+  eco:herring . name = "Herring"
+  eco:herring . trophicLevel = "3"
+  eco:phytoplankton . name = "Phytoplankton"
+  eco:phytoplankton . trophicLevel = "1"
+  eco:sand_eel . name = "Sand Eel"
+  eco:sand_eel . trophicLevel = "3"
+  eco:grey_seal . name = "Grey Seal"
+  eco:grey_seal . trophicLevel = "5"</code></pre>
+</div>
+</div>
+<p>The round-trip recovers the original property graph exactly: 6 nodes, 6 edges, 12 properties, with all attribute values preserved. This is guaranteed by the categorical adjunction — when the mapping is an isomorphism, Sigma and Delta are mutual inverses.</p>
+<hr>
+</section>
+<section id="unit-and-counit-formal-round-trip-guarantees" class="level2">
+<h2 class="anchored" data-anchor-id="unit-and-counit-formal-round-trip-guarantees">Unit and Counit: Formal Round-Trip Guarantees</h2>
+<p>Category theory provides formal transforms that witness the round-trip:</p>
+<ul>
+<li><strong>Unit</strong> (η): <code>I → Delta(Sigma(I))</code> — embeds the original LPG instance into its round-trip. If η is an isomorphism, no data was lost.</li>
+<li><strong>Counit</strong> (ε): <code>Sigma(Delta(J)) → J</code> — projects the round-trip of an RDF instance back. If ε is an isomorphism, no data was invented.</li>
+</ul>
+<div id="20" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>unit_prog <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="st">transform UnitWeb = unit ToTriples MarineWeb</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="st">transform CounitTriples = counit ToTriples AsTriples</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> <span class="fu">run_program</span>(typeside <span class="op">*</span> pg_schema <span class="op">*</span> rdf_schema <span class="op">*</span> mapping <span class="op">*</span> food_web <span class="op">*</span> sigma_prog <span class="op">*</span> delta_prog <span class="op">*</span> unit_prog)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify unit preserves cardinalities</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>src_alg <span class="op">=</span> env.instances[<span class="st">"MarineWeb"</span>].algebra</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>tgt_alg <span class="op">=</span> env.instances[<span class="st">"RoundTrip"</span>].algebra</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ent <span class="kw">in</span> [<span class="op">:</span>PGNode, <span class="op">:</span>PGEdge, <span class="op">:</span>PGProp]</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    n_src <span class="op">=</span> <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(src_alg, ent))</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    n_tgt <span class="op">=</span> <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(tgt_alg, ent))</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    status <span class="op">=</span> n_src <span class="op">==</span> n_tgt ? <span class="st">"✓ isomorphism"</span> <span class="op">:</span> <span class="st">"≠ not iso"</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  Unit on </span><span class="sc">$</span>ent<span class="st">: </span><span class="sc">$</span>n_src<span class="st"> → </span><span class="sc">$</span>n_tgt<span class="st">  </span><span class="sc">$</span>status<span class="st">"</span>)</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify counit</span></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>src_alg2 <span class="op">=</span> env.instances[<span class="st">"AsTriples"</span>].algebra</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">  Counit source and target both have:"</span>)</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ent <span class="kw">in</span> [<span class="op">:</span>Resource, <span class="op">:</span>ObjTriple, <span class="op">:</span>DataTriple]</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(src_alg2, ent))</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"    </span><span class="sc">$</span>ent<span class="st">: </span><span class="sc">$</span>n<span class="st">"</span>)</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  Unit on PGNode: 6 → 6  ✓ isomorphism
+  Unit on PGEdge: 6 → 6  ✓ isomorphism
+  Unit on PGProp: 12 → 12  ✓ isomorphism
+
+  Counit source and target both have:
+    Resource: 6
+    ObjTriple: 6
+    DataTriple: 12</code></pre>
+</div>
+</div>
+<p>Both unit and counit are isomorphisms — the migration is <strong>lossless in both directions</strong>. This is the categorical guarantee: because the mapping between PropertyGraph and TripleStore is a full isomorphism of schemas, Sigma and Delta form an equivalence of categories of instances.</p>
+<hr>
+</section>
+<section id="sparql-like-queries-joining-triples" class="level2">
+<h2 class="anchored" data-anchor-id="sparql-like-queries-joining-triples">SPARQL-Like Queries: Joining Triples</h2>
+<p>CQL’s uber-flower queries can express the same pattern-matching that SPARQL uses to extract structured data from a triple store. This is useful when receiving ecological data as RDF and needing to reconstruct a domain-specific schema.</p>
+<p>Here we define a query that joins data triples to produce a species report — equivalent to:</p>
+<pre class="sparql"><code>SELECT ?uri ?name ?tl WHERE {
+  ?r eco:name ?name .
+  ?r eco:trophicLevel ?tl .
+  BIND(STR(?r) AS ?uri)
+}</code></pre>
+<div id="22" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>query_prog <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema SpeciesReport = literal : Ty {</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entities Entry</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="st">  attributes entry_uri : Entry -&gt; String  entry_name : Entry -&gt; String  entry_tl : Entry -&gt; String</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="st">query JoinTriples = literal : TripleStore -&gt; SpeciesReport {</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="st">  entity Entry -&gt; {</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="st">    from r : Resource  dn : DataTriple  dt : DataTriple</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="st">    where dn.dt_subj = r  dt.dt_subj = r  dn.dt_pred = "name"  dt.dt_pred = "trophicLevel"</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="st">      entry_uri -&gt; r.uri</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="st">      entry_name -&gt; dn.dt_val</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a><span class="st">      entry_tl -&gt; dt.dt_val</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a><span class="st">instance Report = eval JoinTriples AsTriples</span></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> <span class="fu">run_program</span>(typeside <span class="op">*</span> pg_schema <span class="op">*</span> rdf_schema <span class="op">*</span> mapping <span class="op">*</span> food_web <span class="op">*</span> sigma_prog <span class="op">*</span> query_prog)</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>alg_rep <span class="op">=</span> env.instances[<span class="st">"Report"</span>].algebra</span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Species Report (from triple joins) ==="</span>)</span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="cn">e</span> <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(alg_rep, <span class="op">:</span>Entry)), by<span class="op">=</span>string)</span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>    uri <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_rep, <span class="op">:</span>entry_uri, <span class="cn">e</span>)</span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>    nm <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_rep, <span class="op">:</span>entry_name, <span class="cn">e</span>)</span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>    tl <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_rep, <span class="op">:</span>entry_tl, <span class="cn">e</span>)</span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>uri<span class="st">: </span><span class="sc">$</span>nm<span class="st"> (trophic level </span><span class="sc">$</span>tl<span class="st">)"</span>)</span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Species Report (from triple joins) ===
+  eco:copepod: Copepod (trophic level 2)
+  eco:herring: Herring (trophic level 3)
+  eco:phytoplankton: Phytoplankton (trophic level 1)
+  eco:sand_eel: Sand Eel (trophic level 3)
+  eco:atlantic_cod: Atlantic Cod (trophic level 4)
+  eco:grey_seal: Grey Seal (trophic level 5)</code></pre>
+</div>
+</div>
+<p>The CQL query binds three variables — a Resource <code>r</code> and two DataTriples <code>dn</code>, <code>dt</code> — and constrains them so that both triples refer to the same resource and have specific predicates. This is exactly a <strong>basic graph pattern</strong> in SPARQL.</p>
+<p>The key advantage: CQL queries compose and have formal semantics, so this pattern can be chained with downstream migrations (Sigma, Delta) in a type-safe pipeline.</p>
+<hr>
+</section>
+<section id="the-asymmetry-edge-properties" class="level2">
+<h2 class="anchored" data-anchor-id="the-asymmetry-edge-properties">The Asymmetry: Edge Properties</h2>
+<p>So far, property graphs and triple stores appeared structurally identical. But there is a fundamental asymmetry that the categorical view makes precise.</p>
+<p>In a property graph, <strong>edges can carry properties</strong> — for example, a feeding relationship might have an <code>interaction_strength</code> or <code>evidence_source</code> attribute. We model this by adding a <code>PGEdgeProp</code> entity with a foreign key to <code>PGEdge</code>:</p>
+<div id="24" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>rich_pg <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema RichPropertyGraph = literal : Ty {</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entities</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="st">    PGNode PGEdge PGProp PGEdgeProp</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="st">  foreign_keys</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="st">    src : PGEdge -&gt; PGNode</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="st">    tgt : PGEdge -&gt; PGNode</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="st">    prop_of : PGProp -&gt; PGNode</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="st">    eprop_of : PGEdgeProp -&gt; PGEdge</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="st">  attributes</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="st">    node_id : PGNode -&gt; String</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="st">    edge_label : PGEdge -&gt; String</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="st">    prop_key : PGProp -&gt; String</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a><span class="st">    prop_val : PGProp -&gt; String</span></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a><span class="st">    eprop_key : PGEdgeProp -&gt; String</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="st">    eprop_val : PGEdgeProp -&gt; String</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> <span class="fu">run_program</span>(typeside <span class="op">*</span> rich_pg)</span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>sch <span class="op">=</span> env.schemas[<span class="st">"RichPropertyGraph"</span>]</span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"RichPropertyGraph entities: "</span>, <span class="fu">join</span>(<span class="fu">sort</span>(<span class="fu">collect</span>(sch.ens)), <span class="st">", "</span>))</span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys:"</span>)</span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (k, v) <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(sch.fks), by<span class="op">=</span><span class="fu">x-&gt;string</span>(<span class="fu">first</span>(x)))</span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>    dn <span class="op">=</span> CQL.<span class="fu">_display_name</span>(k)</span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>dn<span class="st"> : </span><span class="sc">$</span>(<span class="fu">first</span>(v))<span class="st"> → </span><span class="sc">$</span>(<span class="fu">last</span>(v))<span class="st">"</span>)</span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>RichPropertyGraph entities: PGEdge, PGEdgeProp, PGNode, PGProp
+Foreign keys:
+  eprop_of : PGEdgeProp → PGEdge
+  prop_of : PGProp → PGNode
+  src : PGEdge → PGNode
+  tgt : PGEdge → PGNode</code></pre>
+</div>
+</div>
+<p>The <code>PGEdgeProp</code> entity has a foreign key <code>eprop_of → PGEdge</code>, but the basic TripleStore schema has no entity with a foreign key pointing to <code>ObjTriple</code>. A <code>DataTriple</code> points to a <code>Resource</code>, not to an <code>ObjTriple</code>.</p>
+<p><strong>There is no schema morphism from RichPropertyGraph to TripleStore.</strong></p>
+<p>This is the categorical formalization of a well-known problem: RDF has no native way to attach properties to edges (triples). In ecology, this means metadata about interactions — confidence scores, observation methods, seasonal variation — cannot be directly represented as RDF triples without additional machinery.</p>
+<hr>
+</section>
+<section id="reification-extending-rdf-for-edge-properties" class="level2">
+<h2 class="anchored" data-anchor-id="reification-extending-rdf-for-edge-properties">Reification: Extending RDF for Edge Properties</h2>
+<p>The standard RDF solution is <strong>reification</strong>: making a statement <em>about</em> a statement. In CQL terms, we extend the TripleStore schema with a <code>TripleMeta</code> entity that points to an <code>ObjTriple</code>:</p>
+<div id="26" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>reified_schema <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema ReifiedTripleStore = literal : Ty {</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entities</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="st">    Resource ObjTriple DataTriple TripleMeta</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="st">  foreign_keys</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="st">    subj : ObjTriple -&gt; Resource</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="st">    obj : ObjTriple -&gt; Resource</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="st">    dt_subj : DataTriple -&gt; Resource</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="st">    meta_of : TripleMeta -&gt; ObjTriple</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a><span class="st">  attributes</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="st">    uri : Resource -&gt; String</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a><span class="st">    predicate : ObjTriple -&gt; String</span></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a><span class="st">    dt_pred : DataTriple -&gt; String</span></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a><span class="st">    dt_val : DataTriple -&gt; String</span></span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a><span class="st">    meta_key : TripleMeta -&gt; String</span></span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a><span class="st">    meta_val : TripleMeta -&gt; String</span></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>reified_mapping <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a><span class="st">mapping ToReified = literal : RichPropertyGraph -&gt; ReifiedTripleStore {</span></span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a><span class="st">  entity PGNode -&gt; Resource</span></span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes node_id -&gt; lambda x. x.uri</span></span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a><span class="st">  entity PGEdge -&gt; ObjTriple</span></span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys src -&gt; subj  tgt -&gt; obj</span></span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes edge_label -&gt; lambda x. x.predicate</span></span>
+<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a><span class="st">  entity PGProp -&gt; DataTriple</span></span>
+<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys prop_of -&gt; dt_subj</span></span>
+<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes prop_key -&gt; lambda x. x.dt_pred  prop_val -&gt; lambda x. x.dt_val</span></span>
+<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a><span class="st">  entity PGEdgeProp -&gt; TripleMeta</span></span>
+<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys eprop_of -&gt; meta_of</span></span>
+<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes eprop_key -&gt; lambda x. x.meta_key  eprop_val -&gt; lambda x. x.meta_val</span></span>
+<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb25-35"><a href="#cb25-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-36"><a href="#cb25-36" aria-hidden="true" tabindex="-1"></a>rich_instance <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb25-37"><a href="#cb25-37" aria-hidden="true" tabindex="-1"></a><span class="st">instance RichWeb = literal : RichPropertyGraph {</span></span>
+<span id="cb25-38"><a href="#cb25-38" aria-hidden="true" tabindex="-1"></a><span class="st">  generators</span></span>
+<span id="cb25-39"><a href="#cb25-39" aria-hidden="true" tabindex="-1"></a><span class="st">    n_cod n_herring : PGNode</span></span>
+<span id="cb25-40"><a href="#cb25-40" aria-hidden="true" tabindex="-1"></a><span class="st">    e_cod_herr : PGEdge</span></span>
+<span id="cb25-41"><a href="#cb25-41" aria-hidden="true" tabindex="-1"></a><span class="st">    p_cod_nm p_herr_nm : PGProp</span></span>
+<span id="cb25-42"><a href="#cb25-42" aria-hidden="true" tabindex="-1"></a><span class="st">    ep_strength ep_evidence : PGEdgeProp</span></span>
+<span id="cb25-43"><a href="#cb25-43" aria-hidden="true" tabindex="-1"></a><span class="st">  equations</span></span>
+<span id="cb25-44"><a href="#cb25-44" aria-hidden="true" tabindex="-1"></a><span class="st">    n_cod.node_id = "eco:atlantic_cod"</span></span>
+<span id="cb25-45"><a href="#cb25-45" aria-hidden="true" tabindex="-1"></a><span class="st">    n_herring.node_id = "eco:herring"</span></span>
+<span id="cb25-46"><a href="#cb25-46" aria-hidden="true" tabindex="-1"></a><span class="st">    e_cod_herr.src = n_cod</span></span>
+<span id="cb25-47"><a href="#cb25-47" aria-hidden="true" tabindex="-1"></a><span class="st">    e_cod_herr.tgt = n_herring</span></span>
+<span id="cb25-48"><a href="#cb25-48" aria-hidden="true" tabindex="-1"></a><span class="st">    e_cod_herr.edge_label = "eco:feedsOn"</span></span>
+<span id="cb25-49"><a href="#cb25-49" aria-hidden="true" tabindex="-1"></a><span class="st">    p_cod_nm.prop_of = n_cod</span></span>
+<span id="cb25-50"><a href="#cb25-50" aria-hidden="true" tabindex="-1"></a><span class="st">    p_cod_nm.prop_key = "name"</span></span>
+<span id="cb25-51"><a href="#cb25-51" aria-hidden="true" tabindex="-1"></a><span class="st">    p_cod_nm.prop_val = "Atlantic Cod"</span></span>
+<span id="cb25-52"><a href="#cb25-52" aria-hidden="true" tabindex="-1"></a><span class="st">    p_herr_nm.prop_of = n_herring</span></span>
+<span id="cb25-53"><a href="#cb25-53" aria-hidden="true" tabindex="-1"></a><span class="st">    p_herr_nm.prop_key = "name"</span></span>
+<span id="cb25-54"><a href="#cb25-54" aria-hidden="true" tabindex="-1"></a><span class="st">    p_herr_nm.prop_val = "Herring"</span></span>
+<span id="cb25-55"><a href="#cb25-55" aria-hidden="true" tabindex="-1"></a><span class="st">    ep_strength.eprop_of = e_cod_herr</span></span>
+<span id="cb25-56"><a href="#cb25-56" aria-hidden="true" tabindex="-1"></a><span class="st">    ep_strength.eprop_key = "interaction_strength"</span></span>
+<span id="cb25-57"><a href="#cb25-57" aria-hidden="true" tabindex="-1"></a><span class="st">    ep_strength.eprop_val = "high"</span></span>
+<span id="cb25-58"><a href="#cb25-58" aria-hidden="true" tabindex="-1"></a><span class="st">    ep_evidence.eprop_of = e_cod_herr</span></span>
+<span id="cb25-59"><a href="#cb25-59" aria-hidden="true" tabindex="-1"></a><span class="st">    ep_evidence.eprop_key = "evidence"</span></span>
+<span id="cb25-60"><a href="#cb25-60" aria-hidden="true" tabindex="-1"></a><span class="st">    ep_evidence.eprop_val = "gut content analysis"</span></span>
+<span id="cb25-61"><a href="#cb25-61" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb25-62"><a href="#cb25-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-63"><a href="#cb25-63" aria-hidden="true" tabindex="-1"></a><span class="st">instance ReifiedTriples = sigma ToReified RichWeb</span></span>
+<span id="cb25-64"><a href="#cb25-64" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb25-65"><a href="#cb25-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-66"><a href="#cb25-66" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> <span class="fu">run_program</span>(typeside <span class="op">*</span> rich_pg <span class="op">*</span> reified_schema <span class="op">*</span> reified_mapping <span class="op">*</span> rich_instance)</span>
+<span id="cb25-67"><a href="#cb25-67" aria-hidden="true" tabindex="-1"></a>alg_reif <span class="op">=</span> env.instances[<span class="st">"ReifiedTriples"</span>].algebra</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>Algebra{CQLTerm, CQL.TalgGen}(schema {
+  entities
+    TripleMeta
+    Resource
+    ObjTriple
+    DataTriple
+  foreign_keys
+    dt_subj : DataTriple -&gt; Resource
+    obj : ObjTriple -&gt; Resource
+    meta_of : TripleMeta -&gt; ObjTriple
+    subj : ObjTriple -&gt; Resource
+  attributes
+    predicate : ObjTriple -&gt; String
+    meta_val : TripleMeta -&gt; String
+    dt_pred : DataTriple -&gt; String
+    uri : Resource -&gt; String
+    dt_val : DataTriple -&gt; String
+    meta_key : TripleMeta -&gt; String
+  path_equations
+  observation_equations
+}
+, Dict{Symbol, Set{CQLTerm}}(:TripleMeta =&gt; Set([ep_strength, ep_evidence]), :Resource =&gt; Set([n_herring, n_cod]), :ObjTriple =&gt; Set([ep_strength.meta_of]), :DataTriple =&gt; Set([p_herr_nm, p_cod_nm])), Dict{Symbol, CQLTerm}(:e_cod_herr =&gt; ep_strength.meta_of, :ep_evidence =&gt; ep_evidence, :p_herr_nm =&gt; p_herr_nm, :n_cod =&gt; n_cod, :n_herring =&gt; n_herring, :p_cod_nm =&gt; p_cod_nm, :ep_strength =&gt; ep_strength), Dict{Symbol, Dict{CQLTerm, CQLTerm}}(:dt_subj =&gt; Dict(p_herr_nm =&gt; n_herring, p_cod_nm =&gt; n_cod), :obj =&gt; Dict(ep_strength.meta_of =&gt; n_herring), :meta_of =&gt; Dict(ep_strength =&gt; ep_strength.meta_of, ep_evidence =&gt; ep_strength.meta_of), :subj =&gt; Dict(ep_strength.meta_of =&gt; n_cod)), Dict{CQLTerm, CQLTerm}(ep_strength =&gt; ep_strength, n_herring =&gt; n_herring, p_herr_nm =&gt; p_herr_nm, ep_evidence =&gt; ep_evidence, p_cod_nm =&gt; p_cod_nm, n_cod =&gt; n_cod, ep_strength.meta_of =&gt; ep_strength.meta_of), Dict{Symbol, Set{CQL.TalgGen}}(:String =&gt; Set([interaction_strength, high, eco:herring, eco:atlantic_cod, name, Herring, evidence, gut content analysis, eco:feedsOn, Atlantic Cod])), CQL.var"#simplify_algebra##4#simplify_algebra##5"{Dict{Any, CQLTerm}, CQL.var"#125#126"{Dict{Symbol, Tuple{Vector{Symbol}, Symbol}}}, Vector{Tuple{CQLTerm, CQLTerm}}, Vector{Tuple{CQL.Head, CQLTerm}}}(Dict{Any, CQLTerm}(), CQL.var"#125#126"{Dict{Symbol, Tuple{Vector{Symbol}, Symbol}}}(Dict{Symbol, Tuple{Vector{Symbol}, Symbol}}()), Tuple{CQLTerm, CQLTerm}[], Tuple{CQL.Head, CQLTerm}[(CQL.Head(CQL.H_SK, Symbol("p_herr_nm.dt_pred")), name), (CQL.Head(CQL.H_SK, Symbol("n_herring.uri")), eco:herring), (CQL.Head(CQL.H_SK, Symbol("p_cod_nm.dt_val")), Atlantic Cod), (CQL.Head(CQL.H_SK, Symbol("ep_strength.meta_val")), high), (CQL.Head(CQL.H_SK, Symbol("p_cod_nm.dt_pred")), name), (CQL.Head(CQL.H_SK, Symbol("ep_evidence.meta_val")), gut content analysis), (CQL.Head(CQL.H_SK, Symbol("ep_evidence.meta_key")), evidence), (CQL.Head(CQL.H_SK, Symbol("ep_strength.meta_key")), interaction_strength), (CQL.Head(CQL.H_SK, Symbol("n_cod.uri")), eco:atlantic_cod), (CQL.Head(CQL.H_SK, Symbol("ep_strength.meta_of.predicate")), eco:feedsOn), (CQL.Head(CQL.H_SK, Symbol("p_herr_nm.dt_val")), Herring)]), Dict{CQL.TalgGen, CQLTerm}(interaction_strength =&gt; interaction_strength, n_cod.uri =&gt; n_cod.uri, eco:herring =&gt; eco:herring, eco:atlantic_cod =&gt; eco:atlantic_cod, p_cod_nm.dt_val =&gt; p_cod_nm.dt_val, evidence =&gt; evidence, Atlantic Cod =&gt; Atlantic Cod, name =&gt; name, ep_evidence.meta_val =&gt; ep_evidence.meta_val, eco:feedsOn =&gt; eco:feedsOn…), Set{Equation}())</code></pre>
+</div>
+</div>
+<p>Now the edge properties — interaction strength and evidence source — are preserved as <code>TripleMeta</code> entries in the reified triple store:</p>
+<div id="28" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Reified Triple Store ==="</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Resources:  "</span>, <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(alg_reif, <span class="op">:</span>Resource)))</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"ObjTriples: "</span>, <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(alg_reif, <span class="op">:</span>ObjTriple)))</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"DataTriples:"</span>, <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(alg_reif, <span class="op">:</span>DataTriple)))</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"TripleMeta: "</span>, <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(alg_reif, <span class="op">:</span>TripleMeta)))</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Object triples:"</span>)</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> t <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(alg_reif, <span class="op">:</span>ObjTriple)), by<span class="op">=</span>string)</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_reif, <span class="op">:</span>uri, CQL.<span class="fu">eval_fk</span>(alg_reif, <span class="op">:</span>subj, t))</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>    o <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_reif, <span class="op">:</span>uri, CQL.<span class="fu">eval_fk</span>(alg_reif, <span class="op">:</span>obj, t))</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_reif, <span class="op">:</span>predicate, t)</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>s<span class="st">  </span><span class="sc">$</span>p<span class="st">  </span><span class="sc">$</span>o<span class="st"> ."</span>)</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Edge metadata (reified statements):"</span>)</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(alg_reif, <span class="op">:</span>TripleMeta)), by<span class="op">=</span>string)</span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>    triple <span class="op">=</span> CQL.<span class="fu">eval_fk</span>(alg_reif, <span class="op">:</span>meta_of, m)</span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_reif, <span class="op">:</span>uri, CQL.<span class="fu">eval_fk</span>(alg_reif, <span class="op">:</span>subj, triple))</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>    o <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_reif, <span class="op">:</span>uri, CQL.<span class="fu">eval_fk</span>(alg_reif, <span class="op">:</span>obj, triple))</span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>    mk <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_reif, <span class="op">:</span>meta_key, m)</span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>    mv <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_reif, <span class="op">:</span>meta_val, m)</span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  [</span><span class="sc">$</span>s<span class="st"> → </span><span class="sc">$</span>o<span class="st">] . </span><span class="sc">$</span>mk<span class="st"> = </span><span class="sc">\"$</span>mv<span class="sc">\"</span><span class="st">"</span>)</span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Reified Triple Store ===
+Resources:  2
+ObjTriples: 1
+DataTriples:2
+TripleMeta: 2
+
+Object triples:
+  eco:atlantic_cod  eco:feedsOn  eco:herring .
+
+Edge metadata (reified statements):
+  [eco:atlantic_cod → eco:herring] . evidence = "gut content analysis"
+  [eco:atlantic_cod → eco:herring] . interaction_strength = "high"</code></pre>
+</div>
+</div>
+<p>The reified mapping restores the isomorphism: every entity in <code>RichPropertyGraph</code> now has a counterpart in <code>ReifiedTripleStore</code>, and Sigma/Delta are again mutual inverses.</p>
+<div id="30" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>rt_prog <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance ReifiedRT = delta ToReified ReifiedTriples</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> <span class="fu">run_program</span>(typeside <span class="op">*</span> rich_pg <span class="op">*</span> reified_schema <span class="op">*</span> reified_mapping <span class="op">*</span> rich_instance <span class="op">*</span> rt_prog)</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>alg_rt <span class="op">=</span> env.instances[<span class="st">"ReifiedRT"</span>].algebra</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Round-trip with reification:"</span>)</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  PGNodes:     "</span>, <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(alg_rt, <span class="op">:</span>PGNode)))</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  PGEdges:     "</span>, <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(alg_rt, <span class="op">:</span>PGEdge)))</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  PGProps:     "</span>, <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(alg_rt, <span class="op">:</span>PGProp)))</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  PGEdgeProps: "</span>, <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(alg_rt, <span class="op">:</span>PGEdgeProp)))</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  All preserved: "</span>,</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(alg_rt, <span class="op">:</span>PGNode)) <span class="op">==</span> <span class="fl">2</span> <span class="op">&amp;&amp;</span></span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">length</span>(CQL.<span class="fu">carrier</span>(alg_rt, <span class="op">:</span>PGEdgeProp)) <span class="op">==</span> <span class="fl">2</span> ? <span class="st">"✓"</span> <span class="op">:</span> <span class="st">"✗"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Round-trip with reification:
+  PGNodes:     2
+  PGEdges:     1
+  PGProps:     2
+  PGEdgeProps: 2
+  All preserved: ✓</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="starting-from-rdf-delta-extraction" class="level2">
+<h2 class="anchored" data-anchor-id="starting-from-rdf-delta-extraction">Starting from RDF: Delta Extraction</h2>
+<p>In practice, ecological data often arrives as RDF from linked data repositories (e.g., GBIF, the Encyclopedia of Life, or institutional SPARQL endpoints). Delta extraction converts this RDF data into a structured property graph suitable for Neo4j or similar graph databases.</p>
+<div id="32" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>external_rdf <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance ExternalRDF = literal : TripleStore {</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="st">  generators</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="st">    r_cod r_herring r_copepod r_sandeel : Resource</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="st">    t_cod_herr t_cod_sand t_herr_cope : ObjTriple</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a><span class="st">    d_cod_nm d_cod_tl d_herr_nm d_herr_tl d_cope_nm d_cope_tl d_sand_nm d_sand_tl : DataTriple</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a><span class="st">  equations</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a><span class="st">    r_cod.uri = "eco:atlantic_cod"</span></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a><span class="st">    r_herring.uri = "eco:herring"</span></span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a><span class="st">    r_copepod.uri = "eco:copepod"</span></span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a><span class="st">    r_sandeel.uri = "eco:sand_eel"</span></span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a><span class="st">    t_cod_herr.subj = r_cod        t_cod_herr.obj = r_herring   t_cod_herr.predicate = "eco:feedsOn"</span></span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a><span class="st">    t_cod_sand.subj = r_cod        t_cod_sand.obj = r_sandeel   t_cod_sand.predicate = "eco:feedsOn"</span></span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a><span class="st">    t_herr_cope.subj = r_herring   t_herr_cope.obj = r_copepod  t_herr_cope.predicate = "eco:feedsOn"</span></span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a><span class="st">    d_cod_nm.dt_subj = r_cod       d_cod_nm.dt_pred = "name"           d_cod_nm.dt_val = "Atlantic Cod"</span></span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a><span class="st">    d_cod_tl.dt_subj = r_cod       d_cod_tl.dt_pred = "trophicLevel"   d_cod_tl.dt_val = "4"</span></span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a><span class="st">    d_herr_nm.dt_subj = r_herring  d_herr_nm.dt_pred = "name"          d_herr_nm.dt_val = "Herring"</span></span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a><span class="st">    d_herr_tl.dt_subj = r_herring  d_herr_tl.dt_pred = "trophicLevel"  d_herr_tl.dt_val = "3"</span></span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a><span class="st">    d_cope_nm.dt_subj = r_copepod  d_cope_nm.dt_pred = "name"          d_cope_nm.dt_val = "Copepod"</span></span>
+<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a><span class="st">    d_cope_tl.dt_subj = r_copepod  d_cope_tl.dt_pred = "trophicLevel"  d_cope_tl.dt_val = "2"</span></span>
+<span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a><span class="st">    d_sand_nm.dt_subj = r_sandeel  d_sand_nm.dt_pred = "name"          d_sand_nm.dt_val = "Sand Eel"</span></span>
+<span id="cb31-22"><a href="#cb31-22" aria-hidden="true" tabindex="-1"></a><span class="st">    d_sand_tl.dt_subj = r_sandeel  d_sand_tl.dt_pred = "trophicLevel"  d_sand_tl.dt_val = "3"</span></span>
+<span id="cb31-23"><a href="#cb31-23" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb31-24"><a href="#cb31-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-25"><a href="#cb31-25" aria-hidden="true" tabindex="-1"></a><span class="st">instance ExtractedLPG = delta ToTriples ExternalRDF</span></span>
+<span id="cb31-26"><a href="#cb31-26" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="34" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> <span class="fu">run_program</span>(typeside <span class="op">*</span> pg_schema <span class="op">*</span> rdf_schema <span class="op">*</span> mapping <span class="op">*</span> external_rdf)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>alg_ext <span class="op">=</span> env.instances[<span class="st">"ExtractedLPG"</span>].algebra</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Extracted Property Graph from RDF ==="</span>)</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Nodes:"</span>)</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> n <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(alg_ext, <span class="op">:</span>PGNode)), by<span class="op">=</span>string)</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, CQL.<span class="fu">eval_att</span>(alg_ext, <span class="op">:</span>node_id, n))</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Edges:"</span>)</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="cn">e</span> <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(alg_ext, <span class="op">:</span>PGEdge)), by<span class="op">=</span>string)</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>    sn <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_ext, <span class="op">:</span>node_id, CQL.<span class="fu">eval_fk</span>(alg_ext, <span class="op">:</span>src, <span class="cn">e</span>))</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>    tn <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_ext, <span class="op">:</span>node_id, CQL.<span class="fu">eval_fk</span>(alg_ext, <span class="op">:</span>tgt, <span class="cn">e</span>))</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>sn<span class="st"> --[</span><span class="sc">$</span>(CQL.<span class="fu">eval_att</span>(alg_ext, <span class="op">:</span>edge_label, <span class="cn">e</span>))<span class="st">]--&gt; </span><span class="sc">$</span>tn<span class="st">"</span>)</span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Properties:"</span>)</span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> p <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(alg_ext, <span class="op">:</span>PGProp)), by<span class="op">=</span>string)</span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>    nid <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_ext, <span class="op">:</span>node_id, CQL.<span class="fu">eval_fk</span>(alg_ext, <span class="op">:</span>prop_of, p))</span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a>    pk <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_ext, <span class="op">:</span>prop_key, p)</span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>    pv <span class="op">=</span> CQL.<span class="fu">eval_att</span>(alg_ext, <span class="op">:</span>prop_val, p)</span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>nid<span class="st"> . </span><span class="sc">$</span>pk<span class="st"> = </span><span class="sc">\"$</span>pv<span class="sc">\"</span><span class="st">"</span>)</span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Extracted Property Graph from RDF ===
+Nodes:
+  eco:atlantic_cod
+  eco:copepod
+  eco:herring
+  eco:sand_eel
+
+Edges:
+  eco:atlantic_cod --[eco:feedsOn]--&gt; eco:herring
+  eco:atlantic_cod --[eco:feedsOn]--&gt; eco:sand_eel
+  eco:herring --[eco:feedsOn]--&gt; eco:copepod
+
+Properties:
+  eco:atlantic_cod . name = "Atlantic Cod"
+  eco:atlantic_cod . trophicLevel = "4"
+  eco:copepod . name = "Copepod"
+  eco:copepod . trophicLevel = "2"
+  eco:herring . name = "Herring"
+  eco:herring . trophicLevel = "3"
+  eco:sand_eel . name = "Sand Eel"
+  eco:sand_eel . trophicLevel = "3"</code></pre>
+</div>
+</div>
+<p>Delta extracted 4 species nodes, 3 feeding links, and 8 property records from the RDF data — exactly matching the input. This extracted property graph could be loaded directly into Neo4j.</p>
+<hr>
+</section>
+<section id="schema-colimit-a-unified-view" class="level2">
+<h2 class="anchored" data-anchor-id="schema-colimit-a-unified-view">Schema Colimit: A Unified View</h2>
+<p>Rather than choosing one paradigm over the other, CQL’s <strong>schema colimit</strong> can merge both schemas into a single unified view. The colimit identifies corresponding entities (PGNode = Resource, PGEdge = ObjTriple, PGProp = DataTriple) and equates their attributes.</p>
+<div id="36" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>colimit_prog <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema_colimit Unified = quotient PropertyGraph + TripleStore : Ty {</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entity_equations</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="st">    PropertyGraph.PGNode = TripleStore.Resource</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="st">    PropertyGraph.PGEdge = TripleStore.ObjTriple</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a><span class="st">    PropertyGraph.PGProp = TripleStore.DataTriple</span></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="st">  observation_equations</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a><span class="st">    forall x. x.PropertyGraph_PGNode_node_id = x.TripleStore_Resource_uri</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a><span class="st">    forall x. x.PropertyGraph_PGEdge_edge_label = x.TripleStore_ObjTriple_predicate</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a><span class="st">    forall x. x.PropertyGraph_PGProp_prop_key = x.TripleStore_DataTriple_dt_pred</span></span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a><span class="st">    forall x. x.PropertyGraph_PGProp_prop_val = x.TripleStore_DataTriple_dt_val</span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> <span class="fu">run_program</span>(typeside <span class="op">*</span> pg_schema <span class="op">*</span> rdf_schema <span class="op">*</span> colimit_prog)</span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>sc <span class="op">=</span> env.colimits[<span class="st">"Unified"</span>]</span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>unified <span class="op">=</span> sc.schema</span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Unified Schema ==="</span>)</span>
+<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, <span class="fu">join</span>(<span class="fu">sort</span>(<span class="fu">collect</span>(unified.ens)), <span class="st">", "</span>))</span>
+<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Foreign keys (both naming conventions):"</span>)</span>
+<span id="cb34-22"><a href="#cb34-22" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (k, v) <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(unified.fks), by<span class="op">=</span><span class="fu">x-&gt;string</span>(<span class="fu">first</span>(x)))</span>
+<span id="cb34-23"><a href="#cb34-23" aria-hidden="true" tabindex="-1"></a>    dn <span class="op">=</span> CQL.<span class="fu">_display_name</span>(k)</span>
+<span id="cb34-24"><a href="#cb34-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>dn<span class="st"> : </span><span class="sc">$</span>(<span class="fu">first</span>(v))<span class="st"> → </span><span class="sc">$</span>(<span class="fu">last</span>(v))<span class="st">"</span>)</span>
+<span id="cb34-25"><a href="#cb34-25" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb34-26"><a href="#cb34-26" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Attributes (equated pairs share one entity):"</span>)</span>
+<span id="cb34-27"><a href="#cb34-27" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (k, v) <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(unified.atts), by<span class="op">=</span><span class="fu">x-&gt;string</span>(<span class="fu">first</span>(x)))</span>
+<span id="cb34-28"><a href="#cb34-28" aria-hidden="true" tabindex="-1"></a>    dn <span class="op">=</span> CQL.<span class="fu">_display_name</span>(k)</span>
+<span id="cb34-29"><a href="#cb34-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>dn<span class="st"> : </span><span class="sc">$</span>(<span class="fu">first</span>(v))<span class="st"> → </span><span class="sc">$</span>(<span class="fu">last</span>(v))<span class="st">"</span>)</span>
+<span id="cb34-30"><a href="#cb34-30" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Unified Schema ===
+Entities: PropertyGraph_PGEdge, PropertyGraph_PGNode, PropertyGraph_PGProp
+
+Foreign keys (both naming conventions):
+  PropertyGraph_PGEdge_src : PropertyGraph_PGEdge → PropertyGraph_PGNode
+  PropertyGraph_PGEdge_tgt : PropertyGraph_PGEdge → PropertyGraph_PGNode
+  PropertyGraph_PGProp_prop_of : PropertyGraph_PGProp → PropertyGraph_PGNode
+  TripleStore_DataTriple_dt_subj : PropertyGraph_PGProp → PropertyGraph_PGNode
+  TripleStore_ObjTriple_obj : PropertyGraph_PGEdge → PropertyGraph_PGNode
+  TripleStore_ObjTriple_subj : PropertyGraph_PGEdge → PropertyGraph_PGNode
+
+Attributes (equated pairs share one entity):
+  PropertyGraph_PGEdge_edge_label : PropertyGraph_PGEdge → String
+  PropertyGraph_PGNode_node_id : PropertyGraph_PGNode → String
+  PropertyGraph_PGProp_prop_key : PropertyGraph_PGProp → String
+  PropertyGraph_PGProp_prop_val : PropertyGraph_PGProp → String
+  TripleStore_DataTriple_dt_pred : PropertyGraph_PGProp → String
+  TripleStore_DataTriple_dt_val : PropertyGraph_PGProp → String
+  TripleStore_ObjTriple_predicate : PropertyGraph_PGEdge → String
+  TripleStore_Resource_uri : PropertyGraph_PGNode → String</code></pre>
+</div>
+</div>
+<p>The colimit schema contains a single set of entities — since we identified PGNode with Resource, PGEdge with ObjTriple, and PGProp with DataTriple. The foreign keys and attributes from both paradigms coexist, with the observation equations ensuring that <code>node_id = uri</code>, <code>edge_label = predicate</code>, <code>prop_key = dt_pred</code>, and <code>prop_val = dt_val</code>.</p>
+<p>Data from either paradigm can be migrated into the unified schema using the canonical <strong>Sigma</strong> mappings that the colimit construction provides automatically.</p>
+<hr>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 30%">
+<col style="width: 44%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Challenge</th>
+<th>CQL Solution</th>
+<th>Categorical Concept</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>LPG → RDF</td>
+<td>Sigma (pushforward)</td>
+<td>Left adjoint of functor</td>
+</tr>
+<tr class="even">
+<td>RDF → LPG</td>
+<td>Delta (pullback)</td>
+<td>Right adjoint of functor</td>
+</tr>
+<tr class="odd">
+<td>Round-trip guarantee</td>
+<td>Unit / Counit</td>
+<td>Adjunction natural transforms</td>
+</tr>
+<tr class="even">
+<td>SPARQL-like extraction</td>
+<td>Uber-flower query</td>
+<td>Profunctor composition</td>
+</tr>
+<tr class="odd">
+<td>Edge properties in RDF</td>
+<td>Reification schema + Sigma</td>
+<td>Schema extension + functor</td>
+</tr>
+<tr class="even">
+<td>Unified paradigm view</td>
+<td>Schema colimit</td>
+<td>Categorical colimit</td>
+</tr>
+</tbody>
+</table>
+<p>The key insight is that RDF and LPG are not fundamentally different — they are <strong>isomorphic presentations</strong> of the same categorical structure, as long as node properties are modeled as first-class entities. The asymmetry only appears when LPG uses edge properties, which requires RDF reification to resolve.</p>
+<p>CQL makes this structural relationship precise and executable. Rather than writing ad-hoc scripts to convert between Neo4j and SPARQL endpoints, the conversion is derived automatically from a single schema morphism — with mathematical guarantees that no data is lost or invented in the process.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

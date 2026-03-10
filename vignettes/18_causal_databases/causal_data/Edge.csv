@@ -1,0 +1,17 @@
+id,src,dst,rel_type,polarity,support_lcms,score_sum
+e01,n01,n04,INCREASES,inc,12,1.45
+e02,n02,n04,INCREASES,inc,9,1.12
+e03,n03,n04,INCREASES,inc,11,1.38
+e04,n04,n07,INCREASES,inc,15,1.62
+e05,n05,n02,REDUCES,dec,8,0.95
+e06,n05,n06,INCREASES,inc,10,1.21
+e07,n06,n02,REDUCES,dec,7,0.88
+e08,n01,n09,INCREASES,inc,6,0.72
+e09,n08,n03,INFLUENCES,unk,5,0.61
+e10,n08,n01,INFLUENCES,unk,4,0.55
+e11,n10,n09,REDUCES,dec,8,0.91
+e12,n10,n07,REDUCES,dec,7,0.85
+e13,n01,n07,INCREASES,inc,10,1.30
+e14,n05,n09,REDUCES,dec,6,0.70
+e15,n06,n04,REDUCES,dec,5,0.64
+e16,n01,n02,INCREASES,inc,3,0.42

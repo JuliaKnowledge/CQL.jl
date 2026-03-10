@@ -1,0 +1,345 @@
+---
+title: "Unit Conversion in CQL"
+subtitle: "Type-Safe Data Transformation with User-Defined Functions"
+author: "Simon Frost"
+format:
+  html:
+    code-fold: false
+    toc: true
+    toc-depth: 3
+engine: julia
+---
+
+## Introduction
+
+When integrating data from different sources, values often need to be **converted** between representations --- inches to centimeters, Fahrenheit to Celsius, dollars to euros. If a conversion is accidentally omitted, the result is **silent data corruption**: the numbers look reasonable but mean the wrong thing.
+
+CQL prevents this class of error by making measurement units part of the **type system**. A value in inches has a different type from a value in centimeters, and CQL's type checker rejects any query that confuses the two. Conversion functions are first-class schema elements, and the type checker verifies at compile time that they are applied correctly.
+
+This vignette demonstrates:
+
+1. A typeside with **distinct types** for different units and a conversion function
+2. Schemas using **typed attributes** (inches vs centimeters)
+3. A **correct query** that applies the conversion function
+4. A **rejected query** that omits the conversion (caught at compile time)
+
+This example is adapted from the [CQL unit conversion tutorial](https://categoricaldata.net/unitconv.html).
+
+```{julia}
+#| output: false
+using CQL
+```
+
+## Typed Units in the Typeside
+
+We define a typeside with two distinct types --- `Inches` and `Cm` --- and a conversion function `inToCm`:
+
+```{julia}
+env = cql"""
+typeside Ty = literal {
+    types
+        Inches
+        Cm
+    constants
+        v500 : Inches
+    functions
+        inToCm : Inches -> Cm
+}
+"""
+
+ts = env.Ty
+println("Types: ", ts.tys)
+println("Functions: ", collect(keys(ts.syms)))
+```
+
+Even though both `Inches` and `Cm` might be represented as floating-point numbers at runtime, they are **distinct types** in CQL. You cannot use an `Inches` value where a `Cm` is expected, or vice versa. The function `inToCm` is the only bridge between them.
+
+## Two Schemas: American and European
+
+An American airplane has wing lengths in inches; a European airplane has wing lengths in centimeters:
+
+```{julia}
+env = cql"""
+typeside Ty = literal {
+    types
+        Inches
+        Cm
+    constants
+        v500 : Inches
+    functions
+        inToCm : Inches -> Cm
+}
+
+schema AmericanAirplane = literal : Ty {
+    entities
+        Wing
+    attributes
+        wingLength : Wing -> Inches
+}
+
+schema EuropeanAirplane = literal : Ty {
+    entities
+        Wing
+    attributes
+        wingLength : Wing -> Cm
+}
+"""
+
+println("American schema:")
+println("  wingLength : Wing -> ", env.AmericanAirplane.atts[:wingLength][2])
+
+println("\nEuropean schema:")
+println("  wingLength : Wing -> ", env.EuropeanAirplane.atts[:wingLength][2])
+```
+
+Both schemas have the same structure (a `Wing` entity with a `wingLength` attribute), but the attribute types differ. This captures the real-world difference: the American data is in inches, the European data is in centimeters.
+
+## Sample Data: A Boeing 747
+
+```{julia}
+env = cql"""
+typeside Ty = literal {
+    types
+        Inches
+        Cm
+    constants
+        v500 : Inches
+    functions
+        inToCm : Inches -> Cm
+}
+
+schema AmericanAirplane = literal : Ty {
+    entities
+        Wing
+    attributes
+        wingLength : Wing -> Inches
+}
+
+instance Boeing747 = literal : AmericanAirplane {
+    generators
+        left right : Wing
+    equations
+        wingLength(left) = wingLength(right)
+        wingLength(left) = v500
+}
+"""
+
+alg = env.Boeing747.algebra
+println("=== Boeing 747 (American) ===")
+println("Wings: ", length(carrier(alg, :Wing)))
+for x in carrier(alg, :Wing)
+    wl = eval_att(alg, :wingLength, x)
+    println("  ", repr_x(alg, x), ": wingLength = ", wl)
+end
+```
+
+The left and right wings have equal length (500 inches), enforced by the equation `wingLength(left) = wingLength(right)`.
+
+## The Correct Query: With Conversion
+
+To convert the Boeing 747's data to the European schema, we write a query that applies `inToCm` to each wing length:
+
+```{julia}
+env = cql"""
+typeside Ty = literal {
+    types
+        Inches
+        Cm
+    constants
+        v500 : Inches
+    functions
+        inToCm : Inches -> Cm
+}
+
+schema AmericanAirplane = literal : Ty {
+    entities
+        Wing
+    attributes
+        wingLength : Wing -> Inches
+}
+
+schema EuropeanAirplane = literal : Ty {
+    entities
+        Wing
+    attributes
+        wingLength : Wing -> Cm
+}
+
+query AmericanToEuropean = literal : AmericanAirplane -> EuropeanAirplane {
+    entity Wing -> {
+        from
+            w : Wing
+        attributes
+            wingLength -> inToCm(w.wingLength)
+    }
+}
+
+instance Boeing747 = literal : AmericanAirplane {
+    generators
+        left right : Wing
+    equations
+        wingLength(left) = wingLength(right)
+        wingLength(left) = v500
+}
+
+instance Boeing747Metric = eval AmericanToEuropean Boeing747
+"""
+
+println("=== Boeing 747 (American, Inches) ===")
+alg_us = env.Boeing747.algebra
+for x in carrier(alg_us, :Wing)
+    wl = eval_att(alg_us, :wingLength, x)
+    println("  ", repr_x(alg_us, x), ": wingLength = ", wl)
+end
+
+println("\n=== Boeing 747 (European, Cm) ===")
+alg_eu = env.Boeing747Metric.algebra
+for x in carrier(alg_eu, :Wing)
+    wl = eval_att(alg_eu, :wingLength, x)
+    println("  ", repr_x(alg_eu, x), ": wingLength = ", wl)
+end
+```
+
+The converted wing lengths are `inToCm(v500)` --- the conversion function applied symbolically. In CQL's categorical framework, this is the correct representation: the function `inToCm` transforms a value from the `Inches` type to the `Cm` type.
+
+### Constraint Preservation
+
+The original equation `wingLength(left) = wingLength(right)` is preserved through the query:
+
+```{julia}
+wings = collect(carrier(alg_eu, :Wing))
+wl1 = eval_att(alg_eu, :wingLength, wings[1])
+wl2 = eval_att(alg_eu, :wingLength, wings[2])
+println("Left wing length:  ", wl1)
+println("Right wing length: ", wl2)
+println("Still equal: ", wl1 == wl2)
+```
+
+The CQL query preserves all equational constraints from the source instance. If the wings had equal length in inches, they have equal length in centimeters.
+
+## The Rejected Query: Without Conversion
+
+Now consider a careless query that simply copies the wing length without converting:
+
+```{julia}
+try
+    env_bad = cql"""
+    typeside Ty = literal {
+        types
+            Inches
+            Cm
+        constants
+            v500 : Inches
+        functions
+            inToCm : Inches -> Cm
+    }
+
+    schema AmericanAirplane = literal : Ty {
+        entities
+            Wing
+        attributes
+            wingLength : Wing -> Inches
+    }
+
+    schema EuropeanAirplane = literal : Ty {
+        entities
+            Wing
+        attributes
+            wingLength : Wing -> Cm
+    }
+
+    query DisastrousConversion = literal : AmericanAirplane -> EuropeanAirplane {
+        entity Wing -> {
+            from
+                w : Wing
+            attributes
+                wingLength -> w.wingLength
+        }
+    }
+    """
+    println("ERROR: This should not succeed!")
+catch e
+    println("Query correctly rejected!")
+    println()
+    println("Error: ", e.msg)
+end
+```
+
+CQL rejects this query at **compile time** with a clear error: the attribute `wingLength` in the target schema expects type `Cm`, but `w.wingLength` produces type `Inches`. The type system prevents the data corruption before any data is processed.
+
+## Why This Matters
+
+### The Mars Climate Orbiter
+
+In 1999, NASA's Mars Climate Orbiter was lost because one software component produced thrust values in **pound-force seconds** while another expected **newton-seconds**. The missing conversion caused the spacecraft to enter the atmosphere at the wrong angle and disintegrate.
+
+CQL's type system would have caught this error:
+
+```{julia}
+try
+    env_mars = cql"""
+    typeside Units = literal {
+        types
+            PoundForceSeconds
+            NewtonSeconds
+        functions
+            lbfToN : PoundForceSeconds -> NewtonSeconds
+    }
+
+    schema ThrusterOutput = literal : Units {
+        entities Maneuver
+        attributes thrust : Maneuver -> PoundForceSeconds
+    }
+
+    schema NavigationInput = literal : Units {
+        entities Maneuver
+        attributes thrust : Maneuver -> NewtonSeconds
+    }
+
+    query BadIntegration = literal : ThrusterOutput -> NavigationInput {
+        entity Maneuver -> {
+            from m : Maneuver
+            attributes thrust -> m.thrust
+        }
+    }
+    """
+    println("ERROR: Should have been caught!")
+catch e
+    println("Caught at compile time: ", e.msg)
+end
+```
+
+The type mismatch is caught before any data flows through the system.
+
+## CQL vs SQL
+
+In SQL, all numeric values are just `DOUBLE` or `DECIMAL` --- there is no distinction between inches and centimeters at the type level:
+
+```sql
+-- SQL: No type safety for units
+CREATE TABLE AmericanWing (id INT, wingLength DOUBLE);  -- inches
+CREATE TABLE EuropeanWing (id INT, wingLength DOUBLE);  -- cm
+
+-- This compiles and runs, but is WRONG:
+INSERT INTO EuropeanWing SELECT id, wingLength FROM AmericanWing;
+-- Silently copies inches into a centimeters column!
+```
+
+| Aspect | SQL | CQL |
+|--------|-----|-----|
+| **Unit representation** | All `DOUBLE` | Distinct types (`Inches`, `Cm`) |
+| **Missing conversion** | Silent data corruption | Compile-time type error |
+| **Conversion function** | Application-level logic | First-class schema element |
+| **Verification** | Manual code review | Automated type checking |
+
+## Summary
+
+| Concept | Description |
+|---------|-------------|
+| **Typed units** | Distinct types for distinct measurement systems (e.g., `Inches` vs `Cm`) |
+| **Conversion functions** | Typeside functions bridging between unit types (e.g., `inToCm : Inches -> Cm`) |
+| **Compile-time checking** | CQL rejects queries where attribute types don't match |
+| **Symbolic computation** | Conversions appear as function applications (e.g., `inToCm(v500)`) |
+| **Constraint preservation** | Equational constraints survive conversion (equal inputs yield equal outputs) |
+
+CQL's approach to unit conversion exemplifies a broader principle: **data integrity constraints should be enforced by the system, not by programmer discipline**. By encoding measurement units in the type system and conversion functions in the typeside, CQL transforms a common source of silent data corruption into a compile-time error.

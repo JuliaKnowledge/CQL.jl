@@ -1,0 +1,15 @@
+id,common_name,conservation_status,typical_size_cm,trophic_level
+orca,Killer Whale,Data Deficient,700,apex_predator
+grey_seal,Grey Seal,Least Concern,230,tertiary_consumer
+atlantic_cod,Atlantic Cod,Vulnerable,120,tertiary_consumer
+herring,Atlantic Herring,Least Concern,35,secondary_consumer
+shore_crab,Shore Crab,Least Concern,8,secondary_consumer
+common_starfish,Common Starfish,Least Concern,30,secondary_consumer
+blue_mussel,Blue Mussel,Least Concern,10,primary_consumer
+common_limpet,Common Limpet,Least Concern,6,primary_consumer
+sea_urchin,Sea Urchin,Least Concern,8,primary_consumer
+barnacle,Acorn Barnacle,Least Concern,2,primary_consumer
+zooplankton,Zooplankton,Not Evaluated,0.1,primary_consumer
+kelp,Oarweed Kelp,Least Concern,150,producer
+phytoplankton,Phytoplankton,Not Evaluated,0.01,producer
+coralline_algae,Coralline Algae,Least Concern,5,producer

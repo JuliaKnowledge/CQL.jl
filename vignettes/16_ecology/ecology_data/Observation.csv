@@ -1,0 +1,21 @@
+id,observed_species,site_name,count,method,obs_date
+obs01,blue_mussel,St Andrews,342,quadrat,2024-06-15
+obs02,barnacle,St Andrews,891,quadrat,2024-06-15
+obs03,common_limpet,St Andrews,156,quadrat,2024-06-15
+obs04,shore_crab,St Andrews,23,visual,2024-06-15
+obs05,common_starfish,St Andrews,7,visual,2024-06-15
+obs06,blue_mussel,Arbroath,567,quadrat,2024-06-15
+obs07,barnacle,Arbroath,1204,quadrat,2024-06-15
+obs08,sea_urchin,Arbroath,45,quadrat,2024-06-15
+obs09,kelp,Arbroath,12,quadrat,2024-06-15
+obs10,coralline_algae,Arbroath,89,quadrat,2024-06-15
+obs11,herring,Bell Rock,250,trawl,2024-06-15
+obs12,atlantic_cod,Bell Rock,18,trawl,2024-06-15
+obs13,grey_seal,Bell Rock,3,visual,2024-06-15
+obs14,phytoplankton,Bell Rock,1500,sample,2024-06-15
+obs15,zooplankton,Bell Rock,800,sample,2024-06-15
+obs16,blue_mussel,Crail,423,quadrat,2024-06-15
+obs17,shore_crab,Crail,31,visual,2024-06-15
+obs18,common_starfish,Crail,5,visual,2024-06-15
+obs19,sea_urchin,Crail,38,quadrat,2024-06-15
+obs20,barnacle,Crail,756,quadrat,2024-06-15

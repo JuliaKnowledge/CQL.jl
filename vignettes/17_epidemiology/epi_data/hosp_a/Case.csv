@@ -1,0 +1,4 @@
+id,severity,onset,pathogen_name
+a1,severe,2024-01-10,Influenza
+a2,mild,2024-01-11,COVID-19
+a3,severe,2024-01-13,COVID-19

@@ -1,0 +1,11 @@
+id,label,deg_out,deg_in
+n01,pathogen_transmissibility,4,0
+n02,host_susceptibility,3,2
+n03,contact_rate,2,1
+n04,transmission_rate,1,3
+n05,vaccination_coverage,3,0
+n06,population_immunity,2,2
+n07,outbreak_severity,0,3
+n08,environmental_factors,2,0
+n09,case_fatality_rate,0,2
+n10,healthcare_capacity,1,2

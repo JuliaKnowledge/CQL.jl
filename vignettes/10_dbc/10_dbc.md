@@ -1,0 +1,646 @@
+# Database Connectivity with DuckDB
+CQL.jl
+
+## Introduction
+
+The Java CQL IDE provides built-in JDBC connectivity for importing SQL
+data into CQL instances and exporting CQL results back to SQL databases.
+CQL.jl takes a different approach: instead of embedding a single
+database driver, it provides the building blocks — `Presentation`,
+`saturated_instance`, and the algebra API — that let you connect to
+**any** Julia-accessible database.
+
+This vignette demonstrates a complete round-trip with
+[DuckDB.jl](https://github.com/duckdb/duckdb-julia), a fast embedded
+analytical database:
+
+1.  **Create** SQL tables in DuckDB with sample data
+2.  **Import** the SQL data into a CQL instance using per-element SQL
+    queries
+3.  **Transform** the data using a CQL query (flattening a multi-table
+    schema)
+4.  **Export** the CQL result back to DuckDB tables
+5.  **Query** the exported tables with SQL
+
+This example is adapted from the [CQL JDBC
+tutorial](https://categoricaldata.net/jdbc.html), which uses an H2
+in-memory database. We use DuckDB instead, which is available as a pure
+Julia package with no external dependencies.
+
+``` julia
+using CQL, DuckDB
+```
+
+## Setting Up the SQL Database
+
+We create an in-memory DuckDB database with two tables: `Employee` and
+`Department`. This mirrors the H2 database setup in the Java CQL
+tutorial.
+
+``` julia
+db = DuckDB.DB()
+con = DuckDB.connect(db)
+
+DuckDB.execute(con, """
+    CREATE TABLE Employee(
+        id INT PRIMARY KEY,
+        name VARCHAR,
+        manager INT,
+        worksIn INT
+    )
+""")
+
+DuckDB.execute(con, """
+    CREATE TABLE Department(
+        id INT PRIMARY KEY,
+        name VARCHAR,
+        secretary INT
+    )
+""")
+
+DuckDB.execute(con, """
+    INSERT INTO Employee VALUES
+        (101, 'Alan',    103, 10),
+        (102, 'Camille', 102, 2),
+        (103, 'Andrey',  103, 10)
+""")
+
+DuckDB.execute(con, """
+    INSERT INTO Department VALUES
+        (10, 'Applied Math', 101),
+        (2,  'Pure Math',    102)
+""")
+
+println("=== Employee ===")
+result = DuckDB.execute(con, "SELECT * FROM Employee ORDER BY id")
+for row in result
+    println("  id=$(row[:id])  name=$(row[:name])  manager=$(row[:manager])  worksIn=$(row[:worksIn])")
+end
+
+println("\n=== Department ===")
+result = DuckDB.execute(con, "SELECT * FROM Department ORDER BY id")
+for row in result
+    println("  id=$(row[:id])  name=$(row[:name])  secretary=$(row[:secretary])")
+end
+```
+
+    === Employee ===
+      id=101  name=Alan  manager=103  worksIn=10
+      id=102  name=Camille  manager=102  worksIn=2
+      id=103  name=Andrey  manager=103  worksIn=10
+
+    === Department ===
+      id=2  name=Pure Math  secretary=102
+      id=10  name=Applied Math  secretary=101
+
+The data describes a small organization:
+
+- **Alan** (101) works in Applied Math, managed by Andrey
+- **Camille** (102) works in Pure Math, manages herself
+- **Andrey** (103) works in Applied Math, manages himself
+- **Applied Math** (10) has Alan as secretary
+- **Pure Math** (2) has Camille as secretary
+
+## The CQL Schema
+
+We define a CQL schema that captures the relational structure —
+including foreign keys that SQL only enforces loosely:
+
+``` julia
+env = cql"""
+typeside Ty = literal {
+    types
+        Str
+}
+
+schema S = literal : Ty {
+    entities
+        Employee
+        Department
+    foreign_keys
+        manager   : Employee -> Employee
+        worksIn   : Employee -> Department
+        secretary : Department -> Employee
+    attributes
+        ename : Employee   -> Str
+        dname : Department -> Str
+}
+"""
+
+sch = env.S
+println("Entities:     ", sch.ens)
+println("Foreign keys: ", collect(keys(sch.fks)))
+println("Attributes:   ", collect(keys(sch.atts)))
+```
+
+    Entities:     Set([:Department, :Employee])
+    Foreign keys: [:worksIn, :manager, :secretary]
+    Attributes:   [:dname, :ename]
+
+The schema makes the relational structure explicit:
+
+    Employee --manager--> Employee
+    Employee --worksIn--> Department
+    Department --secretary--> Employee
+
+Note that `manager` is a self-referential foreign key (employees manage
+other employees), and `secretary` creates a bidirectional link between
+departments and employees.
+
+## Importing: SQL to CQL
+
+### The Import Strategy
+
+The Java CQL IDE uses per-element SQL queries for maximum flexibility:
+each entity, foreign key, and attribute gets its own `SELECT` statement.
+We implement the same pattern in Julia.
+
+The import function takes a dictionary mapping CQL schema elements to
+SQL queries:
+
+- **Entity queries** return a single column of IDs (one generator per
+  row)
+- **FK queries** return two columns `(source_id, target_id)`
+- **Attribute queries** return two columns `(source_id, value)`
+
+``` julia
+"""Import SQL data into a CQL instance using per-element queries."""
+function import_duckdb(con, schema::CQLSchema, queries::Dict{Symbol, String})
+    gens = Dict{Symbol, Symbol}()
+    id_to_gen = Dict{Symbol, Dict{String, Symbol}}()
+    eqs = Set{Equation}()
+
+    for en in schema.ens
+        id_to_gen[en] = Dict{String, Symbol}()
+    end
+
+    # Phase 1: Create generators from entity queries
+    for en in schema.ens
+        haskey(queries, en) || error("No query for entity $en")
+        result = DuckDB.execute(con, queries[en])
+        for row in result
+            raw_id = string(row[1])
+            gen_sym = Symbol(string(en, "_", raw_id))
+            gens[gen_sym] = en
+            id_to_gen[en][raw_id] = gen_sym
+        end
+    end
+
+    # Phase 2: Build FK equations from FK queries
+    for (fk, (src, tgt)) in schema.fks
+        haskey(queries, fk) || error("No query for FK $fk")
+        result = DuckDB.execute(con, queries[fk])
+        for row in result
+            src_id = string(row[1])
+            tgt_id = string(row[2])
+            src_gen = id_to_gen[src][src_id]
+            tgt_gen = id_to_gen[tgt][tgt_id]
+            push!(eqs, Equation(CQLFk(fk, CQLGen(src_gen)), CQLGen(tgt_gen)))
+        end
+    end
+
+    # Phase 3: Build attribute equations from attribute queries
+    for (att, (src, ty)) in schema.atts
+        haskey(queries, att) || error("No query for attribute $att")
+        result = DuckDB.execute(con, queries[att])
+        for row in result
+            src_id = string(row[1])
+            val = row[2]
+            val === missing && continue
+            src_gen = id_to_gen[src][src_id]
+            push!(eqs, Equation(
+                CQLAtt(att, CQLGen(src_gen)),
+                CQLSym(Symbol(val), CQLTerm[])))
+        end
+    end
+
+    pres = Presentation(gens, Dict{Symbol,Symbol}(), eqs)
+    saturated_instance(schema, pres)
+end
+
+println("import_duckdb defined")
+```
+
+    import_duckdb defined
+
+### Running the Import
+
+Each query extracts one piece of the relational structure. This mirrors
+the JDBC import syntax from the Java CQL IDE:
+
+``` julia
+inst = import_duckdb(con, sch, Dict(
+    # Entity queries: one column of IDs
+    :Employee   => "SELECT id FROM Employee",
+    :Department => "SELECT id FROM Department",
+    # FK queries: (source_id, target_id)
+    :manager    => "SELECT id, manager FROM Employee",
+    :worksIn    => "SELECT id, worksIn FROM Employee",
+    :secretary  => "SELECT id, secretary FROM Department",
+    # Attribute queries: (source_id, value)
+    :ename      => "SELECT id, name FROM Employee",
+    :dname      => "SELECT id, name FROM Department",
+))
+
+alg = inst.algebra
+
+println("=== Imported CQL Instance ===\n")
+
+println("Employee ($(length(carrier(alg, :Employee))) rows):")
+for x in carrier(alg, :Employee)
+    nm = eval_att(alg, :ename, x)
+    mgr = eval_fk(alg, :manager, x)
+    dept = eval_fk(alg, :worksIn, x)
+    dnm = eval_att(alg, :dname, dept)
+    println("  ", repr_x(alg, x), ": ename=", nm,
+            "  manager=", repr_x(alg, mgr),
+            "  worksIn=", dnm)
+end
+
+println("\nDepartment ($(length(carrier(alg, :Department))) rows):")
+for x in carrier(alg, :Department)
+    nm = eval_att(alg, :dname, x)
+    sec = eval_fk(alg, :secretary, x)
+    println("  ", repr_x(alg, x), ": dname=", nm,
+            "  secretary=", repr_x(alg, sec))
+end
+```
+
+    === Imported CQL Instance ===
+
+    Employee (3 rows):
+      Employee_103: ename=Andrey  manager=Employee_103  worksIn=Applied Math
+      Employee_101: ename=Alan  manager=Employee_103  worksIn=Applied Math
+      Employee_102: ename=Camille  manager=Employee_102  worksIn=Pure Math
+
+    Department (2 rows):
+      Department_2: dname=Pure Math  secretary=Employee_102
+      Department_10: dname=Applied Math  secretary=Employee_101
+
+The SQL data is now a fully typed CQL instance. Foreign keys are
+functions (not just integer references), so we can follow chains like
+`e.manager.worksIn.dname` directly.
+
+### Flexible Query Mapping
+
+The per-query approach allows column renaming, computed values, and even
+joins in the SQL:
+
+| CQL Element | SQL Query                          | Purpose                 |
+|-------------|------------------------------------|-------------------------|
+| `Employee`  | `SELECT id FROM Employee`          | One generator per row   |
+| `manager`   | `SELECT id, manager FROM Employee` | FK as `(src, tgt)` pair |
+| `ename`     | `SELECT id, name FROM Employee`    | Rename `name` → `ename` |
+
+This flexibility is important when the SQL column names don’t match the
+CQL schema, or when the data requires transformation during import
+(e.g., joining multiple SQL tables into one CQL entity).
+
+## CQL Transformation: Flattening
+
+Now we use CQL to transform the data. We define a flat “report” schema
+and a query that denormalizes the employee data by following foreign
+keys:
+
+``` julia
+env2 = cql"""
+typeside Ty = literal {
+    types
+        Str
+}
+
+schema S = literal : Ty {
+    entities
+        Employee
+        Department
+    foreign_keys
+        manager   : Employee -> Employee
+        worksIn   : Employee -> Department
+        secretary : Department -> Employee
+    attributes
+        ename : Employee   -> Str
+        dname : Department -> Str
+}
+
+schema EmployeeReport = literal : Ty {
+    entities
+        Row
+    attributes
+        empName  : Row -> Str
+        mgrName  : Row -> Str
+        deptName : Row -> Str
+}
+
+query Flatten = literal : S -> EmployeeReport {
+    entity Row -> {
+        from
+            e : Employee
+        attributes
+            empName  -> e.ename
+            mgrName  -> e.manager.ename
+            deptName -> e.worksIn.dname
+    }
+}
+"""
+
+println("Query: S -> EmployeeReport")
+println(env2.Flatten)
+```
+
+    Query: S -> EmployeeReport
+    query {
+      entity Row -> {
+        from
+          e : Employee
+      }
+      attributes
+        deptName -> e.worksIn.dname
+        empName -> e.ename
+        mgrName -> e.manager.ename
+    }
+
+The query follows two FK chains:
+
+- `e.manager.ename` — follow `manager` then read `ename`
+- `e.worksIn.dname` — follow `worksIn` then read `dname`
+
+In SQL, this would require two explicit `JOIN` clauses. In CQL, it’s
+just dot notation.
+
+### Evaluating the Query
+
+``` julia
+q = env2.Flatten
+flat_inst = eval_query_instance(q, inst, default_options())
+flat_alg = flat_inst.algebra
+
+println("=== Flattened Employee Report ===\n")
+println(rpad("Employee", 10), "| ", rpad("Manager", 10), "| Department")
+println("-"^10, "+", "-"^11, "+", "-"^15)
+for x in carrier(flat_alg, :Row)
+    en = eval_att(flat_alg, :empName, x)
+    mn = eval_att(flat_alg, :mgrName, x)
+    dn = eval_att(flat_alg, :deptName, x)
+    println(rpad(string(en), 10), "| ", rpad(string(mn), 10), "| ", dn)
+end
+```
+
+    === Flattened Employee Report ===
+
+    Employee  | Manager   | Department
+    ----------+-----------+---------------
+    Alan      | Andrey    | Applied Math
+    Andrey    | Andrey    | Applied Math
+    Camille   | Camille   | Pure Math
+
+The CQL query produced a flat report with the manager’s name and
+department name resolved — no manual joins needed.
+
+## Exporting: CQL to SQL
+
+Now we write the CQL result back to DuckDB. The export function creates
+one SQL table per CQL entity:
+
+``` julia
+"""Export a CQL instance to DuckDB tables."""
+function export_duckdb(con, inst::CQLInstance; prefix::String="")
+    alg = inst.algebra
+    sch = inst.schema
+
+    # Assign integer IDs to all carrier elements
+    id_map = Dict{Any, Int}()
+    counter = 1
+    for en in sort(collect(sch.ens))
+        for x in sort(collect(carrier(alg, en)); by=string)
+            id_map[x] = counter
+            counter += 1
+        end
+    end
+
+    for en in sch.ens
+        tbl = prefix * string(en)
+        fks_from = [(fk, tgt) for (fk, (src, tgt)) in sch.fks if src == en]
+        atts_from = [(att, ty) for (att, (src, ty)) in sch.atts if src == en]
+
+        # Build CREATE TABLE
+        cols = ["id INT"]
+        for (fk, _) in fks_from
+            push!(cols, "\"$(fk)\" INT")
+        end
+        for (att, _) in atts_from
+            push!(cols, "\"$(att)\" VARCHAR")
+        end
+
+        DuckDB.execute(con, "DROP TABLE IF EXISTS \"$tbl\"")
+        DuckDB.execute(con, "CREATE TABLE \"$tbl\" ($(join(cols, ", ")))")
+
+        # Insert rows
+        for x in carrier(alg, en)
+            vals = String["$(id_map[x])"]
+            for (fk, _) in fks_from
+                push!(vals, "$(id_map[eval_fk(alg, fk, x)])")
+            end
+            for (att, _) in atts_from
+                t = eval_att(alg, att, x)
+                v = (t isa CQLSym && isempty(t.args)) ? string(t.sym) : string(t)
+                push!(vals, "'" * replace(v, "'" => "''") * "'")
+            end
+            DuckDB.execute(con, "INSERT INTO \"$tbl\" VALUES ($(join(vals, ", ")))")
+        end
+    end
+end
+
+println("export_duckdb defined")
+```
+
+    export_duckdb defined
+
+### Exporting the Original Instance
+
+``` julia
+export_duckdb(con, inst, prefix="Exported_")
+
+println("=== Exported Instance (SQL) ===\n")
+
+result = DuckDB.execute(con, """
+    SELECT e.id, e.ename, m.ename AS manager_name, d.dname
+    FROM Exported_Employee e
+    JOIN Exported_Employee m ON e.manager = m.id
+    JOIN Exported_Department d ON e.worksIn = d.id
+    ORDER BY e.id
+""")
+
+println(rpad("ID", 5), "| ", rpad("Name", 10), "| ", rpad("Manager", 10), "| Department")
+println("-"^5, "+", "-"^11, "+", "-"^11, "+", "-"^15)
+for row in result
+    println(rpad(string(row[:id]), 5), "| ",
+            rpad(string(row[:ename]), 10), "| ",
+            rpad(string(row[:manager_name]), 10), "| ",
+            row[:dname])
+end
+```
+
+    === Exported Instance (SQL) ===
+
+    ID   | Name      | Manager   | Department
+    -----+-----------+-----------+---------------
+    3    | Alan      | Andrey    | Applied Math
+    4    | Camille   | Camille   | Pure Math
+    5    | Andrey    | Andrey    | Applied Math
+
+The exported tables preserve the full relational structure. We can query
+them with standard SQL joins to reconstruct the denormalized view.
+
+### Exporting the Flat Report
+
+``` julia
+export_duckdb(con, flat_inst, prefix="Report_")
+
+println("=== Flat Report (SQL) ===\n")
+result = DuckDB.execute(con, "SELECT * FROM Report_Row ORDER BY id")
+for row in result
+    println("  $(row[:empName]) | manager: $(row[:mgrName]) | dept: $(row[:deptName])")
+end
+```
+
+    === Flat Report (SQL) ===
+
+      Andrey | manager: Andrey | dept: Applied Math
+      Alan | manager: Andrey | dept: Applied Math
+      Camille | manager: Camille | dept: Pure Math
+
+The flattened CQL query result is now a single SQL table — no joins
+needed to read the denormalized data.
+
+## The Full Round-Trip
+
+Let’s verify the round-trip by re-importing the exported data:
+
+``` julia
+inst2 = import_duckdb(con, sch, Dict(
+    :Employee   => "SELECT id FROM Exported_Employee",
+    :Department => "SELECT id FROM Exported_Department",
+    :manager    => "SELECT id, manager FROM Exported_Employee",
+    :worksIn    => "SELECT id, worksIn FROM Exported_Employee",
+    :secretary  => "SELECT id, secretary FROM Exported_Department",
+    :ename      => "SELECT id, ename FROM Exported_Employee",
+    :dname      => "SELECT id, dname FROM Exported_Department",
+))
+
+alg2 = inst2.algebra
+
+println("=== Round-trip Verification ===\n")
+println("Original employees: ", length(carrier(inst.algebra, :Employee)))
+println("Round-trip employees: ", length(carrier(alg2, :Employee)))
+println("Original departments: ", length(carrier(inst.algebra, :Department)))
+println("Round-trip departments: ", length(carrier(alg2, :Department)))
+
+println("\nRound-trip data:")
+for x in carrier(alg2, :Employee)
+    nm = eval_att(alg2, :ename, x)
+    mgr = eval_fk(alg2, :manager, x)
+    dept = eval_fk(alg2, :worksIn, x)
+    dnm = eval_att(alg2, :dname, dept)
+    println("  ", nm, " | manager: ", eval_att(alg2, :ename, mgr), " | dept: ", dnm)
+end
+```
+
+    === Round-trip Verification ===
+
+    Original employees: 3
+    Round-trip employees: 3
+    Original departments: 2
+    Round-trip departments: 2
+
+    Round-trip data:
+      Alan | manager: Andrey | dept: Applied Math
+      Andrey | manager: Andrey | dept: Applied Math
+      Camille | manager: Camille | dept: Pure Math
+
+The data survives the full SQL → CQL → SQL → CQL round-trip with all
+relational structure intact.
+
+## Native JDBC and ODBC Support
+
+In addition to the programmatic approach shown above, CQL.jl provides
+**native CQL syntax** for JDBC and ODBC database connectivity, matching
+the Java CQL IDE’s built-in commands.
+
+### JDBC (via JDBC.jl / JavaCall.jl)
+
+CQL.jl supports the full `import_jdbc` / `export_jdbc_instance` /
+`exec_jdbc` syntax from the Java CQL IDE. This uses JDBC.jl under the
+hood, which calls Java database drivers through JNI:
+
+    typeside Ty = sql
+
+    command setup = exec_jdbc "org.h2.Driver" "jdbc:h2:mem:db1" {
+        "CREATE TABLE Employee(id INT, name VARCHAR, manager INT)"
+        "INSERT INTO Employee VALUES (1, 'Alice', 2)"
+    }
+
+    instance I = import_jdbc "org.h2.Driver" "jdbc:h2:mem:db1" : S {
+        Employee -> "SELECT id, name, manager FROM Employee"
+    }
+
+    command store = export_jdbc_instance I "org.h2.Driver" "jdbc:h2:mem:db1" "CQL_"
+
+### ODBC (via ODBC.jl)
+
+CQL.jl also supports ODBC connectivity, which provides access to
+databases via operating-system-level ODBC drivers (MySQL/MariaDB,
+PostgreSQL, SQL Server, etc.):
+
+    command setup = exec_odbc "Driver=...;Server=localhost;Database=mydb" {
+        "CREATE TABLE Employee(id INT, name VARCHAR(100))"
+        "INSERT INTO Employee VALUES (1, 'Alice')"
+    }
+
+    instance I = import_odbc "Driver=...;Server=localhost;Database=mydb" : S {
+        Employee -> "SELECT id, name FROM Employee"
+    }
+
+    instance J = import_odbc_direct "Driver=..." id : S
+
+    schema D = import_odbc_all "Driver=..." { options allow_sql_import_all_unsafe = true }
+
+    command store = export_odbc_instance I "Driver=..." "CQL_"
+
+### Comparison
+
+| Feature | DuckDB (programmatic) | JDBC (native) | ODBC (native) |
+|----|----|----|----|
+| **Syntax** | Julia functions | CQL DSL | CQL DSL |
+| **Driver** | DuckDB.jl | Java JDBC driver | OS ODBC driver |
+| **Databases** | DuckDB only | H2, Derby, PostgreSQL, … | MariaDB, PostgreSQL, SQL Server, … |
+| **Schema discovery** | Manual | `import_jdbc_all` | `import_odbc_all` |
+| **Auto import** | Manual | `import_jdbc_direct` | `import_odbc_direct` |
+| **Dependencies** | DuckDB.jl | JavaCall.jl, JDBC.jl, JVM | ODBC.jl, ODBC driver |
+| **Use case** | Embedded analytics | Cross-platform compatibility | Production databases |
+
+The DuckDB/programmatic approach shown in this vignette is best for
+embedded analytics and testing. The native JDBC/ODBC syntax is better
+for production data integration where you want the CQL program to be
+self-contained.
+
+``` julia
+DuckDB.disconnect(con)
+DuckDB.close(db)
+```
+
+## Summary
+
+| Concept | Description |
+|----|----|
+| **Per-element queries** | Each entity, FK, and attribute maps to a SQL query |
+| **`Presentation`** | Generators + equations represent the imported data |
+| **`saturated_instance`** | Creates a CQL instance from a flat presentation |
+| **Algebra API** | `carrier`, `eval_fk`, `eval_att` extract data for export |
+| **Round-trip** | SQL → CQL → transform → SQL preserves all structure |
+
+CQL.jl’s approach to database connectivity is library-based rather than
+built-in: you write small import/export functions using the
+`Presentation` and algebra APIs, and the same pattern works for any data
+source. The per-element query pattern from the Java CQL IDE translates
+directly, giving you the same flexibility with the full power of Julia’s
+database ecosystem.

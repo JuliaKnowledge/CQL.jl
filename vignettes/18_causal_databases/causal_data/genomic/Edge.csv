@@ -1,0 +1,8 @@
+id,src,dst,rel_type,polarity,support_lcms,score_sum
+ge01,g05,g01,INCREASES,inc,7,0.89
+ge02,g01,g02,INCREASES,inc,9,1.05
+ge03,g02,g04,REDUCES,dec,8,0.97
+ge04,g02,g03,INCREASES,inc,6,0.78
+ge05,g05,g04,REDUCES,dec,5,0.65
+ge06,g03,g06,INCREASES,inc,4,0.52
+ge07,g01,g03,INFLUENCES,unk,3,0.41

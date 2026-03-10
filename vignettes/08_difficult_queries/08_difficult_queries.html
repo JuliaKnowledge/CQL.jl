@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="CQL.jl">
+
+<title>CQL vs SQL: Difficult Queries</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="difficult_queries_files/libs/clipboard/clipboard.min.js"></script>
+<script src="difficult_queries_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="difficult_queries_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="difficult_queries_files/libs/quarto-html/popper.min.js"></script>
+<script src="difficult_queries_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="difficult_queries_files/libs/quarto-html/anchor.min.js"></script>
+<link href="difficult_queries_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="difficult_queries_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="difficult_queries_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="difficult_queries_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="difficult_queries_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#the-problem" id="toc-the-problem" class="nav-link" data-scroll-target="#the-problem">The Problem</a></li>
+  </ul></li>
+  <li><a href="#schema-definitions" id="toc-schema-definitions" class="nav-link" data-scroll-target="#schema-definitions">Schema Definitions</a>
+  <ul class="collapse">
+  <li><a href="#the-source-schema-s" id="toc-the-source-schema-s" class="nav-link" data-scroll-target="#the-source-schema-s">The Source Schema (S)</a></li>
+  <li><a href="#the-target-schema-t" id="toc-the-target-schema-t" class="nav-link" data-scroll-target="#the-target-schema-t">The Target Schema (T)</a></li>
+  </ul></li>
+  <li><a href="#sample-data" id="toc-sample-data" class="nav-link" data-scroll-target="#sample-data">Sample Data</a></li>
+  <li><a href="#why-this-is-hard" id="toc-why-this-is-hard" class="nav-link" data-scroll-target="#why-this-is-hard">Why This Is Hard</a></li>
+  <li><a href="#the-cql-solution" id="toc-the-cql-solution" class="nav-link" data-scroll-target="#the-cql-solution">The CQL Solution</a>
+  <ul class="collapse">
+  <li><a href="#understanding-the-where-clauses" id="toc-understanding-the-where-clauses" class="nav-link" data-scroll-target="#understanding-the-where-clauses">Understanding the Where-Clauses</a></li>
+  </ul></li>
+  <li><a href="#evaluating-the-query" id="toc-evaluating-the-query" class="nav-link" data-scroll-target="#evaluating-the-query">Evaluating the Query</a></li>
+  <li><a href="#verifying-the-result" id="toc-verifying-the-result" class="nav-link" data-scroll-target="#verifying-the-result">Verifying the Result</a></li>
+  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion">Discussion</a>
+  <ul class="collapse">
+  <li><a href="#why-cql-makes-this-easy" id="toc-why-cql-makes-this-easy" class="nav-link" data-scroll-target="#why-cql-makes-this-easy">Why CQL Makes This Easy</a></li>
+  <li><a href="#why-sql-struggles" id="toc-why-sql-struggles" class="nav-link" data-scroll-target="#why-sql-struggles">Why SQL Struggles</a></li>
+  <li><a href="#the-interactive-development-process" id="toc-the-interactive-development-process" class="nav-link" data-scroll-target="#the-interactive-development-process">The Interactive Development Process</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">CQL vs SQL: Difficult Queries</h1>
+<p class="subtitle lead">When SQL Struggles and CQL Shines</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>CQL.jl </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>This vignette demonstrates a class of query that is notoriously difficult to write in SQL but natural in CQL. The example is drawn from the <a href="https://categoricaldata.net/help/vsSQL1.html">CQL IDE</a> (built-in example <code>vsSQL1</code>).</p>
+<section id="the-problem" class="level3">
+<h3 class="anchored" data-anchor-id="the-problem">The Problem</h3>
+<p>Consider a database of employees and departments with these foreign keys:</p>
+<ul>
+<li>Each <strong>employee</strong> has a <strong>manager</strong> (another employee)</li>
+<li>Each employee <strong>works in</strong> a department</li>
+<li>Each <strong>department</strong> has a <strong>secretary</strong> (an employee)</li>
+</ul>
+<p>We want to extract a <strong>sub-database</strong> (including all foreign keys) where:</p>
+<ol type="1">
+<li>Every employee works in the <strong>same department as their manager</strong></li>
+<li>Every department’s <strong>secretary works in that department</strong></li>
+</ol>
+<p>The challenge: we need a <em>closed</em> sub-database. If we include an employee, we must also include their manager, the department they work in, and that department’s secretary — and all of <em>those</em> must also satisfy the constraints, recursively. The programmer must invent what is essentially an <strong>inductive hypothesis</strong> sufficient to guarantee closure under the business rules.</p>
+<p>In SQL, this is extremely difficult. A SQL programmer would need to construct a fixpoint computation that simultaneously maintains all closure properties. In practice on this problem, a novice CQL user can try one different query per minute and arrive at a solution in an hour with 100% confidence — a development process similar to interactive theorem proving in Coq.</p>
+<div id="2" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="schema-definitions" class="level2">
+<h2 class="anchored" data-anchor-id="schema-definitions">Schema Definitions</h2>
+<section id="the-source-schema-s" class="level3">
+<h3 class="anchored" data-anchor-id="the-source-schema-s">The Source Schema (S)</h3>
+<p>The source schema <code>S</code> captures the structure of the employee-department database without any constraints. This is the schema of the “raw” data.</p>
+<div id="4" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="st">        Alan Camille Audrey "Applied Math" "Pure Math" : String</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="st">schema S = literal : Ty {</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="st">        Employee</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="st">        Department</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="st">        manager   : Employee -&gt; Employee</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="st">        worksIn   : Employee -&gt; Department</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="st">        secretary : Department -&gt; Employee</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="st">        first : Employee -&gt; String</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="st">        name  : Department -&gt; String</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>sch_S <span class="op">=</span> env.S</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, sch_S.ens)</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(sch_S.fks)))</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Path equations: "</span>, <span class="fu">length</span>(sch_S.path_eqs))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Entities: Set([:Department, :Employee])
+Foreign keys: [:worksIn, :manager, :secretary]
+Path equations: 0</code></pre>
+</div>
+</div>
+<p>Schema <code>S</code> has no path equations — it imposes no business rules. Any combination of employees and departments is a valid instance.</p>
+</section>
+<section id="the-target-schema-t" class="level3">
+<h3 class="anchored" data-anchor-id="the-target-schema-t">The Target Schema (T)</h3>
+<p>The target schema <code>T</code> extends <code>S</code> with two <strong>path equations</strong> that encode the business rules we want to enforce:</p>
+<div id="6" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="st">        Alan Camille Audrey "Applied Math" "Pure Math" : String</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="st">schema S = literal : Ty {</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="st">        Employee</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="st">        Department</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="st">        manager   : Employee -&gt; Employee</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="st">        worksIn   : Employee -&gt; Department</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="st">        secretary : Department -&gt; Employee</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="st">        first : Employee -&gt; String</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="st">        name  : Department -&gt; String</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="st">schema T = literal : Ty {</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="st">    imports</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="st">        S</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="st">    path_equations</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="st">        Employee.manager.worksIn = Employee.worksIn</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="st">        Department.secretary.worksIn = Department</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>sch_T <span class="op">=</span> env.T</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, sch_T.ens)</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Path equations: "</span>, <span class="fu">length</span>(sch_T.path_eqs))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Entities: Set([:Department, :Employee])
+Path equations: 2</code></pre>
+</div>
+</div>
+<p>The path equations state:</p>
+<ul>
+<li><strong><code>Employee.manager.worksIn = Employee.worksIn</code></strong>: For every employee, following <code>manager</code> then <code>worksIn</code> gives the same department as just <code>worksIn</code>. In other words, every employee’s manager works in the same department.</li>
+<li><strong><code>Department.secretary.worksIn = Department</code></strong>: For every department, following <code>secretary</code> then <code>worksIn</code> returns to the same department. In other words, every department’s secretary works in that department.</li>
+</ul>
+<p>Any instance on <code>T</code> <em>automatically</em> satisfies both business rules.</p>
+</section>
+</section>
+<section id="sample-data" class="level2">
+<h2 class="anchored" data-anchor-id="sample-data">Sample Data</h2>
+<p>We populate the source schema with a small employee-department database:</p>
+<div id="8" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="st">        Alan Camille Audrey "Applied Math" "Pure Math" : String</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="st">schema S = literal : Ty {</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="st">        Employee</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="st">        Department</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="st">        manager   : Employee -&gt; Employee</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="st">        worksIn   : Employee -&gt; Department</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="st">        secretary : Department -&gt; Employee</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="st">        first : Employee -&gt; String</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="st">        name  : Department -&gt; String</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="st">schema T = literal : Ty {</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="st">    imports</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="st">        S</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="st">    path_equations</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="st">        Employee.manager.worksIn = Employee.worksIn</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="st">        Department.secretary.worksIn = Department</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="st">instance I = literal : S {</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="st">    generators</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a><span class="st">        e101 e102 e103 : Employee</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a><span class="st">        d2 d10 : Department</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="st">    multi_equations</span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a><span class="st">        manager   -&gt; {e101 e103, e102 e102, e103 e103}</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a><span class="st">        worksIn   -&gt; {e101 d10, e102 d2, e103 d10}</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a><span class="st">        secretary -&gt; {d10 e101, d2 e102}</span></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a><span class="st">        first     -&gt; {e101 Alan, e102 Camille, e103 Audrey}</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a><span class="st">        name      -&gt; {d10 "Applied Math", d2 "Pure Math"}</span></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>inst_I <span class="op">=</span> env.I</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>alg_I <span class="op">=</span> inst_I.algebra</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>Algebra{CQLTerm, CQL.TalgGen}(schema {
+  entities
+    Department
+    Employee
+  foreign_keys
+    worksIn : Employee -&gt; Department
+    manager : Employee -&gt; Employee
+    secretary : Department -&gt; Employee
+  attributes
+    first : Employee -&gt; String
+    name : Department -&gt; String
+  path_equations
+  observation_equations
+}
+, Dict{Symbol, Set{CQLTerm}}(:Department =&gt; Set([e102.worksIn, e103.worksIn]), :Employee =&gt; Set([e102, e103, e103.worksIn.secretary])), Dict{Symbol, CQLTerm}(:e103 =&gt; e103, :e101 =&gt; e103.worksIn.secretary, :e102 =&gt; e102, :d2 =&gt; e102.worksIn, :d10 =&gt; e103.worksIn), Dict{Symbol, Dict{CQLTerm, CQLTerm}}(:worksIn =&gt; Dict(e102 =&gt; e102.worksIn, e103 =&gt; e103.worksIn, e103.worksIn.secretary =&gt; e103.worksIn), :manager =&gt; Dict(e102 =&gt; e102, e103 =&gt; e103, e103.worksIn.secretary =&gt; e103), :secretary =&gt; Dict(e102.worksIn =&gt; e102, e103.worksIn =&gt; e103.worksIn.secretary)), Dict{CQLTerm, CQLTerm}(e102.worksIn =&gt; e102.worksIn, e102 =&gt; e102, e103 =&gt; e103, e103.worksIn.secretary =&gt; e103.worksIn.secretary, e103.worksIn =&gt; e103.worksIn), Dict{Symbol, Set{CQL.TalgGen}}(:String =&gt; Set([e103.worksIn.secretary.first, e103.first, e102.worksIn.name, e102.first, e103.worksIn.name])), CQL.var"#simplify_algebra##4#simplify_algebra##5"{Algebra{CQLTerm, CQL.TalgGen}, Vector{Tuple{CQL.Head, CQLTerm}}}(Algebra{CQLTerm, CQL.TalgGen}(schema {
+  entities
+    Department
+    Employee
+  foreign_keys
+    worksIn : Employee -&gt; Department
+    manager : Employee -&gt; Employee
+    secretary : Department -&gt; Employee
+  attributes
+    first : Employee -&gt; String
+    name : Department -&gt; String
+  path_equations
+  observation_equations
+}
+, Dict{Symbol, Set{CQLTerm}}(:Department =&gt; Set([e102.worksIn, e103.worksIn]), :Employee =&gt; Set([e102, e103, e103.worksIn.secretary])), Dict{Symbol, CQLTerm}(:e103 =&gt; e103, :e101 =&gt; e103.worksIn.secretary, :e102 =&gt; e102, :d2 =&gt; e102.worksIn, :d10 =&gt; e103.worksIn), Dict{Symbol, Dict{CQLTerm, CQLTerm}}(:worksIn =&gt; Dict(e102 =&gt; e102.worksIn, e103 =&gt; e103.worksIn, e103.worksIn.secretary =&gt; e103.worksIn), :manager =&gt; Dict(e102 =&gt; e102, e103 =&gt; e103, e103.worksIn.secretary =&gt; e103), :secretary =&gt; Dict(e102.worksIn =&gt; e102, e103.worksIn =&gt; e103.worksIn.secretary)), Dict{CQLTerm, CQLTerm}(e102.worksIn =&gt; e102.worksIn, e102 =&gt; e102, e103 =&gt; e103, e103.worksIn.secretary =&gt; e103.worksIn.secretary, e103.worksIn =&gt; e103.worksIn), Dict{Symbol, Set{CQL.TalgGen}}(:String =&gt; Set([e103.worksIn.secretary.first, e103.first, e102.worksIn.name, e102.first, e103.worksIn.name])), CQL.var"#initial_instance##0#initial_instance##1"(), Dict{CQL.TalgGen, CQLTerm}(e103.worksIn.secretary.first =&gt; e103.worksIn.secretary.first, e103.first =&gt; e103.first, e102.worksIn.name =&gt; e102.worksIn.name, e102.first =&gt; e102.first, e103.worksIn.name =&gt; e103.worksIn.name), Set(Equation[e103.worksIn.secretary.first = Alan, e102.worksIn.name = Pure Math, e103.worksIn.name = Applied Math, e103.first = Audrey, e102.first = Camille])), Tuple{CQL.Head, CQLTerm}[(CQL.Head(CQL.H_SK, Symbol("e103.worksIn.name")), Applied Math), (CQL.Head(CQL.H_SK, Symbol("e102.worksIn.name")), Pure Math), (CQL.Head(CQL.H_SK, Symbol("e103.first")), Audrey), (CQL.Head(CQL.H_SK, Symbol("e103.worksIn.secretary.first")), Alan), (CQL.Head(CQL.H_SK, Symbol("e102.first")), Camille)]), Dict{CQL.TalgGen, CQLTerm}(e103.worksIn.secretary.first =&gt; e103.worksIn.secretary.first, e103.first =&gt; e103.first, e102.worksIn.name =&gt; e102.worksIn.name, e102.first =&gt; e102.first, e103.worksIn.name =&gt; e103.worksIn.name), Set{Equation}())</code></pre>
+</div>
+</div>
+<p>Let’s examine this data:</p>
+<div id="10" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Employee Table ==="</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Name       | Manager  | Works In"</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"-----------+----------+-------------"</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg_I, <span class="op">:</span>Employee)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_I, <span class="op">:</span>first, x)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    mgr <span class="op">=</span> <span class="fu">eval_fk</span>(alg_I, <span class="op">:</span>manager, x)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    mgr_nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_I, <span class="op">:</span>first, mgr)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    dept <span class="op">=</span> <span class="fu">eval_fk</span>(alg_I, <span class="op">:</span>worksIn, x)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    dept_nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_I, <span class="op">:</span>name, dept)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="fu">rpad</span>(<span class="fu">string</span>(nm), <span class="fl">11</span>), <span class="st">"| "</span>, <span class="fu">rpad</span>(<span class="fu">string</span>(mgr_nm), <span class="fl">9</span>), <span class="st">"| "</span>, dept_nm)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== Department Table ==="</span>)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Name         | Secretary"</span>)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"-------------+----------"</span>)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg_I, <span class="op">:</span>Department)</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_I, <span class="op">:</span>name, x)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    sec <span class="op">=</span> <span class="fu">eval_fk</span>(alg_I, <span class="op">:</span>secretary, x)</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    sec_nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_I, <span class="op">:</span>first, sec)</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="fu">rpad</span>(<span class="fu">string</span>(nm), <span class="fl">14</span>), <span class="st">"| "</span>, sec_nm)</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Employee Table ===
+Name       | Manager  | Works In
+-----------+----------+-------------
+Camille    | Camille  | Pure Math
+Audrey     | Audrey   | Applied Math
+Alan       | Audrey   | Applied Math
+
+=== Department Table ===
+Name         | Secretary
+-------------+----------
+Pure Math     | Camille
+Applied Math  | Alan</code></pre>
+</div>
+</div>
+<p>Let’s check which business rules are already satisfied:</p>
+<div id="12" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Checking Business Rules ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Rule 1: manager.worksIn = worksIn (manager works in same dept)"</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg_I, <span class="op">:</span>Employee)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_I, <span class="op">:</span>first, x)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    own_dept <span class="op">=</span> <span class="fu">eval_fk</span>(alg_I, <span class="op">:</span>worksIn, x)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    mgr <span class="op">=</span> <span class="fu">eval_fk</span>(alg_I, <span class="op">:</span>manager, x)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    mgr_dept <span class="op">=</span> <span class="fu">eval_fk</span>(alg_I, <span class="op">:</span>worksIn, mgr)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    ok <span class="op">=</span> own_dept <span class="op">==</span> mgr_dept</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, nm, <span class="st">": "</span>, ok ? <span class="st">"OK"</span> <span class="op">:</span> <span class="st">"VIOLATED"</span>,</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>            ok ? <span class="st">""</span> <span class="op">:</span> <span class="st">" (works in </span><span class="sc">$</span>(<span class="fu">eval_att</span>(alg_I, <span class="op">:</span>name, own_dept))<span class="st">, manager works in </span><span class="sc">$</span>(<span class="fu">eval_att</span>(alg_I, <span class="op">:</span>name, mgr_dept))<span class="st">)"</span>)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Rule 2: secretary.worksIn = department (secretary works in their dept)"</span>)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg_I, <span class="op">:</span>Department)</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_I, <span class="op">:</span>name, x)</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    sec <span class="op">=</span> <span class="fu">eval_fk</span>(alg_I, <span class="op">:</span>secretary, x)</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    sec_dept <span class="op">=</span> <span class="fu">eval_fk</span>(alg_I, <span class="op">:</span>worksIn, sec)</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    ok <span class="op">=</span> sec_dept <span class="op">==</span> x</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, nm, <span class="st">": "</span>, ok ? <span class="st">"OK"</span> <span class="op">:</span> <span class="st">"VIOLATED"</span>,</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>            ok ? <span class="st">""</span> <span class="op">:</span> <span class="st">" (secretary works in </span><span class="sc">$</span>(<span class="fu">eval_att</span>(alg_I, <span class="op">:</span>name, sec_dept))<span class="st">)"</span>)</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Checking Business Rules ===
+
+Rule 1: manager.worksIn = worksIn (manager works in same dept)
+  Camille: OK
+  Audrey: OK
+  Alan: OK
+
+Rule 2: secretary.worksIn = department (secretary works in their dept)
+  Pure Math: OK
+  Applied Math: OK</code></pre>
+</div>
+</div>
+<p>The full database <strong>violates</strong> some rules. We need to find the largest sub-database where <em>all</em> rules hold — and where the sub-database is <strong>closed</strong> under all foreign keys.</p>
+</section>
+<section id="why-this-is-hard" class="level2">
+<h2 class="anchored" data-anchor-id="why-this-is-hard">Why This Is Hard</h2>
+<p>The difficulty is the <strong>closure requirement</strong>. A SQL programmer can easily filter employees whose managers work in the same department:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> Employee e</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> e.worksIn <span class="op">=</span> (<span class="kw">SELECT</span> worksIn <span class="kw">FROM</span> Employee <span class="kw">WHERE</span> <span class="kw">id</span> <span class="op">=</span> e.manager)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>But this is not enough! After filtering, we must check:</p>
+<ol type="1">
+<li>Is the <strong>manager</strong> of each remaining employee also in the result?</li>
+<li>Is the <strong>department</strong> each remaining employee works in still present?</li>
+<li>Does each remaining <strong>department’s secretary</strong> survive the filter?</li>
+<li>Do all of <em>those</em> satisfy the constraints too?</li>
+</ol>
+<p>This is a fixpoint problem: removing one row can invalidate others, which can invalidate still others, cascading until a stable sub-database remains. In SQL, you would need recursive CTEs or iterative stored procedures, with careful reasoning about termination and correctness.</p>
+<p>In CQL, the solution is a <strong>single query</strong> — the uber-flower pattern.</p>
+</section>
+<section id="the-cql-solution" class="level2">
+<h2 class="anchored" data-anchor-id="the-cql-solution">The CQL Solution</h2>
+<p>The query <code>good1</code> selects the sub-database satisfying both business rules. It is a single CQL query from schema <code>S</code> to schema <code>T</code>:</p>
+<div id="14" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="st">        Alan Camille Audrey "Applied Math" "Pure Math" : String</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="st">schema S = literal : Ty {</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="st">        Employee</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="st">        Department</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="st">        manager   : Employee -&gt; Employee</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="st">        worksIn   : Employee -&gt; Department</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="st">        secretary : Department -&gt; Employee</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="st">        first : Employee -&gt; String</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="st">        name  : Department -&gt; String</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="st">schema T = literal : Ty {</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="st">    imports</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="st">        S</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="st">    path_equations</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="st">        Employee.manager.worksIn = Employee.worksIn</span></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="st">        Department.secretary.worksIn = Department</span></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a><span class="st">query good1 = literal : S -&gt; T {</span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a><span class="st">    entity Employee -&gt; {</span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a><span class="st">        from</span></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a><span class="st">            e : Employee</span></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a><span class="st">        where</span></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a><span class="st">            e.manager = e</span></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a><span class="st">            e.worksIn.secretary = e</span></span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a><span class="st">        attributes</span></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a><span class="st">            first -&gt; e.first</span></span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a><span class="st">        foreign_keys</span></span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a><span class="st">            manager -&gt; {e -&gt; e.manager}</span></span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a><span class="st">            worksIn -&gt; {d -&gt; e.worksIn}</span></span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a><span class="st">    entity Department -&gt; {</span></span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a><span class="st">        from</span></span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a><span class="st">            d : Department</span></span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a><span class="st">        where</span></span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a><span class="st">            d.secretary.worksIn = d</span></span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a><span class="st">            d.secretary.manager = d.secretary</span></span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a><span class="st">        attributes</span></span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a><span class="st">            name -&gt; d.name</span></span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a><span class="st">        foreign_keys</span></span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a><span class="st">            secretary -&gt; {e -&gt; d.secretary}</span></span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a><span class="st">instance I = literal : S {</span></span>
+<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a><span class="st">    generators</span></span>
+<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a><span class="st">        e101 e102 e103 : Employee</span></span>
+<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a><span class="st">        d2 d10 : Department</span></span>
+<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a><span class="st">    multi_equations</span></span>
+<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a><span class="st">        manager   -&gt; {e101 e103, e102 e102, e103 e103}</span></span>
+<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a><span class="st">        worksIn   -&gt; {e101 d10, e102 d2, e103 d10}</span></span>
+<span id="cb13-64"><a href="#cb13-64" aria-hidden="true" tabindex="-1"></a><span class="st">        secretary -&gt; {d10 e101, d2 e102}</span></span>
+<span id="cb13-65"><a href="#cb13-65" aria-hidden="true" tabindex="-1"></a><span class="st">        first     -&gt; {e101 Alan, e102 Camille, e103 Audrey}</span></span>
+<span id="cb13-66"><a href="#cb13-66" aria-hidden="true" tabindex="-1"></a><span class="st">        name      -&gt; {d10 "Applied Math", d2 "Pure Math"}</span></span>
+<span id="cb13-67"><a href="#cb13-67" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb13-68"><a href="#cb13-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-69"><a href="#cb13-69" aria-hidden="true" tabindex="-1"></a><span class="st">instance J = eval good1 I</span></span>
+<span id="cb13-70"><a href="#cb13-70" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb13-71"><a href="#cb13-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-72"><a href="#cb13-72" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(env.good1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>query {
+  entity Department -&gt; {
+    from
+      d : Department
+    where
+      d.secretary.manager = d.secretary
+      d.secretary.worksIn = d
+  }
+  entity Employee -&gt; {
+    from
+      e : Employee
+    where
+      e.manager = e
+      e.worksIn.secretary = e
+  }
+  foreign_key worksIn -&gt; {
+    d -&gt; e.worksIn
+  }
+  foreign_key manager -&gt; {
+    e -&gt; e.manager
+  }
+  foreign_key secretary -&gt; {
+    e -&gt; d.secretary
+  }
+  attributes
+    first -&gt; e.first
+    name -&gt; d.name
+}
+</code></pre>
+</div>
+</div>
+<section id="understanding-the-where-clauses" class="level3">
+<h3 class="anchored" data-anchor-id="understanding-the-where-clauses">Understanding the Where-Clauses</h3>
+<p>The query’s where-clauses are the key. They form the “inductive hypothesis” that guarantees closure:</p>
+<p><strong>For employees:</strong></p>
+<ul>
+<li><code>e.manager = e</code> — the employee is their own manager (a fixed point). This guarantees that the manager FK stays within the selected employees.</li>
+<li><code>e.worksIn.secretary = e</code> — the employee is the secretary of the department they work in. Combined with the first condition, this ensures that the department’s secretary is a selected, self-managing employee.</li>
+</ul>
+<p><strong>For departments:</strong></p>
+<ul>
+<li><code>d.secretary.worksIn = d</code> — the department’s secretary works in this department. This is exactly business rule 2.</li>
+<li><code>d.secretary.manager = d.secretary</code> — the department’s secretary is self-managed. This ensures the secretary satisfies the employee conditions.</li>
+</ul>
+<p>Together, these four conditions form a <strong>mutually reinforcing</strong> set of constraints: selected employees point only to selected departments and selected employees, and vice versa.</p>
+</section>
+</section>
+<section id="evaluating-the-query" class="level2">
+<h2 class="anchored" data-anchor-id="evaluating-the-query">Evaluating the Query</h2>
+<div id="16" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>inst_J <span class="op">=</span> env.J</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>alg_J <span class="op">=</span> inst_J.algebra</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Before query (instance I):"</span>)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Employees: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg_I, <span class="op">:</span>Employee)))</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Departments: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg_I, <span class="op">:</span>Department)))</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">After query (instance J):"</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Employees: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg_J, <span class="op">:</span>Employee)))</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Departments: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg_J, <span class="op">:</span>Department)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Before query (instance I):
+  Employees: 3
+  Departments: 2
+
+After query (instance J):
+  Employees: 1
+  Departments: 1</code></pre>
+</div>
+</div>
+<p>The query reduced 3 employees to 1, and 2 departments to 1. Let’s see who survived:</p>
+<div id="18" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Surviving Employees ==="</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg_J, <span class="op">:</span>Employee)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_J, <span class="op">:</span>first, x)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    mgr <span class="op">=</span> <span class="fu">eval_fk</span>(alg_J, <span class="op">:</span>manager, x)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    mgr_nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_J, <span class="op">:</span>first, mgr)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    dept <span class="op">=</span> <span class="fu">eval_fk</span>(alg_J, <span class="op">:</span>worksIn, x)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    dept_nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_J, <span class="op">:</span>name, dept)</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, nm, <span class="st">": manager="</span>, mgr_nm, <span class="st">", worksIn="</span>, dept_nm)</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== Surviving Departments ==="</span>)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg_J, <span class="op">:</span>Department)</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_J, <span class="op">:</span>name, x)</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    sec <span class="op">=</span> <span class="fu">eval_fk</span>(alg_J, <span class="op">:</span>secretary, x)</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    sec_nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_J, <span class="op">:</span>first, sec)</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, nm, <span class="st">": secretary="</span>, sec_nm)</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Surviving Employees ===
+  Camille: manager=Camille, worksIn=Pure Math
+
+=== Surviving Departments ===
+  Pure Math: secretary=Camille</code></pre>
+</div>
+</div>
+<p>Only <strong>Camille</strong> and <strong>Pure Math</strong> survive. Let’s verify why, by tracing through each person in the original data:</p>
+<div id="20" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Why Each Person Was Included or Excluded ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg_I, <span class="op">:</span>Employee)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_I, <span class="op">:</span>first, x)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    mgr <span class="op">=</span> <span class="fu">eval_fk</span>(alg_I, <span class="op">:</span>manager, x)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    is_self_managed <span class="op">=</span> (mgr <span class="op">==</span> x)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    dept <span class="op">=</span> <span class="fu">eval_fk</span>(alg_I, <span class="op">:</span>worksIn, x)</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    sec <span class="op">=</span> <span class="fu">eval_fk</span>(alg_I, <span class="op">:</span>secretary, dept)</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    is_own_secretary <span class="op">=</span> (sec <span class="op">==</span> x)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(nm, <span class="st">":"</span>)</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  Self-managed (e.manager = e)? "</span>, is_self_managed)</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  Secretary of own dept (e.worksIn.secretary = e)? "</span>, is_own_secretary)</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> is_self_managed <span class="op">&amp;&amp;</span> is_own_secretary</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>        <span class="fu">println</span>(<span class="st">"  =&gt; INCLUDED in result"</span>)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>        reasons <span class="op">=</span> <span class="dt">String</span>[]</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>        !is_self_managed <span class="op">&amp;&amp;</span> <span class="fu">push!</span>(reasons, <span class="st">"not self-managed"</span>)</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>        !is_own_secretary <span class="op">&amp;&amp;</span> <span class="fu">push!</span>(reasons, <span class="st">"not secretary of own department"</span>)</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>        <span class="fu">println</span>(<span class="st">"  =&gt; EXCLUDED ("</span>, <span class="fu">join</span>(reasons, <span class="st">", "</span>), <span class="st">")"</span>)</span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>()</span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Why Each Person Was Included or Excluded ===
+
+Camille:
+  Self-managed (e.manager = e)? true
+  Secretary of own dept (e.worksIn.secretary = e)? true
+  =&gt; INCLUDED in result
+
+Audrey:
+  Self-managed (e.manager = e)? true
+  Secretary of own dept (e.worksIn.secretary = e)? false
+  =&gt; EXCLUDED (not secretary of own department)
+
+Alan:
+  Self-managed (e.manager = e)? false
+  Secretary of own dept (e.worksIn.secretary = e)? true
+  =&gt; EXCLUDED (not self-managed)
+</code></pre>
+</div>
+</div>
+</section>
+<section id="verifying-the-result" class="level2">
+<h2 class="anchored" data-anchor-id="verifying-the-result">Verifying the Result</h2>
+<p>Let’s confirm that instance <code>J</code> satisfies both path equations of schema <code>T</code>:</p>
+<div id="22" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Verifying Path Equations in J ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Rule 1: manager.worksIn = worksIn"</span>)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>all_ok <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg_J, <span class="op">:</span>Employee)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_J, <span class="op">:</span>first, x)</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    own_dept <span class="op">=</span> <span class="fu">eval_fk</span>(alg_J, <span class="op">:</span>worksIn, x)</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    mgr <span class="op">=</span> <span class="fu">eval_fk</span>(alg_J, <span class="op">:</span>manager, x)</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    mgr_dept <span class="op">=</span> <span class="fu">eval_fk</span>(alg_J, <span class="op">:</span>worksIn, mgr)</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    ok <span class="op">=</span> own_dept <span class="op">==</span> mgr_dept</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">global</span> all_ok <span class="op">=</span> all_ok <span class="op">&amp;&amp;</span> ok</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, nm, <span class="st">": "</span>, ok ? <span class="st">"OK"</span> <span class="op">:</span> <span class="st">"FAILED"</span>)</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Rule 2: secretary.worksIn = department"</span>)</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg_J, <span class="op">:</span>Department)</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>    nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_J, <span class="op">:</span>name, x)</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>    sec <span class="op">=</span> <span class="fu">eval_fk</span>(alg_J, <span class="op">:</span>secretary, x)</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>    sec_dept <span class="op">=</span> <span class="fu">eval_fk</span>(alg_J, <span class="op">:</span>worksIn, sec)</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>    ok <span class="op">=</span> sec_dept <span class="op">==</span> x</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>    all_ok <span class="op">=</span> all_ok <span class="op">&amp;&amp;</span> ok</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, nm, <span class="st">": "</span>, ok ? <span class="st">"OK"</span> <span class="op">:</span> <span class="st">"FAILED"</span>)</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">All path equations satisfied: "</span>, all_ok)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Verifying Path Equations in J ===
+
+Rule 1: manager.worksIn = worksIn
+  Camille: OK
+
+Rule 2: secretary.worksIn = department
+  Pure Math: OK
+
+All path equations satisfied: true</code></pre>
+</div>
+</div>
+</section>
+<section id="discussion" class="level2">
+<h2 class="anchored" data-anchor-id="discussion">Discussion</h2>
+<section id="why-cql-makes-this-easy" class="level3">
+<h3 class="anchored" data-anchor-id="why-cql-makes-this-easy">Why CQL Makes This Easy</h3>
+<p>In CQL, the programmer specifies:</p>
+<ol type="1">
+<li><strong>What to select</strong> (the <code>from</code> clause): iterate over source entities</li>
+<li><strong>What constraints to impose</strong> (the <code>where</code> clause): equations between paths</li>
+<li><strong>How to map the result</strong> (the <code>attributes</code> and <code>foreign_keys</code> clauses): term-level mappings</li>
+</ol>
+<p>The CQL system then:</p>
+<ul>
+<li>Enumerates all satisfying tuples (like a database join)</li>
+<li>Builds the result instance with proper FK structure</li>
+<li>Invokes an <strong>automated theorem prover</strong> to verify the result satisfies the target schema’s path equations</li>
+<li>Guarantees that the result is a valid instance of the constrained schema <code>T</code></li>
+</ul>
+<p>The theorem prover handles all the inductive reasoning about closure automatically. The user only needs to find the right where-clauses — and can iterate quickly, trying different queries until the prover confirms correctness.</p>
+</section>
+<section id="why-sql-struggles" class="level3">
+<h3 class="anchored" data-anchor-id="why-sql-struggles">Why SQL Struggles</h3>
+<p>In SQL, the equivalent operation requires:</p>
+<ol type="1">
+<li>A <strong>recursive CTE</strong> or iterative procedure to compute the fixpoint</li>
+<li>Careful reasoning about <strong>termination</strong> (will the recursion stop?)</li>
+<li>Manual verification that the result is <strong>closed</strong> under all foreign keys</li>
+<li>No automated proof that business rules hold in the result</li>
+</ol>
+<p>The fundamental issue is that SQL operates on individual tables, while the CQL query operates on the entire <strong>schema</strong> simultaneously, with the theorem prover ensuring global consistency.</p>
+</section>
+<section id="the-interactive-development-process" class="level3">
+<h3 class="anchored" data-anchor-id="the-interactive-development-process">The Interactive Development Process</h3>
+<p>A CQL user arrives at <code>good1</code> through an interactive process:</p>
+<ol type="1">
+<li>Start with a simple query (e.g., just filter <code>e.manager.worksIn = e.worksIn</code>)</li>
+<li>Run it — the theorem prover rejects it (the result doesn’t satisfy <code>T</code>’s equations)</li>
+<li>Add more where-clauses to strengthen the inductive hypothesis</li>
+<li>Repeat until the prover accepts</li>
+</ol>
+<p>This is analogous to interactive theorem proving: the user proposes lemmas (where-clauses), and the system checks whether they are strong enough to prove the theorem (that the output satisfies <code>T</code>).</p>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 44%">
+<col style="width: 27%">
+<col style="width: 27%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Aspect</th>
+<th>SQL</th>
+<th>CQL</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Query type</strong></td>
+<td>Recursive CTE / fixpoint</td>
+<td>Single uber-flower query</td>
+</tr>
+<tr class="even">
+<td><strong>Closure guarantee</strong></td>
+<td>Manual reasoning</td>
+<td>Automated theorem prover</td>
+</tr>
+<tr class="odd">
+<td><strong>Correctness</strong></td>
+<td>Programmer must verify</td>
+<td>System guarantees</td>
+</tr>
+<tr class="even">
+<td><strong>Development</strong></td>
+<td>Trial and error without feedback</td>
+<td>Interactive: prover gives yes/no</td>
+</tr>
+<tr class="odd">
+<td><strong>Schema constraints</strong></td>
+<td>Triggers / application logic</td>
+<td>Path equations (mathematical)</td>
+</tr>
+</tbody>
+</table>
+<p>The CQL approach transforms a difficult programming problem into an interactive search for the right where-clauses, with the theorem prover providing immediate feedback on correctness.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

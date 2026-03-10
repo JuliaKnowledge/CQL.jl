@@ -1,0 +1,13 @@
+id,patient,location,pathogen,severity,onset,symptoms
+c01,p01,care1,flu,severe,2024-01-10,"fever,cough,dyspnea"
+c02,p02,care1,flu,severe,2024-01-12,"fever,myalgia"
+c03,p03,care2,flu,moderate,2024-01-14,"fever,cough"
+c04,p10,care2,flu,severe,2024-01-15,"fever,cough,dyspnea"
+c05,p04,hosp1,covid,mild,2024-01-11,"cough,sore throat"
+c06,p05,hosp1,covid,severe,2024-01-13,"fever,cough,dyspnea"
+c07,p09,hosp1,covid,mild,2024-01-16,cough
+c08,p01,hosp2,covid,moderate,2024-01-18,"fever,fatigue"
+c09,p06,sch1,rsv,severe,2024-01-09,"wheeze,dyspnea,fever"
+c10,p07,sch1,rsv,moderate,2024-01-11,"cough,wheeze"
+c11,p08,sch2,rsv,mild,2024-01-13,"cough,runny nose"
+c12,p06,hosp2,rsv,severe,2024-01-14,"wheeze,dyspnea,cyanosis"

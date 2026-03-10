@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="CQL.jl">
+
+<title>Database Connectivity with DuckDB</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="dbc_files/libs/clipboard/clipboard.min.js"></script>
+<script src="dbc_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="dbc_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="dbc_files/libs/quarto-html/popper.min.js"></script>
+<script src="dbc_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="dbc_files/libs/quarto-html/anchor.min.js"></script>
+<link href="dbc_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="dbc_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="dbc_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="dbc_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="dbc_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#setting-up-the-sql-database" id="toc-setting-up-the-sql-database" class="nav-link" data-scroll-target="#setting-up-the-sql-database">Setting Up the SQL Database</a></li>
+  <li><a href="#the-cql-schema" id="toc-the-cql-schema" class="nav-link" data-scroll-target="#the-cql-schema">The CQL Schema</a></li>
+  <li><a href="#importing-sql-to-cql" id="toc-importing-sql-to-cql" class="nav-link" data-scroll-target="#importing-sql-to-cql">Importing: SQL to CQL</a>
+  <ul class="collapse">
+  <li><a href="#the-import-strategy" id="toc-the-import-strategy" class="nav-link" data-scroll-target="#the-import-strategy">The Import Strategy</a></li>
+  <li><a href="#running-the-import" id="toc-running-the-import" class="nav-link" data-scroll-target="#running-the-import">Running the Import</a></li>
+  <li><a href="#flexible-query-mapping" id="toc-flexible-query-mapping" class="nav-link" data-scroll-target="#flexible-query-mapping">Flexible Query Mapping</a></li>
+  </ul></li>
+  <li><a href="#cql-transformation-flattening" id="toc-cql-transformation-flattening" class="nav-link" data-scroll-target="#cql-transformation-flattening">CQL Transformation: Flattening</a>
+  <ul class="collapse">
+  <li><a href="#evaluating-the-query" id="toc-evaluating-the-query" class="nav-link" data-scroll-target="#evaluating-the-query">Evaluating the Query</a></li>
+  </ul></li>
+  <li><a href="#exporting-cql-to-sql" id="toc-exporting-cql-to-sql" class="nav-link" data-scroll-target="#exporting-cql-to-sql">Exporting: CQL to SQL</a>
+  <ul class="collapse">
+  <li><a href="#exporting-the-original-instance" id="toc-exporting-the-original-instance" class="nav-link" data-scroll-target="#exporting-the-original-instance">Exporting the Original Instance</a></li>
+  <li><a href="#exporting-the-flat-report" id="toc-exporting-the-flat-report" class="nav-link" data-scroll-target="#exporting-the-flat-report">Exporting the Flat Report</a></li>
+  </ul></li>
+  <li><a href="#the-full-round-trip" id="toc-the-full-round-trip" class="nav-link" data-scroll-target="#the-full-round-trip">The Full Round-Trip</a></li>
+  <li><a href="#native-jdbc-and-odbc-support" id="toc-native-jdbc-and-odbc-support" class="nav-link" data-scroll-target="#native-jdbc-and-odbc-support">Native JDBC and ODBC Support</a>
+  <ul class="collapse">
+  <li><a href="#jdbc-via-jdbc.jl-javacall.jl" id="toc-jdbc-via-jdbc.jl-javacall.jl" class="nav-link" data-scroll-target="#jdbc-via-jdbc.jl-javacall.jl">JDBC (via JDBC.jl / JavaCall.jl)</a></li>
+  <li><a href="#odbc-via-odbc.jl" id="toc-odbc-via-odbc.jl" class="nav-link" data-scroll-target="#odbc-via-odbc.jl">ODBC (via ODBC.jl)</a></li>
+  <li><a href="#comparison" id="toc-comparison" class="nav-link" data-scroll-target="#comparison">Comparison</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Database Connectivity with DuckDB</h1>
+<p class="subtitle lead">Importing and Exporting CQL Instances via SQL</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>CQL.jl </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>The Java CQL IDE provides built-in JDBC connectivity for importing SQL data into CQL instances and exporting CQL results back to SQL databases. CQL.jl takes a different approach: instead of embedding a single database driver, it provides the building blocks — <code>Presentation</code>, <code>saturated_instance</code>, and the algebra API — that let you connect to <strong>any</strong> Julia-accessible database.</p>
+<p>This vignette demonstrates a complete round-trip with <a href="https://github.com/duckdb/duckdb-julia">DuckDB.jl</a>, a fast embedded analytical database:</p>
+<ol type="1">
+<li><strong>Create</strong> SQL tables in DuckDB with sample data</li>
+<li><strong>Import</strong> the SQL data into a CQL instance using per-element SQL queries</li>
+<li><strong>Transform</strong> the data using a CQL query (flattening a multi-table schema)</li>
+<li><strong>Export</strong> the CQL result back to DuckDB tables</li>
+<li><strong>Query</strong> the exported tables with SQL</li>
+</ol>
+<p>This example is adapted from the <a href="https://categoricaldata.net/jdbc.html">CQL JDBC tutorial</a>, which uses an H2 in-memory database. We use DuckDB instead, which is available as a pure Julia package with no external dependencies.</p>
+<div id="2" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span>, <span class="bu">DuckDB</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="setting-up-the-sql-database" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-the-sql-database">Setting Up the SQL Database</h2>
+<p>We create an in-memory DuckDB database with two tables: <code>Employee</code> and <code>Department</code>. This mirrors the H2 database setup in the Java CQL tutorial.</p>
+<div id="4" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>db <span class="op">=</span> DuckDB.<span class="fu">DB</span>()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>con <span class="op">=</span> DuckDB.<span class="fu">connect</span>(db)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>DuckDB.<span class="fu">execute</span>(con, <span class="st">"""</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="st">    CREATE TABLE Employee(</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="st">        id INT PRIMARY KEY,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="st">        name VARCHAR,</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="st">        manager INT,</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="st">        worksIn INT</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="st">    )</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span>)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>DuckDB.<span class="fu">execute</span>(con, <span class="st">"""</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="st">    CREATE TABLE Department(</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="st">        id INT PRIMARY KEY,</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="st">        name VARCHAR,</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="st">        secretary INT</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="st">    )</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span>)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>DuckDB.<span class="fu">execute</span>(con, <span class="st">"""</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="st">    INSERT INTO Employee VALUES</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="st">        (101, 'Alan',    103, 10),</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="st">        (102, 'Camille', 102, 2),</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="st">        (103, 'Andrey',  103, 10)</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span>)</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>DuckDB.<span class="fu">execute</span>(con, <span class="st">"""</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="st">    INSERT INTO Department VALUES</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="st">        (10, 'Applied Math', 101),</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="st">        (2,  'Pure Math',    102)</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span>)</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Employee ==="</span>)</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> DuckDB.<span class="fu">execute</span>(con, <span class="st">"SELECT * FROM Employee ORDER BY id"</span>)</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> result</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  id=</span><span class="sc">$</span>(row[<span class="op">:</span>id])<span class="st">  name=</span><span class="sc">$</span>(row[<span class="op">:</span>name])<span class="st">  manager=</span><span class="sc">$</span>(row[<span class="op">:</span>manager])<span class="st">  worksIn=</span><span class="sc">$</span>(row[<span class="op">:</span>worksIn])<span class="st">"</span>)</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== Department ==="</span>)</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> DuckDB.<span class="fu">execute</span>(con, <span class="st">"SELECT * FROM Department ORDER BY id"</span>)</span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> result</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  id=</span><span class="sc">$</span>(row[<span class="op">:</span>id])<span class="st">  name=</span><span class="sc">$</span>(row[<span class="op">:</span>name])<span class="st">  secretary=</span><span class="sc">$</span>(row[<span class="op">:</span>secretary])<span class="st">"</span>)</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Employee ===
+  id=101  name=Alan  manager=103  worksIn=10
+  id=102  name=Camille  manager=102  worksIn=2
+  id=103  name=Andrey  manager=103  worksIn=10
+
+=== Department ===
+  id=2  name=Pure Math  secretary=102
+  id=10  name=Applied Math  secretary=101</code></pre>
+</div>
+</div>
+<p>The data describes a small organization:</p>
+<ul>
+<li><strong>Alan</strong> (101) works in Applied Math, managed by Andrey</li>
+<li><strong>Camille</strong> (102) works in Pure Math, manages herself</li>
+<li><strong>Andrey</strong> (103) works in Applied Math, manages himself</li>
+<li><strong>Applied Math</strong> (10) has Alan as secretary</li>
+<li><strong>Pure Math</strong> (2) has Camille as secretary</li>
+</ul>
+</section>
+<section id="the-cql-schema" class="level2">
+<h2 class="anchored" data-anchor-id="the-cql-schema">The CQL Schema</h2>
+<p>We define a CQL schema that captures the relational structure — including foreign keys that SQL only enforces loosely:</p>
+<div id="6" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">        Str</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="st">schema S = literal : Ty {</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="st">        Employee</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="st">        Department</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="st">        manager   : Employee -&gt; Employee</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="st">        worksIn   : Employee -&gt; Department</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="st">        secretary : Department -&gt; Employee</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="st">        ename : Employee   -&gt; Str</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="st">        dname : Department -&gt; Str</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>sch <span class="op">=</span> env.S</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities:     "</span>, sch.ens)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(sch.fks)))</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Attributes:   "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(sch.atts)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Entities:     Set([:Department, :Employee])
+Foreign keys: [:worksIn, :manager, :secretary]
+Attributes:   [:dname, :ename]</code></pre>
+</div>
+</div>
+<p>The schema makes the relational structure explicit:</p>
+<pre><code>Employee --manager--&gt; Employee
+Employee --worksIn--&gt; Department
+Department --secretary--&gt; Employee</code></pre>
+<p>Note that <code>manager</code> is a self-referential foreign key (employees manage other employees), and <code>secretary</code> creates a bidirectional link between departments and employees.</p>
+</section>
+<section id="importing-sql-to-cql" class="level2">
+<h2 class="anchored" data-anchor-id="importing-sql-to-cql">Importing: SQL to CQL</h2>
+<section id="the-import-strategy" class="level3">
+<h3 class="anchored" data-anchor-id="the-import-strategy">The Import Strategy</h3>
+<p>The Java CQL IDE uses per-element SQL queries for maximum flexibility: each entity, foreign key, and attribute gets its own <code>SELECT</code> statement. We implement the same pattern in Julia.</p>
+<p>The import function takes a dictionary mapping CQL schema elements to SQL queries:</p>
+<ul>
+<li><strong>Entity queries</strong> return a single column of IDs (one generator per row)</li>
+<li><strong>FK queries</strong> return two columns <code>(source_id, target_id)</code></li>
+<li><strong>Attribute queries</strong> return two columns <code>(source_id, value)</code></li>
+</ul>
+<div id="8" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""Import SQL data into a CQL instance using per-element queries."""</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">import_duckdb</span>(con, schema<span class="op">::</span><span class="dt">CQLSchema</span>, queries<span class="op">::</span><span class="dt">Dict{Symbol, String}</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    gens <span class="op">=</span> <span class="fu">Dict</span><span class="dt">{Symbol, Symbol}</span>()</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    id_to_gen <span class="op">=</span> <span class="fu">Dict</span><span class="dt">{Symbol, Dict{String, Symbol}}</span>()</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    eqs <span class="op">=</span> <span class="fu">Set</span><span class="dt">{Equation}</span>()</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> en <span class="kw">in</span> schema.ens</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        id_to_gen[en] <span class="op">=</span> <span class="fu">Dict</span><span class="dt">{String, Symbol}</span>()</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Phase 1: Create generators from entity queries</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> en <span class="kw">in</span> schema.ens</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">haskey</span>(queries, en) <span class="op">||</span> <span class="fu">error</span>(<span class="st">"No query for entity </span><span class="sc">$</span>en<span class="st">"</span>)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> DuckDB.<span class="fu">execute</span>(con, queries[en])</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> row <span class="kw">in</span> result</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>            raw_id <span class="op">=</span> <span class="fu">string</span>(row[<span class="fl">1</span>])</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>            gen_sym <span class="op">=</span> <span class="fu">Symbol</span>(<span class="fu">string</span>(en, <span class="st">"_"</span>, raw_id))</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>            gens[gen_sym] <span class="op">=</span> en</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>            id_to_gen[en][raw_id] <span class="op">=</span> gen_sym</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Phase 2: Build FK equations from FK queries</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (fk, (src, tgt)) <span class="kw">in</span> schema.fks</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>        <span class="fu">haskey</span>(queries, fk) <span class="op">||</span> <span class="fu">error</span>(<span class="st">"No query for FK </span><span class="sc">$</span>fk<span class="st">"</span>)</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> DuckDB.<span class="fu">execute</span>(con, queries[fk])</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> row <span class="kw">in</span> result</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>            src_id <span class="op">=</span> <span class="fu">string</span>(row[<span class="fl">1</span>])</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>            tgt_id <span class="op">=</span> <span class="fu">string</span>(row[<span class="fl">2</span>])</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>            src_gen <span class="op">=</span> id_to_gen[src][src_id]</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>            tgt_gen <span class="op">=</span> id_to_gen[tgt][tgt_id]</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>            <span class="fu">push!</span>(eqs, <span class="fu">Equation</span>(<span class="fu">CQLFk</span>(fk, <span class="fu">CQLGen</span>(src_gen)), <span class="fu">CQLGen</span>(tgt_gen)))</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Phase 3: Build attribute equations from attribute queries</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (att, (src, ty)) <span class="kw">in</span> schema.atts</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>        <span class="fu">haskey</span>(queries, att) <span class="op">||</span> <span class="fu">error</span>(<span class="st">"No query for attribute </span><span class="sc">$</span>att<span class="st">"</span>)</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> DuckDB.<span class="fu">execute</span>(con, queries[att])</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> row <span class="kw">in</span> result</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>            src_id <span class="op">=</span> <span class="fu">string</span>(row[<span class="fl">1</span>])</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>            val <span class="op">=</span> row[<span class="fl">2</span>]</span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>            val <span class="op">===</span> <span class="cn">missing</span> <span class="op">&amp;&amp;</span> <span class="cf">continue</span></span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>            src_gen <span class="op">=</span> id_to_gen[src][src_id]</span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>            <span class="fu">push!</span>(eqs, <span class="fu">Equation</span>(</span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>                <span class="fu">CQLAtt</span>(att, <span class="fu">CQLGen</span>(src_gen)),</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>                <span class="fu">CQLSym</span>(<span class="fu">Symbol</span>(val), CQLTerm[])))</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>    pres <span class="op">=</span> <span class="fu">Presentation</span>(gens, <span class="fu">Dict</span><span class="dt">{Symbol,Symbol}</span>(), eqs)</span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">saturated_instance</span>(schema, pres)</span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"import_duckdb defined"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>import_duckdb defined</code></pre>
+</div>
+</div>
+</section>
+<section id="running-the-import" class="level3">
+<h3 class="anchored" data-anchor-id="running-the-import">Running the Import</h3>
+<p>Each query extracts one piece of the relational structure. This mirrors the JDBC import syntax from the Java CQL IDE:</p>
+<div id="10" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>inst <span class="op">=</span> <span class="fu">import_duckdb</span>(con, sch, <span class="fu">Dict</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Entity queries: one column of IDs</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span>Employee   <span class="op">=&gt;</span> <span class="st">"SELECT id FROM Employee"</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span>Department <span class="op">=&gt;</span> <span class="st">"SELECT id FROM Department"</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># FK queries: (source_id, target_id)</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span>manager    <span class="op">=&gt;</span> <span class="st">"SELECT id, manager FROM Employee"</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span>worksIn    <span class="op">=&gt;</span> <span class="st">"SELECT id, worksIn FROM Employee"</span>,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span>secretary  <span class="op">=&gt;</span> <span class="st">"SELECT id, secretary FROM Department"</span>,</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Attribute queries: (source_id, value)</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span>ename      <span class="op">=&gt;</span> <span class="st">"SELECT id, name FROM Employee"</span>,</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span>dname      <span class="op">=&gt;</span> <span class="st">"SELECT id, name FROM Department"</span>,</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>alg <span class="op">=</span> inst.algebra</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Imported CQL Instance ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Employee (</span><span class="sc">$</span>(<span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>Employee)))<span class="st"> rows):"</span>)</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>Employee)</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    nm <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>ename, x)</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    mgr <span class="op">=</span> <span class="fu">eval_fk</span>(alg, <span class="op">:</span>manager, x)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    dept <span class="op">=</span> <span class="fu">eval_fk</span>(alg, <span class="op">:</span>worksIn, x)</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    dnm <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>dname, dept)</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">repr_x</span>(alg, x), <span class="st">": ename="</span>, nm,</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>            <span class="st">"  manager="</span>, <span class="fu">repr_x</span>(alg, mgr),</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>            <span class="st">"  worksIn="</span>, dnm)</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Department (</span><span class="sc">$</span>(<span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>Department)))<span class="st"> rows):"</span>)</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>Department)</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>    nm <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>dname, x)</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>    sec <span class="op">=</span> <span class="fu">eval_fk</span>(alg, <span class="op">:</span>secretary, x)</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">repr_x</span>(alg, x), <span class="st">": dname="</span>, nm,</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>            <span class="st">"  secretary="</span>, <span class="fu">repr_x</span>(alg, sec))</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Imported CQL Instance ===
+
+Employee (3 rows):
+  Employee_103: ename=Andrey  manager=Employee_103  worksIn=Applied Math
+  Employee_101: ename=Alan  manager=Employee_103  worksIn=Applied Math
+  Employee_102: ename=Camille  manager=Employee_102  worksIn=Pure Math
+
+Department (2 rows):
+  Department_2: dname=Pure Math  secretary=Employee_102
+  Department_10: dname=Applied Math  secretary=Employee_101</code></pre>
+</div>
+</div>
+<p>The SQL data is now a fully typed CQL instance. Foreign keys are functions (not just integer references), so we can follow chains like <code>e.manager.worksIn.dname</code> directly.</p>
+</section>
+<section id="flexible-query-mapping" class="level3">
+<h3 class="anchored" data-anchor-id="flexible-query-mapping">Flexible Query Mapping</h3>
+<p>The per-query approach allows column renaming, computed values, and even joins in the SQL:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 39%">
+<col style="width: 33%">
+<col style="width: 27%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>CQL Element</th>
+<th>SQL Query</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Employee</code></td>
+<td><code>SELECT id FROM Employee</code></td>
+<td>One generator per row</td>
+</tr>
+<tr class="even">
+<td><code>manager</code></td>
+<td><code>SELECT id, manager FROM Employee</code></td>
+<td>FK as <code>(src, tgt)</code> pair</td>
+</tr>
+<tr class="odd">
+<td><code>ename</code></td>
+<td><code>SELECT id, name FROM Employee</code></td>
+<td>Rename <code>name</code> → <code>ename</code></td>
+</tr>
+</tbody>
+</table>
+<p>This flexibility is important when the SQL column names don’t match the CQL schema, or when the data requires transformation during import (e.g., joining multiple SQL tables into one CQL entity).</p>
+</section>
+</section>
+<section id="cql-transformation-flattening" class="level2">
+<h2 class="anchored" data-anchor-id="cql-transformation-flattening">CQL Transformation: Flattening</h2>
+<p>Now we use CQL to transform the data. We define a flat “report” schema and a query that denormalizes the employee data by following foreign keys:</p>
+<div id="12" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>env2 <span class="op">=</span> cql<span class="st">"""</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="st">        Str</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="st">schema S = literal : Ty {</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="st">        Employee</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="st">        Department</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="st">        manager   : Employee -&gt; Employee</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="st">        worksIn   : Employee -&gt; Department</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="st">        secretary : Department -&gt; Employee</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="st">        ename : Employee   -&gt; Str</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="st">        dname : Department -&gt; Str</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="st">schema EmployeeReport = literal : Ty {</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a><span class="st">        Row</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a><span class="st">        empName  : Row -&gt; Str</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a><span class="st">        mgrName  : Row -&gt; Str</span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a><span class="st">        deptName : Row -&gt; Str</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a><span class="st">query Flatten = literal : S -&gt; EmployeeReport {</span></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a><span class="st">    entity Row -&gt; {</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a><span class="st">        from</span></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a><span class="st">            e : Employee</span></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a><span class="st">        attributes</span></span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a><span class="st">            empName  -&gt; e.ename</span></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a><span class="st">            mgrName  -&gt; e.manager.ename</span></span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a><span class="st">            deptName -&gt; e.worksIn.dname</span></span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Query: S -&gt; EmployeeReport"</span>)</span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(env2.Flatten)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Query: S -&gt; EmployeeReport
+query {
+  entity Row -&gt; {
+    from
+      e : Employee
+  }
+  attributes
+    deptName -&gt; e.worksIn.dname
+    empName -&gt; e.ename
+    mgrName -&gt; e.manager.ename
+}
+</code></pre>
+</div>
+</div>
+<p>The query follows two FK chains:</p>
+<ul>
+<li><code>e.manager.ename</code> — follow <code>manager</code> then read <code>ename</code></li>
+<li><code>e.worksIn.dname</code> — follow <code>worksIn</code> then read <code>dname</code></li>
+</ul>
+<p>In SQL, this would require two explicit <code>JOIN</code> clauses. In CQL, it’s just dot notation.</p>
+<section id="evaluating-the-query" class="level3">
+<h3 class="anchored" data-anchor-id="evaluating-the-query">Evaluating the Query</h3>
+<div id="14" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>q <span class="op">=</span> env2.Flatten</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>flat_inst <span class="op">=</span> <span class="fu">eval_query_instance</span>(q, inst, <span class="fu">default_options</span>())</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>flat_alg <span class="op">=</span> flat_inst.algebra</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Flattened Employee Report ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">rpad</span>(<span class="st">"Employee"</span>, <span class="fl">10</span>), <span class="st">"| "</span>, <span class="fu">rpad</span>(<span class="st">"Manager"</span>, <span class="fl">10</span>), <span class="st">"| Department"</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"-"</span><span class="op">^</span><span class="fl">10</span>, <span class="st">"+"</span>, <span class="st">"-"</span><span class="op">^</span><span class="fl">11</span>, <span class="st">"+"</span>, <span class="st">"-"</span><span class="op">^</span><span class="fl">15</span>)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(flat_alg, <span class="op">:</span>Row)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    en <span class="op">=</span> <span class="fu">eval_att</span>(flat_alg, <span class="op">:</span>empName, x)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    mn <span class="op">=</span> <span class="fu">eval_att</span>(flat_alg, <span class="op">:</span>mgrName, x)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    dn <span class="op">=</span> <span class="fu">eval_att</span>(flat_alg, <span class="op">:</span>deptName, x)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="fu">rpad</span>(<span class="fu">string</span>(en), <span class="fl">10</span>), <span class="st">"| "</span>, <span class="fu">rpad</span>(<span class="fu">string</span>(mn), <span class="fl">10</span>), <span class="st">"| "</span>, dn)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Flattened Employee Report ===
+
+Employee  | Manager   | Department
+----------+-----------+---------------
+Alan      | Andrey    | Applied Math
+Andrey    | Andrey    | Applied Math
+Camille   | Camille   | Pure Math</code></pre>
+</div>
+</div>
+<p>The CQL query produced a flat report with the manager’s name and department name resolved — no manual joins needed.</p>
+</section>
+</section>
+<section id="exporting-cql-to-sql" class="level2">
+<h2 class="anchored" data-anchor-id="exporting-cql-to-sql">Exporting: CQL to SQL</h2>
+<p>Now we write the CQL result back to DuckDB. The export function creates one SQL table per CQL entity:</p>
+<div id="16" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="st">"""Export a CQL instance to DuckDB tables."""</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">export_duckdb</span>(con, inst<span class="op">::</span><span class="dt">CQLInstance</span>; prefix<span class="op">::</span><span class="dt">String</span>=<span class="st">""</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    alg <span class="op">=</span> inst.algebra</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    sch <span class="op">=</span> inst.schema</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Assign integer IDs to all carrier elements</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    id_map <span class="op">=</span> <span class="fu">Dict</span><span class="dt">{Any, Int}</span>()</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    counter <span class="op">=</span> <span class="fl">1</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> en <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(sch.ens))</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> x <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(<span class="fu">carrier</span>(alg, en)); by<span class="op">=</span>string)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>            id_map[x] <span class="op">=</span> counter</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>            counter <span class="op">+=</span> <span class="fl">1</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> en <span class="kw">in</span> sch.ens</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>        tbl <span class="op">=</span> prefix <span class="op">*</span> <span class="fu">string</span>(en)</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>        fks_from <span class="op">=</span> [(fk, tgt) for (fk, (src, tgt)) <span class="kw">in</span> sch.fks if src <span class="op">==</span> en]</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>        atts_from <span class="op">=</span> [(att, ty) for (att, (src, ty)) <span class="kw">in</span> sch.atts if src <span class="op">==</span> en]</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Build CREATE TABLE</span></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>        cols <span class="op">=</span> [<span class="st">"id INT"</span>]</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (fk, _) <span class="kw">in</span> fks_from</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>            <span class="fu">push!</span>(cols, <span class="st">"</span><span class="sc">\"$</span>(fk)<span class="sc">\"</span><span class="st"> INT"</span>)</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (att, _) <span class="kw">in</span> atts_from</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>            <span class="fu">push!</span>(cols, <span class="st">"</span><span class="sc">\"$</span>(att)<span class="sc">\"</span><span class="st"> VARCHAR"</span>)</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>        DuckDB.<span class="fu">execute</span>(con, <span class="st">"DROP TABLE IF EXISTS </span><span class="sc">\"$</span>tbl<span class="sc">\"</span><span class="st">"</span>)</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>        DuckDB.<span class="fu">execute</span>(con, <span class="st">"CREATE TABLE </span><span class="sc">\"$</span>tbl<span class="sc">\"</span><span class="st"> (</span><span class="sc">$</span>(<span class="fu">join</span>(cols, <span class="st">", "</span>))<span class="st">)"</span>)</span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Insert rows</span></span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, en)</span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>            vals <span class="op">=</span> <span class="dt">String</span>[<span class="st">"</span><span class="sc">$</span>(id_map[x])<span class="st">"</span>]</span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> (fk, _) <span class="kw">in</span> fks_from</span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>                <span class="fu">push!</span>(vals, <span class="st">"</span><span class="sc">$</span>(id_map[<span class="fu">eval_fk</span>(alg, fk, x)])<span class="st">"</span>)</span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>            <span class="cf">end</span></span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> (att, _) <span class="kw">in</span> atts_from</span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>                t <span class="op">=</span> <span class="fu">eval_att</span>(alg, att, x)</span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>                v <span class="op">=</span> (t isa CQLSym <span class="op">&amp;&amp;</span> <span class="fu">isempty</span>(t.args)) ? <span class="fu">string</span>(t.sym) <span class="op">:</span> <span class="fu">string</span>(t)</span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a>                <span class="fu">push!</span>(vals, <span class="st">"'"</span> <span class="op">*</span> <span class="fu">replace</span>(v, <span class="st">"'"</span> <span class="op">=&gt;</span> <span class="st">"''"</span>) <span class="op">*</span> <span class="st">"'"</span>)</span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>            <span class="cf">end</span></span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>            DuckDB.<span class="fu">execute</span>(con, <span class="st">"INSERT INTO </span><span class="sc">\"$</span>tbl<span class="sc">\"</span><span class="st"> VALUES (</span><span class="sc">$</span>(<span class="fu">join</span>(vals, <span class="st">", "</span>))<span class="st">)"</span>)</span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"export_duckdb defined"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>export_duckdb defined</code></pre>
+</div>
+</div>
+<section id="exporting-the-original-instance" class="level3">
+<h3 class="anchored" data-anchor-id="exporting-the-original-instance">Exporting the Original Instance</h3>
+<div id="18" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">export_duckdb</span>(con, inst, prefix<span class="op">=</span><span class="st">"Exported_"</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Exported Instance (SQL) ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> DuckDB.<span class="fu">execute</span>(con, <span class="st">"""</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="st">    SELECT e.id, e.ename, m.ename AS manager_name, d.dname</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="st">    FROM Exported_Employee e</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="st">    JOIN Exported_Employee m ON e.manager = m.id</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="st">    JOIN Exported_Department d ON e.worksIn = d.id</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="st">    ORDER BY e.id</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span>)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">rpad</span>(<span class="st">"ID"</span>, <span class="fl">5</span>), <span class="st">"| "</span>, <span class="fu">rpad</span>(<span class="st">"Name"</span>, <span class="fl">10</span>), <span class="st">"| "</span>, <span class="fu">rpad</span>(<span class="st">"Manager"</span>, <span class="fl">10</span>), <span class="st">"| Department"</span>)</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"-"</span><span class="op">^</span><span class="fl">5</span>, <span class="st">"+"</span>, <span class="st">"-"</span><span class="op">^</span><span class="fl">11</span>, <span class="st">"+"</span>, <span class="st">"-"</span><span class="op">^</span><span class="fl">11</span>, <span class="st">"+"</span>, <span class="st">"-"</span><span class="op">^</span><span class="fl">15</span>)</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> result</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="fu">rpad</span>(<span class="fu">string</span>(row[<span class="op">:</span>id]), <span class="fl">5</span>), <span class="st">"| "</span>,</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>            <span class="fu">rpad</span>(<span class="fu">string</span>(row[<span class="op">:</span>ename]), <span class="fl">10</span>), <span class="st">"| "</span>,</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>            <span class="fu">rpad</span>(<span class="fu">string</span>(row[<span class="op">:</span>manager_name]), <span class="fl">10</span>), <span class="st">"| "</span>,</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>            row[<span class="op">:</span>dname])</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Exported Instance (SQL) ===
+
+ID   | Name      | Manager   | Department
+-----+-----------+-----------+---------------
+3    | Alan      | Andrey    | Applied Math
+4    | Camille   | Camille   | Pure Math
+5    | Andrey    | Andrey    | Applied Math</code></pre>
+</div>
+</div>
+<p>The exported tables preserve the full relational structure. We can query them with standard SQL joins to reconstruct the denormalized view.</p>
+</section>
+<section id="exporting-the-flat-report" class="level3">
+<h3 class="anchored" data-anchor-id="exporting-the-flat-report">Exporting the Flat Report</h3>
+<div id="20" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">export_duckdb</span>(con, flat_inst, prefix<span class="op">=</span><span class="st">"Report_"</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Flat Report (SQL) ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> DuckDB.<span class="fu">execute</span>(con, <span class="st">"SELECT * FROM Report_Row ORDER BY id"</span>)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> result</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>(row[<span class="op">:</span>empName])<span class="st"> | manager: </span><span class="sc">$</span>(row[<span class="op">:</span>mgrName])<span class="st"> | dept: </span><span class="sc">$</span>(row[<span class="op">:</span>deptName])<span class="st">"</span>)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Flat Report (SQL) ===
+
+  Andrey | manager: Andrey | dept: Applied Math
+  Alan | manager: Andrey | dept: Applied Math
+  Camille | manager: Camille | dept: Pure Math</code></pre>
+</div>
+</div>
+<p>The flattened CQL query result is now a single SQL table — no joins needed to read the denormalized data.</p>
+</section>
+</section>
+<section id="the-full-round-trip" class="level2">
+<h2 class="anchored" data-anchor-id="the-full-round-trip">The Full Round-Trip</h2>
+<p>Let’s verify the round-trip by re-importing the exported data:</p>
+<div id="22" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>inst2 <span class="op">=</span> <span class="fu">import_duckdb</span>(con, sch, <span class="fu">Dict</span>(</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span>Employee   <span class="op">=&gt;</span> <span class="st">"SELECT id FROM Exported_Employee"</span>,</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span>Department <span class="op">=&gt;</span> <span class="st">"SELECT id FROM Exported_Department"</span>,</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span>manager    <span class="op">=&gt;</span> <span class="st">"SELECT id, manager FROM Exported_Employee"</span>,</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span>worksIn    <span class="op">=&gt;</span> <span class="st">"SELECT id, worksIn FROM Exported_Employee"</span>,</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span>secretary  <span class="op">=&gt;</span> <span class="st">"SELECT id, secretary FROM Exported_Department"</span>,</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span>ename      <span class="op">=&gt;</span> <span class="st">"SELECT id, ename FROM Exported_Employee"</span>,</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span>dname      <span class="op">=&gt;</span> <span class="st">"SELECT id, dname FROM Exported_Department"</span>,</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>alg2 <span class="op">=</span> inst2.algebra</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Round-trip Verification ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Original employees: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(inst.algebra, <span class="op">:</span>Employee)))</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Round-trip employees: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg2, <span class="op">:</span>Employee)))</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Original departments: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(inst.algebra, <span class="op">:</span>Department)))</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Round-trip departments: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg2, <span class="op">:</span>Department)))</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Round-trip data:"</span>)</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg2, <span class="op">:</span>Employee)</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>    nm <span class="op">=</span> <span class="fu">eval_att</span>(alg2, <span class="op">:</span>ename, x)</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>    mgr <span class="op">=</span> <span class="fu">eval_fk</span>(alg2, <span class="op">:</span>manager, x)</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>    dept <span class="op">=</span> <span class="fu">eval_fk</span>(alg2, <span class="op">:</span>worksIn, x)</span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>    dnm <span class="op">=</span> <span class="fu">eval_att</span>(alg2, <span class="op">:</span>dname, dept)</span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, nm, <span class="st">" | manager: "</span>, <span class="fu">eval_att</span>(alg2, <span class="op">:</span>ename, mgr), <span class="st">" | dept: "</span>, dnm)</span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Round-trip Verification ===
+
+Original employees: 3
+Round-trip employees: 3
+Original departments: 2
+Round-trip departments: 2
+
+Round-trip data:
+  Alan | manager: Andrey | dept: Applied Math
+  Andrey | manager: Andrey | dept: Applied Math
+  Camille | manager: Camille | dept: Pure Math</code></pre>
+</div>
+</div>
+<p>The data survives the full SQL → CQL → SQL → CQL round-trip with all relational structure intact.</p>
+</section>
+<section id="native-jdbc-and-odbc-support" class="level2">
+<h2 class="anchored" data-anchor-id="native-jdbc-and-odbc-support">Native JDBC and ODBC Support</h2>
+<p>In addition to the programmatic approach shown above, CQL.jl provides <strong>native CQL syntax</strong> for JDBC and ODBC database connectivity, matching the Java CQL IDE’s built-in commands.</p>
+<section id="jdbc-via-jdbc.jl-javacall.jl" class="level3">
+<h3 class="anchored" data-anchor-id="jdbc-via-jdbc.jl-javacall.jl">JDBC (via JDBC.jl / JavaCall.jl)</h3>
+<p>CQL.jl supports the full <code>import_jdbc</code> / <code>export_jdbc_instance</code> / <code>exec_jdbc</code> syntax from the Java CQL IDE. This uses JDBC.jl under the hood, which calls Java database drivers through JNI:</p>
+<pre><code>typeside Ty = sql
+
+command setup = exec_jdbc "org.h2.Driver" "jdbc:h2:mem:db1" {
+    "CREATE TABLE Employee(id INT, name VARCHAR, manager INT)"
+    "INSERT INTO Employee VALUES (1, 'Alice', 2)"
+}
+
+instance I = import_jdbc "org.h2.Driver" "jdbc:h2:mem:db1" : S {
+    Employee -&gt; "SELECT id, name, manager FROM Employee"
+}
+
+command store = export_jdbc_instance I "org.h2.Driver" "jdbc:h2:mem:db1" "CQL_"</code></pre>
+</section>
+<section id="odbc-via-odbc.jl" class="level3">
+<h3 class="anchored" data-anchor-id="odbc-via-odbc.jl">ODBC (via ODBC.jl)</h3>
+<p>CQL.jl also supports ODBC connectivity, which provides access to databases via operating-system-level ODBC drivers (MySQL/MariaDB, PostgreSQL, SQL Server, etc.):</p>
+<pre><code>command setup = exec_odbc "Driver=...;Server=localhost;Database=mydb" {
+    "CREATE TABLE Employee(id INT, name VARCHAR(100))"
+    "INSERT INTO Employee VALUES (1, 'Alice')"
+}
+
+instance I = import_odbc "Driver=...;Server=localhost;Database=mydb" : S {
+    Employee -&gt; "SELECT id, name FROM Employee"
+}
+
+instance J = import_odbc_direct "Driver=..." id : S
+
+schema D = import_odbc_all "Driver=..." { options allow_sql_import_all_unsafe = true }
+
+command store = export_odbc_instance I "Driver=..." "CQL_"</code></pre>
+</section>
+<section id="comparison" class="level3">
+<h3 class="anchored" data-anchor-id="comparison">Comparison</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 36%">
+<col style="width: 24%">
+<col style="width: 24%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>DuckDB (programmatic)</th>
+<th>JDBC (native)</th>
+<th>ODBC (native)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Syntax</strong></td>
+<td>Julia functions</td>
+<td>CQL DSL</td>
+<td>CQL DSL</td>
+</tr>
+<tr class="even">
+<td><strong>Driver</strong></td>
+<td>DuckDB.jl</td>
+<td>Java JDBC driver</td>
+<td>OS ODBC driver</td>
+</tr>
+<tr class="odd">
+<td><strong>Databases</strong></td>
+<td>DuckDB only</td>
+<td>H2, Derby, PostgreSQL, …</td>
+<td>MariaDB, PostgreSQL, SQL Server, …</td>
+</tr>
+<tr class="even">
+<td><strong>Schema discovery</strong></td>
+<td>Manual</td>
+<td><code>import_jdbc_all</code></td>
+<td><code>import_odbc_all</code></td>
+</tr>
+<tr class="odd">
+<td><strong>Auto import</strong></td>
+<td>Manual</td>
+<td><code>import_jdbc_direct</code></td>
+<td><code>import_odbc_direct</code></td>
+</tr>
+<tr class="even">
+<td><strong>Dependencies</strong></td>
+<td>DuckDB.jl</td>
+<td>JavaCall.jl, JDBC.jl, JVM</td>
+<td>ODBC.jl, ODBC driver</td>
+</tr>
+<tr class="odd">
+<td><strong>Use case</strong></td>
+<td>Embedded analytics</td>
+<td>Cross-platform compatibility</td>
+<td>Production databases</td>
+</tr>
+</tbody>
+</table>
+<p>The DuckDB/programmatic approach shown in this vignette is best for embedded analytics and testing. The native JDBC/ODBC syntax is better for production data integration where you want the CQL program to be self-contained.</p>
+<div id="24" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>DuckDB.<span class="fu">disconnect</span>(con)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>DuckDB.<span class="fu">close</span>(db)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 40%">
+<col style="width: 59%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Concept</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Per-element queries</strong></td>
+<td>Each entity, FK, and attribute maps to a SQL query</td>
+</tr>
+<tr class="even">
+<td><strong><code>Presentation</code></strong></td>
+<td>Generators + equations represent the imported data</td>
+</tr>
+<tr class="odd">
+<td><strong><code>saturated_instance</code></strong></td>
+<td>Creates a CQL instance from a flat presentation</td>
+</tr>
+<tr class="even">
+<td><strong>Algebra API</strong></td>
+<td><code>carrier</code>, <code>eval_fk</code>, <code>eval_att</code> extract data for export</td>
+</tr>
+<tr class="odd">
+<td><strong>Round-trip</strong></td>
+<td>SQL → CQL → transform → SQL preserves all structure</td>
+</tr>
+</tbody>
+</table>
+<p>CQL.jl’s approach to database connectivity is library-based rather than built-in: you write small import/export functions using the <code>Presentation</code> and algebra APIs, and the same pattern works for any data source. The per-element query pattern from the Java CQL IDE translates directly, giving you the same flexibility with the full power of Julia’s database ecosystem.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

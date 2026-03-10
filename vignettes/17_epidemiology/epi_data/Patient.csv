@@ -1,0 +1,11 @@
+id,name,age_group,vaccinated,risk
+p01,Margaret,65+,true,COPD
+p02,Harold,65+,false,diabetes
+p03,Dorothy,65+,true,heart disease
+p04,James,40-64,true,none
+p05,Sarah,40-64,false,immunosuppressed
+p06,Emily,0-4,false,premature birth
+p07,Oliver,5-17,false,asthma
+p08,Amelia,5-17,false,none
+p09,William,18-39,true,none
+p10,Grace,65+,true,COPD

@@ -1,0 +1,674 @@
+# CQL vs SQL: Difficult Queries
+CQL.jl
+
+## Introduction
+
+This vignette demonstrates a class of query that is notoriously
+difficult to write in SQL but natural in CQL. The example is drawn from
+the [CQL IDE](https://categoricaldata.net/help/vsSQL1.html) (built-in
+example `vsSQL1`).
+
+### The Problem
+
+Consider a database of employees and departments with these foreign
+keys:
+
+- Each **employee** has a **manager** (another employee)
+- Each employee **works in** a department
+- Each **department** has a **secretary** (an employee)
+
+We want to extract a **sub-database** (including all foreign keys)
+where:
+
+1.  Every employee works in the **same department as their manager**
+2.  Every department’s **secretary works in that department**
+
+The challenge: we need a *closed* sub-database. If we include an
+employee, we must also include their manager, the department they work
+in, and that department’s secretary — and all of *those* must also
+satisfy the constraints, recursively. The programmer must invent what is
+essentially an **inductive hypothesis** sufficient to guarantee closure
+under the business rules.
+
+In SQL, this is extremely difficult. A SQL programmer would need to
+construct a fixpoint computation that simultaneously maintains all
+closure properties. In practice on this problem, a novice CQL user can
+try one different query per minute and arrive at a solution in an hour
+with 100% confidence — a development process similar to interactive
+theorem proving in Coq.
+
+``` julia
+using CQL
+```
+
+## Schema Definitions
+
+### The Source Schema (S)
+
+The source schema `S` captures the structure of the employee-department
+database without any constraints. This is the schema of the “raw” data.
+
+``` julia
+env = cql"""
+typeside Ty = literal {
+    types
+        String
+    constants
+        Alan Camille Audrey "Applied Math" "Pure Math" : String
+}
+
+schema S = literal : Ty {
+    entities
+        Employee
+        Department
+    foreign_keys
+        manager   : Employee -> Employee
+        worksIn   : Employee -> Department
+        secretary : Department -> Employee
+    attributes
+        first : Employee -> String
+        name  : Department -> String
+}
+"""
+
+sch_S = env.S
+println("Entities: ", sch_S.ens)
+println("Foreign keys: ", collect(keys(sch_S.fks)))
+println("Path equations: ", length(sch_S.path_eqs))
+```
+
+    Entities: Set([:Department, :Employee])
+    Foreign keys: [:worksIn, :manager, :secretary]
+    Path equations: 0
+
+Schema `S` has no path equations — it imposes no business rules. Any
+combination of employees and departments is a valid instance.
+
+### The Target Schema (T)
+
+The target schema `T` extends `S` with two **path equations** that
+encode the business rules we want to enforce:
+
+``` julia
+env = cql"""
+typeside Ty = literal {
+    types
+        String
+    constants
+        Alan Camille Audrey "Applied Math" "Pure Math" : String
+}
+
+schema S = literal : Ty {
+    entities
+        Employee
+        Department
+    foreign_keys
+        manager   : Employee -> Employee
+        worksIn   : Employee -> Department
+        secretary : Department -> Employee
+    attributes
+        first : Employee -> String
+        name  : Department -> String
+}
+
+schema T = literal : Ty {
+    imports
+        S
+    path_equations
+        Employee.manager.worksIn = Employee.worksIn
+        Department.secretary.worksIn = Department
+}
+"""
+
+sch_T = env.T
+println("Entities: ", sch_T.ens)
+println("Path equations: ", length(sch_T.path_eqs))
+```
+
+    Entities: Set([:Department, :Employee])
+    Path equations: 2
+
+The path equations state:
+
+- **`Employee.manager.worksIn = Employee.worksIn`**: For every employee,
+  following `manager` then `worksIn` gives the same department as just
+  `worksIn`. In other words, every employee’s manager works in the same
+  department.
+- **`Department.secretary.worksIn = Department`**: For every department,
+  following `secretary` then `worksIn` returns to the same department.
+  In other words, every department’s secretary works in that department.
+
+Any instance on `T` *automatically* satisfies both business rules.
+
+## Sample Data
+
+We populate the source schema with a small employee-department database:
+
+``` julia
+env = cql"""
+typeside Ty = literal {
+    types
+        String
+    constants
+        Alan Camille Audrey "Applied Math" "Pure Math" : String
+}
+
+schema S = literal : Ty {
+    entities
+        Employee
+        Department
+    foreign_keys
+        manager   : Employee -> Employee
+        worksIn   : Employee -> Department
+        secretary : Department -> Employee
+    attributes
+        first : Employee -> String
+        name  : Department -> String
+}
+
+schema T = literal : Ty {
+    imports
+        S
+    path_equations
+        Employee.manager.worksIn = Employee.worksIn
+        Department.secretary.worksIn = Department
+}
+
+instance I = literal : S {
+    generators
+        e101 e102 e103 : Employee
+        d2 d10 : Department
+    multi_equations
+        manager   -> {e101 e103, e102 e102, e103 e103}
+        worksIn   -> {e101 d10, e102 d2, e103 d10}
+        secretary -> {d10 e101, d2 e102}
+        first     -> {e101 Alan, e102 Camille, e103 Audrey}
+        name      -> {d10 "Applied Math", d2 "Pure Math"}
+}
+"""
+
+inst_I = env.I
+alg_I = inst_I.algebra
+```
+
+    Algebra{CQLTerm, CQL.TalgGen}(schema {
+      entities
+        Department
+        Employee
+      foreign_keys
+        worksIn : Employee -> Department
+        manager : Employee -> Employee
+        secretary : Department -> Employee
+      attributes
+        first : Employee -> String
+        name : Department -> String
+      path_equations
+      observation_equations
+    }
+    , Dict{Symbol, Set{CQLTerm}}(:Department => Set([e102.worksIn, e101.worksIn]), :Employee => Set([e102, e101.manager, e101])), Dict{Symbol, CQLTerm}(:e103 => e101.manager, :e101 => e101, :e102 => e102, :d2 => e102.worksIn, :d10 => e101.worksIn), Dict{Symbol, Dict{CQLTerm, CQLTerm}}(:worksIn => Dict(e102 => e102.worksIn, e101.manager => e101.worksIn, e101 => e101.worksIn), :manager => Dict(e102 => e102, e101.manager => e101.manager, e101 => e101.manager), :secretary => Dict(e102.worksIn => e102, e101.worksIn => e101)), Dict{CQLTerm, CQLTerm}(e102.worksIn => e102.worksIn, e102 => e102, e101.manager => e101.manager, e101.worksIn => e101.worksIn, e101 => e101), Dict{Symbol, Set{CQL.TalgGen}}(:String => Set([Audrey, Alan, Pure Math, Camille, Applied Math])), CQL.var"#simplify_algebra##4#simplify_algebra##5"{Algebra{CQLTerm, CQL.TalgGen}, Vector{Tuple{CQLTerm, CQLTerm}}, Vector{Tuple{CQL.Head, CQLTerm}}}(Algebra{CQLTerm, CQL.TalgGen}(schema {
+      entities
+        Department
+        Employee
+      foreign_keys
+        worksIn : Employee -> Department
+        manager : Employee -> Employee
+        secretary : Department -> Employee
+      attributes
+        first : Employee -> String
+        name : Department -> String
+      path_equations
+      observation_equations
+    }
+    , Dict{Symbol, Set{CQLTerm}}(:Department => Set([e102.worksIn, e101.worksIn]), :Employee => Set([e102, e101.manager, e101])), Dict{Symbol, CQLTerm}(:e103 => e101.manager, :e101 => e101, :e102 => e102, :d2 => e102.worksIn, :d10 => e101.worksIn), Dict{Symbol, Dict{CQLTerm, CQLTerm}}(:worksIn => Dict(e102 => e102.worksIn, e101.manager => e101.worksIn, e101 => e101.worksIn), :manager => Dict(e102 => e102, e101.manager => e101.manager, e101 => e101.manager), :secretary => Dict(e102.worksIn => e102, e101.worksIn => e101)), Dict{CQLTerm, CQLTerm}(e102.worksIn => e102.worksIn, e102 => e102, e101.manager => e101.manager, e101.worksIn => e101.worksIn, e101 => e101), Dict{Symbol, Set{CQL.TalgGen}}(:String => Set([Audrey, Alan, Pure Math, e101.worksIn.name, Camille, Applied Math, e102.worksIn.name, e102.first, e101.first, e101.manager.first])), CQL.var"#125#126"{Dict{Symbol, Tuple{Vector{Symbol}, Symbol}}}(Dict(:Camille => ([], :String), :Audrey => ([], :String), :Alan => ([], :String), Symbol("Applied Math") => ([], :String), Symbol("Pure Math") => ([], :String))), Dict{CQL.TalgGen, CQLTerm}(Audrey => Audrey, Alan => Alan, Pure Math => Pure Math, e101.worksIn.name => e101.worksIn.name, Camille => Camille, Applied Math => Applied Math, e102.worksIn.name => e102.worksIn.name, e102.first => e102.first, e101.first => e101.first, e101.manager.first => e101.manager.first…), Set(Equation[e101.manager.first = Audrey, e102.worksIn.name = Pure Math, e101.first = Alan, e101.worksIn.name = Applied Math, e102.first = Camille])), Tuple{CQLTerm, CQLTerm}[], Tuple{CQL.Head, CQLTerm}[(CQL.Head(CQL.H_SK, Symbol("e102.worksIn.name")), Pure Math), (CQL.Head(CQL.H_SK, Symbol("e101.first")), Alan), (CQL.Head(CQL.H_SK, Symbol("e101.manager.first")), Audrey), (CQL.Head(CQL.H_SK, Symbol("e102.first")), Camille), (CQL.Head(CQL.H_SK, Symbol("e101.worksIn.name")), Applied Math)]), Dict{CQL.TalgGen, CQLTerm}(Audrey => Audrey, Alan => Alan, Pure Math => Pure Math, e101.worksIn.name => e101.worksIn.name, Camille => Camille, Applied Math => Applied Math, e102.worksIn.name => e102.worksIn.name, e102.first => e102.first, e101.first => e101.first, e101.manager.first => e101.manager.first…), Set{Equation}())
+
+Let’s examine this data:
+
+``` julia
+println("=== Employee Table ===")
+println("Name       | Manager  | Works In")
+println("-----------+----------+-------------")
+for x in carrier(alg_I, :Employee)
+    nm = eval_att(alg_I, :first, x)
+    mgr = eval_fk(alg_I, :manager, x)
+    mgr_nm = eval_att(alg_I, :first, mgr)
+    dept = eval_fk(alg_I, :worksIn, x)
+    dept_nm = eval_att(alg_I, :name, dept)
+    println(rpad(string(nm), 11), "| ", rpad(string(mgr_nm), 9), "| ", dept_nm)
+end
+
+println("\n=== Department Table ===")
+println("Name         | Secretary")
+println("-------------+----------")
+for x in carrier(alg_I, :Department)
+    nm = eval_att(alg_I, :name, x)
+    sec = eval_fk(alg_I, :secretary, x)
+    sec_nm = eval_att(alg_I, :first, sec)
+    println(rpad(string(nm), 14), "| ", sec_nm)
+end
+```
+
+    === Employee Table ===
+    Name       | Manager  | Works In
+    -----------+----------+-------------
+    Camille    | Camille  | Pure Math
+    Audrey     | Audrey   | Applied Math
+    Alan       | Audrey   | Applied Math
+
+    === Department Table ===
+    Name         | Secretary
+    -------------+----------
+    Pure Math     | Camille
+    Applied Math  | Alan
+
+Let’s check which business rules are already satisfied:
+
+``` julia
+println("=== Checking Business Rules ===\n")
+
+println("Rule 1: manager.worksIn = worksIn (manager works in same dept)")
+for x in carrier(alg_I, :Employee)
+    nm = eval_att(alg_I, :first, x)
+    own_dept = eval_fk(alg_I, :worksIn, x)
+    mgr = eval_fk(alg_I, :manager, x)
+    mgr_dept = eval_fk(alg_I, :worksIn, mgr)
+    ok = own_dept == mgr_dept
+    println("  ", nm, ": ", ok ? "OK" : "VIOLATED",
+            ok ? "" : " (works in $(eval_att(alg_I, :name, own_dept)), manager works in $(eval_att(alg_I, :name, mgr_dept)))")
+end
+
+println("\nRule 2: secretary.worksIn = department (secretary works in their dept)")
+for x in carrier(alg_I, :Department)
+    nm = eval_att(alg_I, :name, x)
+    sec = eval_fk(alg_I, :secretary, x)
+    sec_dept = eval_fk(alg_I, :worksIn, sec)
+    ok = sec_dept == x
+    println("  ", nm, ": ", ok ? "OK" : "VIOLATED",
+            ok ? "" : " (secretary works in $(eval_att(alg_I, :name, sec_dept)))")
+end
+```
+
+    === Checking Business Rules ===
+
+    Rule 1: manager.worksIn = worksIn (manager works in same dept)
+      Camille: OK
+      Audrey: OK
+      Alan: OK
+
+    Rule 2: secretary.worksIn = department (secretary works in their dept)
+      Pure Math: OK
+      Applied Math: OK
+
+The full database **violates** some rules. We need to find the largest
+sub-database where *all* rules hold — and where the sub-database is
+**closed** under all foreign keys.
+
+## Why This Is Hard
+
+The difficulty is the **closure requirement**. A SQL programmer can
+easily filter employees whose managers work in the same department:
+
+``` sql
+SELECT * FROM Employee e
+WHERE e.worksIn = (SELECT worksIn FROM Employee WHERE id = e.manager)
+```
+
+But this is not enough! After filtering, we must check:
+
+1.  Is the **manager** of each remaining employee also in the result?
+2.  Is the **department** each remaining employee works in still
+    present?
+3.  Does each remaining **department’s secretary** survive the filter?
+4.  Do all of *those* satisfy the constraints too?
+
+This is a fixpoint problem: removing one row can invalidate others,
+which can invalidate still others, cascading until a stable sub-database
+remains. In SQL, you would need recursive CTEs or iterative stored
+procedures, with careful reasoning about termination and correctness.
+
+In CQL, the solution is a **single query** — the uber-flower pattern.
+
+## The CQL Solution
+
+The query `good1` selects the sub-database satisfying both business
+rules. It is a single CQL query from schema `S` to schema `T`:
+
+``` julia
+env = cql"""
+typeside Ty = literal {
+    types
+        String
+    constants
+        Alan Camille Audrey "Applied Math" "Pure Math" : String
+}
+
+schema S = literal : Ty {
+    entities
+        Employee
+        Department
+    foreign_keys
+        manager   : Employee -> Employee
+        worksIn   : Employee -> Department
+        secretary : Department -> Employee
+    attributes
+        first : Employee -> String
+        name  : Department -> String
+}
+
+schema T = literal : Ty {
+    imports
+        S
+    path_equations
+        Employee.manager.worksIn = Employee.worksIn
+        Department.secretary.worksIn = Department
+}
+
+query good1 = literal : S -> T {
+    entity Employee -> {
+        from
+            e : Employee
+        where
+            e.manager = e
+            e.worksIn.secretary = e
+        attributes
+            first -> e.first
+        foreign_keys
+            manager -> {e -> e.manager}
+            worksIn -> {d -> e.worksIn}
+    }
+
+    entity Department -> {
+        from
+            d : Department
+        where
+            d.secretary.worksIn = d
+            d.secretary.manager = d.secretary
+        attributes
+            name -> d.name
+        foreign_keys
+            secretary -> {e -> d.secretary}
+    }
+}
+
+instance I = literal : S {
+    generators
+        e101 e102 e103 : Employee
+        d2 d10 : Department
+    multi_equations
+        manager   -> {e101 e103, e102 e102, e103 e103}
+        worksIn   -> {e101 d10, e102 d2, e103 d10}
+        secretary -> {d10 e101, d2 e102}
+        first     -> {e101 Alan, e102 Camille, e103 Audrey}
+        name      -> {d10 "Applied Math", d2 "Pure Math"}
+}
+
+instance J = eval good1 I
+"""
+
+println(env.good1)
+```
+
+    query {
+      entity Department -> {
+        from
+          d : Department
+        where
+          d.secretary.manager = d.secretary
+          d.secretary.worksIn = d
+      }
+      entity Employee -> {
+        from
+          e : Employee
+        where
+          e.manager = e
+          e.worksIn.secretary = e
+      }
+      foreign_key worksIn -> {
+        d -> e.worksIn
+      }
+      foreign_key manager -> {
+        e -> e.manager
+      }
+      foreign_key secretary -> {
+        e -> d.secretary
+      }
+      attributes
+        first -> e.first
+        name -> d.name
+    }
+
+### Understanding the Where-Clauses
+
+The query’s where-clauses are the key. They form the “inductive
+hypothesis” that guarantees closure:
+
+**For employees:**
+
+- `e.manager = e` — the employee is their own manager (a fixed point).
+  This guarantees that the manager FK stays within the selected
+  employees.
+- `e.worksIn.secretary = e` — the employee is the secretary of the
+  department they work in. Combined with the first condition, this
+  ensures that the department’s secretary is a selected, self-managing
+  employee.
+
+**For departments:**
+
+- `d.secretary.worksIn = d` — the department’s secretary works in this
+  department. This is exactly business rule 2.
+- `d.secretary.manager = d.secretary` — the department’s secretary is
+  self-managed. This ensures the secretary satisfies the employee
+  conditions.
+
+Together, these four conditions form a **mutually reinforcing** set of
+constraints: selected employees point only to selected departments and
+selected employees, and vice versa.
+
+## Evaluating the Query
+
+``` julia
+inst_J = env.J
+alg_J = inst_J.algebra
+
+println("Before query (instance I):")
+println("  Employees: ", length(carrier(alg_I, :Employee)))
+println("  Departments: ", length(carrier(alg_I, :Department)))
+
+println("\nAfter query (instance J):")
+println("  Employees: ", length(carrier(alg_J, :Employee)))
+println("  Departments: ", length(carrier(alg_J, :Department)))
+```
+
+    Before query (instance I):
+      Employees: 3
+      Departments: 2
+
+    After query (instance J):
+      Employees: 1
+      Departments: 1
+
+The query reduced 3 employees to 1, and 2 departments to 1. Let’s see
+who survived:
+
+``` julia
+println("=== Surviving Employees ===")
+for x in carrier(alg_J, :Employee)
+    nm = eval_att(alg_J, :first, x)
+    mgr = eval_fk(alg_J, :manager, x)
+    mgr_nm = eval_att(alg_J, :first, mgr)
+    dept = eval_fk(alg_J, :worksIn, x)
+    dept_nm = eval_att(alg_J, :name, dept)
+    println("  ", nm, ": manager=", mgr_nm, ", worksIn=", dept_nm)
+end
+
+println("\n=== Surviving Departments ===")
+for x in carrier(alg_J, :Department)
+    nm = eval_att(alg_J, :name, x)
+    sec = eval_fk(alg_J, :secretary, x)
+    sec_nm = eval_att(alg_J, :first, sec)
+    println("  ", nm, ": secretary=", sec_nm)
+end
+```
+
+    === Surviving Employees ===
+      Camille: manager=Camille, worksIn=Pure Math
+
+    === Surviving Departments ===
+      Pure Math: secretary=Camille
+
+Only **Camille** and **Pure Math** survive. Let’s verify why, by tracing
+through each person in the original data:
+
+``` julia
+println("=== Why Each Person Was Included or Excluded ===\n")
+
+for x in carrier(alg_I, :Employee)
+    nm = eval_att(alg_I, :first, x)
+    mgr = eval_fk(alg_I, :manager, x)
+    is_self_managed = (mgr == x)
+    dept = eval_fk(alg_I, :worksIn, x)
+    sec = eval_fk(alg_I, :secretary, dept)
+    is_own_secretary = (sec == x)
+
+    println(nm, ":")
+    println("  Self-managed (e.manager = e)? ", is_self_managed)
+    println("  Secretary of own dept (e.worksIn.secretary = e)? ", is_own_secretary)
+    if is_self_managed && is_own_secretary
+        println("  => INCLUDED in result")
+    else
+        reasons = String[]
+        !is_self_managed && push!(reasons, "not self-managed")
+        !is_own_secretary && push!(reasons, "not secretary of own department")
+        println("  => EXCLUDED (", join(reasons, ", "), ")")
+    end
+    println()
+end
+```
+
+    === Why Each Person Was Included or Excluded ===
+
+    Camille:
+      Self-managed (e.manager = e)? true
+      Secretary of own dept (e.worksIn.secretary = e)? true
+      => INCLUDED in result
+
+    Audrey:
+      Self-managed (e.manager = e)? true
+      Secretary of own dept (e.worksIn.secretary = e)? false
+      => EXCLUDED (not secretary of own department)
+
+    Alan:
+      Self-managed (e.manager = e)? false
+      Secretary of own dept (e.worksIn.secretary = e)? true
+      => EXCLUDED (not self-managed)
+
+## Verifying the Result
+
+Let’s confirm that instance `J` satisfies both path equations of schema
+`T`:
+
+``` julia
+println("=== Verifying Path Equations in J ===\n")
+
+println("Rule 1: manager.worksIn = worksIn")
+all_ok = true
+for x in carrier(alg_J, :Employee)
+    nm = eval_att(alg_J, :first, x)
+    own_dept = eval_fk(alg_J, :worksIn, x)
+    mgr = eval_fk(alg_J, :manager, x)
+    mgr_dept = eval_fk(alg_J, :worksIn, mgr)
+    ok = own_dept == mgr_dept
+    global all_ok = all_ok && ok
+    println("  ", nm, ": ", ok ? "OK" : "FAILED")
+end
+
+println("\nRule 2: secretary.worksIn = department")
+for x in carrier(alg_J, :Department)
+    nm = eval_att(alg_J, :name, x)
+    sec = eval_fk(alg_J, :secretary, x)
+    sec_dept = eval_fk(alg_J, :worksIn, sec)
+    ok = sec_dept == x
+    all_ok = all_ok && ok
+    println("  ", nm, ": ", ok ? "OK" : "FAILED")
+end
+
+println("\nAll path equations satisfied: ", all_ok)
+```
+
+    === Verifying Path Equations in J ===
+
+    Rule 1: manager.worksIn = worksIn
+      Camille: OK
+
+    Rule 2: secretary.worksIn = department
+      Pure Math: OK
+
+    All path equations satisfied: true
+
+## Discussion
+
+### Why CQL Makes This Easy
+
+In CQL, the programmer specifies:
+
+1.  **What to select** (the `from` clause): iterate over source entities
+2.  **What constraints to impose** (the `where` clause): equations
+    between paths
+3.  **How to map the result** (the `attributes` and `foreign_keys`
+    clauses): term-level mappings
+
+The CQL system then:
+
+- Enumerates all satisfying tuples (like a database join)
+- Builds the result instance with proper FK structure
+- Invokes an **automated theorem prover** to verify the result satisfies
+  the target schema’s path equations
+- Guarantees that the result is a valid instance of the constrained
+  schema `T`
+
+The theorem prover handles all the inductive reasoning about closure
+automatically. The user only needs to find the right where-clauses — and
+can iterate quickly, trying different queries until the prover confirms
+correctness.
+
+### Why SQL Struggles
+
+In SQL, the equivalent operation requires:
+
+1.  A **recursive CTE** or iterative procedure to compute the fixpoint
+2.  Careful reasoning about **termination** (will the recursion stop?)
+3.  Manual verification that the result is **closed** under all foreign
+    keys
+4.  No automated proof that business rules hold in the result
+
+The fundamental issue is that SQL operates on individual tables, while
+the CQL query operates on the entire **schema** simultaneously, with the
+theorem prover ensuring global consistency.
+
+### The Interactive Development Process
+
+A CQL user arrives at `good1` through an interactive process:
+
+1.  Start with a simple query (e.g., just filter
+    `e.manager.worksIn = e.worksIn`)
+2.  Run it — the theorem prover rejects it (the result doesn’t satisfy
+    `T`’s equations)
+3.  Add more where-clauses to strengthen the inductive hypothesis
+4.  Repeat until the prover accepts
+
+This is analogous to interactive theorem proving: the user proposes
+lemmas (where-clauses), and the system checks whether they are strong
+enough to prove the theorem (that the output satisfies `T`).
+
+## Summary
+
+| Aspect | SQL | CQL |
+|----|----|----|
+| **Query type** | Recursive CTE / fixpoint | Single uber-flower query |
+| **Closure guarantee** | Manual reasoning | Automated theorem prover |
+| **Correctness** | Programmer must verify | System guarantees |
+| **Development** | Trial and error without feedback | Interactive: prover gives yes/no |
+| **Schema constraints** | Triggers / application logic | Path equations (mathematical) |
+
+The CQL approach transforms a difficult programming problem into an
+interactive search for the right where-clauses, with the theorem prover
+providing immediate feedback on correctness.

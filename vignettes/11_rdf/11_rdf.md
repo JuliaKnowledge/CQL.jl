@@ -1,0 +1,533 @@
+# RDF Integration with CQL
+CQL.jl
+
+## Introduction
+
+The **Resource Description Framework (RDF)** is the W3C standard for
+representing knowledge as subject–predicate–object triples. RDF
+underpins the Semantic Web, linked data, and ontology standards like
+OWL. Querying RDF typically uses **SPARQL**, a graph pattern matching
+language.
+
+CQL.jl provides native RDF/XML export and import, enabling a bridge
+between CQL’s categorical data integration framework and the Semantic
+Web ecosystem:
+
+1.  **Export** a CQL instance to RDF/XML, producing schema triples
+    (classes, properties) and data triples
+2.  **Import** an RDF/XML file as a flat triple instance (subject,
+    predicate, object)
+3.  **Spanify** the imported triples into a structured schema with one
+    entity per predicate
+4.  **Query** the result using CQL’s uber-flower queries, which
+    generalize both SQL `SELECT` and SPARQL `SELECT WHERE`
+
+This round-trip demonstrates CQL’s ability to interoperate with RDF
+while providing stronger guarantees than SPARQL alone.
+
+``` julia
+using CQL
+```
+
+## The Source Instance
+
+We start with a schema describing employees and departments — the same
+structure used throughout the CQL documentation — and populate it with
+sample data.
+
+``` julia
+rdf_path = joinpath(tempdir(), "employees.rdf.xml")
+
+env = run_program("""
+typeside Ty = literal {
+    types
+        String Integer
+    constants
+        Al Akin Bob Bo Carl Cork Dan Dunn Math CS : String
+}
+
+schema S = literal : Ty {
+    entities
+        Employee Department
+    foreign_keys
+        manager   : Employee -> Employee
+        worksIn   : Employee -> Department
+        secretary : Department -> Employee
+    attributes
+        first last : Employee -> String
+        name       : Department -> String
+    path_equations
+        Employee.manager.worksIn = Employee.worksIn
+        Department.secretary.worksIn = Department
+}
+
+instance I = literal : S {
+    generators
+        a b c : Employee
+        m s   : Department
+    equations
+        first(a) = Al    last(a) = Akin
+        first(b) = Bob   last(b) = Bo
+        first(c) = Carl  last(c) = Cork
+        manager(a) = b   manager(b) = b   manager(c) = c
+        worksIn(a) = m   worksIn(b) = m   worksIn(c) = s
+        secretary(m) = b secretary(s) = c
+        name(m) = Math   name(s) = CS
+}
+""")
+
+alg = env.I.algebra
+println("Source instance:")
+for x in carrier(alg, :Employee)
+    f = eval_att(alg, :first, x)
+    l = eval_att(alg, :last, x)
+    d = eval_att(alg, :name, eval_fk(alg, :worksIn, x))
+    println("  $f $l — works in $d")
+end
+```
+
+    Source instance:
+      Carl Cork — works in CS
+      Al Akin — works in Math
+      Bob Bo — works in Math
+
+The instance has 3 employees and 2 departments, with path equations
+enforcing that managers work in the same department as their reports.
+
+## Exporting to RDF/XML
+
+The `export_rdf_instance_xml` command serializes a CQL instance as
+RDF/XML. It generates:
+
+- **Schema triples**: each entity becomes an `rdfs:Class`, each
+  attribute and foreign key becomes an `rdf:Property` with `rdfs:domain`
+  and `rdfs:range`
+- **Data triples**: each element gets an `rdf:type` triple, attribute
+  values become literal triples, and foreign key targets become resource
+  links
+
+Elements are identified by URIs of the form `cql://entity/Employee/0`,
+attributes by `cql://attribute/Employee/first`, and foreign keys by
+`cql://foreign_key/Employee/manager`.
+
+``` julia
+env2 = run_program("""
+typeside Ty = literal {
+    types
+        String Integer
+    constants
+        Al Akin Bob Bo Carl Cork Dan Dunn Math CS : String
+}
+
+schema S = literal : Ty {
+    entities
+        Employee Department
+    foreign_keys
+        manager   : Employee -> Employee
+        worksIn   : Employee -> Department
+        secretary : Department -> Employee
+    attributes
+        first last : Employee -> String
+        name       : Department -> String
+    path_equations
+        Employee.manager.worksIn = Employee.worksIn
+        Department.secretary.worksIn = Department
+}
+
+instance I = literal : S {
+    generators
+        a b c : Employee
+        m s   : Department
+    equations
+        first(a) = Al    last(a) = Akin
+        first(b) = Bob   last(b) = Bo
+        first(c) = Carl  last(c) = Cork
+        manager(a) = b   manager(b) = b   manager(c) = c
+        worksIn(a) = m   worksIn(b) = m   worksIn(c) = s
+        secretary(m) = b secretary(s) = c
+        name(m) = Math   name(s) = CS
+}
+
+command cmd1 = export_rdf_instance_xml I "$rdf_path" {
+    external_types
+        String -> "http://www.w3.org/2001/XMLSchema#string"
+}
+""")
+println("Exported to: $rdf_path")
+```
+
+    Exported to: /var/folders/yh/30rj513j6mn1n7x556c2v4w80000gn/T/employees.rdf.xml
+
+Let’s examine the generated RDF/XML:
+
+``` julia
+rdf_xml = read(rdf_path, String)
+# Show a manageable excerpt
+lines = split(rdf_xml, '\n')
+println("RDF/XML ($(length(lines)) lines, first 40 shown):")
+println(join(lines[1:min(40, length(lines))], '\n'))
+if length(lines) > 40
+    println("...")
+end
+```
+
+    RDF/XML (77 lines, first 40 shown):
+    <?xml version="1.0" encoding="UTF-8"?>
+    <rdf:RDF
+        xmlns:j.0="cql://attribute/Department/"
+        xmlns:j.1="cql://attribute/Employee/"
+        xmlns:j.2="cql://foreign_key/Department/"
+        xmlns:j.3="cql://foreign_key/Employee/"
+        xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+        xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+      <rdf:Description rdf:about="cql://attribute/Department/name">
+        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+        <rdfs:domain rdf:resource="cql://entity/Department"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+      </rdf:Description>
+      <rdf:Description rdf:about="cql://attribute/Employee/first">
+        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+        <rdfs:domain rdf:resource="cql://entity/Employee"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+      </rdf:Description>
+      <rdf:Description rdf:about="cql://attribute/Employee/last">
+        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+        <rdfs:domain rdf:resource="cql://entity/Employee"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+      </rdf:Description>
+      <rdf:Description rdf:about="cql://entity/Department">
+        <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+      </rdf:Description>
+      <rdf:Description rdf:about="cql://entity/Department/0">
+        <rdf:type rdf:resource="cql://entity/Department"/>
+        <j.0:name>Math</j.0:name>
+        <j.2:secretary rdf:resource="cql://entity/Employee/1"/>
+      </rdf:Description>
+      <rdf:Description rdf:about="cql://entity/Department/1">
+        <rdf:type rdf:resource="cql://entity/Department"/>
+        <j.0:name>CS</j.0:name>
+        <j.2:secretary rdf:resource="cql://entity/Employee/2"/>
+      </rdf:Description>
+      <rdf:Description rdf:about="cql://entity/Employee">
+        <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+      </rdf:Description>
+      <rdf:Description rdf:about="cql://entity/Employee/0">
+    ...
+
+The RDF/XML contains the full schema and data. Each employee appears as
+an `rdf:Description` element with its type, attributes (as literal text
+content), and foreign keys (as `rdf:resource` links to other entity
+URIs).
+
+## Importing RDF/XML
+
+The `import_rdf_all` expression reads an RDF/XML file and produces a CQL
+instance on a fixed schema with a single entity `R` carrying three
+attributes: `subject`, `predicate`, and `object`, all of type `Dom`.
+Every triple in the RDF file becomes one generator in the instance.
+
+``` julia
+env3 = run_program("""
+typeside Ty = literal {
+    types
+        String Integer
+    constants
+        Al Akin Bob Bo Carl Cork Dan Dunn Math CS : String
+}
+
+schema S = literal : Ty {
+    entities
+        Employee Department
+    foreign_keys
+        manager   : Employee -> Employee
+        worksIn   : Employee -> Department
+        secretary : Department -> Employee
+    attributes
+        first last : Employee -> String
+        name       : Department -> String
+    path_equations
+        Employee.manager.worksIn = Employee.worksIn
+        Department.secretary.worksIn = Department
+}
+
+instance I = literal : S {
+    generators
+        a b c : Employee
+        m s   : Department
+    equations
+        first(a) = Al    last(a) = Akin
+        first(b) = Bob   last(b) = Bo
+        first(c) = Carl  last(c) = Cork
+        manager(a) = b   manager(b) = b   manager(c) = c
+        worksIn(a) = m   worksIn(b) = m   worksIn(c) = s
+        secretary(m) = b secretary(s) = c
+        name(m) = Math   name(s) = CS
+}
+
+command cmd1 = export_rdf_instance_xml I "$rdf_path" {
+    external_types
+        String -> "http://www.w3.org/2001/XMLSchema#string"
+}
+
+instance J = import_rdf_all "$rdf_path"
+""")
+
+alg_j = env3.J.algebra
+n_triples = length(carrier(alg_j, :R))
+println("Imported $n_triples triples into instance J")
+println("\nSample triples (first 10):")
+for (i, x) in enumerate(carrier(alg_j, :R))
+    i > 10 && break
+    s = eval_att(alg_j, :subject, x)
+    p = eval_att(alg_j, :predicate, x)
+    o = eval_att(alg_j, :object, x)
+    println("  $s")
+    println("    $p")
+    println("    $o")
+    println()
+end
+```
+
+    Imported 41 triples into instance J
+
+    Sample triples (first 10):
+      cql://entity/Employee/0
+        http://www.w3.org/1999/02/22-rdf-syntax-ns#type
+        cql://entity/Employee
+
+      cql://entity/Employee/0
+        cql://foreign_key/Employee/worksIn
+        cql://entity/Department/0
+
+      cql://entity/Employee/2
+        cql://attribute/Employee/last
+        Cork
+
+      cql://foreign_key/Department/secretary
+        http://www.w3.org/2000/01/rdf-schema#range
+        cql://entity/Employee
+
+      cql://attribute/Employee/last
+        http://www.w3.org/2000/01/rdf-schema#domain
+        cql://entity/Employee
+
+      cql://attribute/Department/name
+        http://www.w3.org/2000/01/rdf-schema#range
+        http://www.w3.org/2001/XMLSchema#string
+
+      cql://entity/Employee/1
+        cql://attribute/Employee/first
+        Bob
+
+      cql://foreign_key/Employee/worksIn
+        http://www.w3.org/2000/01/rdf-schema#range
+        cql://entity/Department
+
+      cql://entity/Department/0
+        cql://foreign_key/Department/secretary
+        cql://entity/Employee/1
+
+      cql://entity/Employee/0
+        cql://attribute/Employee/first
+        Al
+
+The imported instance `J` is a flat “triple store” — every RDF triple
+becomes a row with subject, predicate, and object as string attributes.
+This is analogous to loading RDF into a single-table triple store, but
+within CQL’s algebraic framework.
+
+## Spanifying: From Triples to Structure
+
+The `spanify` operation restructures a flat triple instance into a
+schema with **one entity per distinct predicate**. Each entity has
+`subject` and `object` attributes of type `Dom`. This transforms the
+unstructured triple store into a structured schema that CQL can reason
+about.
+
+``` julia
+env4 = run_program("""
+typeside Ty = literal {
+    types
+        String Integer
+    constants
+        Al Akin Bob Bo Carl Cork Dan Dunn Math CS : String
+}
+
+schema S = literal : Ty {
+    entities
+        Employee Department
+    foreign_keys
+        manager   : Employee -> Employee
+        worksIn   : Employee -> Department
+        secretary : Department -> Employee
+    attributes
+        first last : Employee -> String
+        name       : Department -> String
+    path_equations
+        Employee.manager.worksIn = Employee.worksIn
+        Department.secretary.worksIn = Department
+}
+
+instance I = literal : S {
+    generators
+        a b c : Employee
+        m s   : Department
+    equations
+        first(a) = Al    last(a) = Akin
+        first(b) = Bob   last(b) = Bo
+        first(c) = Carl  last(c) = Cork
+        manager(a) = b   manager(b) = b   manager(c) = c
+        worksIn(a) = m   worksIn(b) = m   worksIn(c) = s
+        secretary(m) = b secretary(s) = c
+        name(m) = Math   name(s) = CS
+}
+
+command cmd1 = export_rdf_instance_xml I "$rdf_path" {
+    external_types
+        String -> "http://www.w3.org/2001/XMLSchema#string"
+}
+
+instance J = import_rdf_all "$rdf_path"
+
+instance K = spanify J
+""")
+
+alg_k = env4.K.algebra
+sch_k = env4.K.schema
+println("Spanified schema entities:")
+for en in sort(collect(sch_k.ens))
+    n = length(carrier(alg_k, en))
+    println("  $en: $n rows")
+end
+```
+
+    Spanified schema entities:
+      cql://attribute/Department/name: 2 rows
+      cql://attribute/Employee/first: 3 rows
+      cql://attribute/Employee/last: 3 rows
+      cql://foreign_key/Department/secretary: 2 rows
+      cql://foreign_key/Employee/manager: 3 rows
+      cql://foreign_key/Employee/worksIn: 3 rows
+      http://www.w3.org/1999/02/22-rdf-syntax-ns#type: 13 rows
+      http://www.w3.org/2000/01/rdf-schema#domain: 6 rows
+      http://www.w3.org/2000/01/rdf-schema#range: 6 rows
+
+Each RDF predicate (like `rdf:type`, `cql://attribute/Employee/first`,
+`cql://foreign_key/Employee/manager`) becomes its own entity. This
+structured representation enables targeted queries on specific
+relationships.
+
+## CQL vs SPARQL
+
+CQL and SPARQL both query graph-structured data, but they operate at
+fundamentally different levels of abstraction.
+
+### Pattern Matching vs Schema-Level Reasoning
+
+**SPARQL** works by graph pattern matching — you write triple patterns
+and the engine finds all bindings:
+
+``` sparql
+# SPARQL: Find employees and their departments
+SELECT ?emp ?dept WHERE {
+    ?emp <cql://foreign_key/Employee/worksIn> ?deptNode .
+    ?deptNode <cql://attribute/Department/name> ?dept .
+    ?emp <cql://attribute/Employee/first> ?empName .
+}
+```
+
+**CQL** queries are *typed* against a schema. The schema declares
+entities, foreign keys, and attributes, and the query follows foreign
+key paths with compile-time type checking:
+
+    # CQL: same query, schema-aware
+    query Q = literal : S -> Result {
+        entity Row -> {
+            from e : Employee
+            attributes
+                empName  -> e.first
+                deptName -> e.worksIn.name
+        }
+    }
+
+The CQL version:
+
+- **Validates at definition time** — if `worksIn` doesn’t exist or
+  doesn’t point to `Department`, the query is rejected before any data
+  is involved
+- **Composes with data migration** — the same query can be combined with
+  `delta`, `sigma`, and schema colimits
+- **Generates provenance** — each result element tracks which source
+  generators produced it
+
+### Data Migration: What SPARQL Cannot Do
+
+SPARQL is a *query* language — it retrieves data from a graph but cannot
+express **schema-level transformations**. CQL’s functorial operations
+have no SPARQL equivalent:
+
+| Operation | CQL | SPARQL |
+|----|----|----|
+| **Schema merging** | `schema_colimit` | Manual ontology alignment (OWL imports) |
+| **Data pullback** | `delta F I` | Not expressible |
+| **Data pushforward** | `sigma F I` | Not expressible |
+| **Schema evolution** | Mapping + migration | SPARQL UPDATE (ad-hoc) |
+| **Constraint propagation** | Path equations, observation equations | SHACL/ShEx (separate validation layer) |
+| **Labeled nulls** | Automatic Skolem terms | No equivalent |
+
+In SPARQL, integrating data from two ontologies requires writing
+`CONSTRUCT` queries that manually translate between vocabularies. In
+CQL, you define a schema colimit identifying corresponding entities, and
+the `sigma` migration handles the data automatically:
+
+    # CQL: Merge two ontologies
+    schema_colimit C = quotient SchemaA + SchemaB : Ty {
+        entity_equations
+            SchemaA.Person = SchemaB.Individual
+    }
+    instance Merged = coproduct (sigma mappingA dataA) + (sigma mappingB dataB) : Combined
+
+### Round-Trip Guarantees
+
+CQL’s delta–sigma adjunction guarantees that `sigma F (delta F I)`
+recovers the original instance `I` (up to isomorphism) when the mapping
+is well-behaved. This is a **mathematical theorem**, not an empirical
+observation. SPARQL has no analogous guarantee — a `CONSTRUCT` followed
+by a `SELECT` may lose information silently.
+
+### When to Use Which
+
+| Use Case                                     | Best Tool    |
+|----------------------------------------------|--------------|
+| Ad-hoc queries over existing RDF stores      | SPARQL       |
+| Schema-level data integration                | CQL          |
+| Ontology merging with correctness guarantees | CQL          |
+| Federated queries across SPARQL endpoints    | SPARQL       |
+| Data migration between evolving schemas      | CQL          |
+| Publishing linked data                       | RDF + SPARQL |
+| ETL with provenance tracking                 | CQL          |
+
+CQL and SPARQL are complementary: use CQL for the *structural*
+integration work (schema merging, data migration, constraint
+propagation), then export to RDF for *publication* and SPARQL querying.
+
+## Summary
+
+| Concept | CQL Syntax | Description |
+|----|----|----|
+| **RDF Export** | `command c = export_rdf_instance_xml I "file.xml" { ... }` | Serialize instance as RDF/XML |
+| **RDF Import** | `instance J = import_rdf_all "file.xml"` | Load RDF/XML as flat triples |
+| **Spanify** | `instance K = spanify J` | Restructure triples into per-predicate entities |
+
+The RDF integration pipeline enables CQL to interoperate with the
+Semantic Web ecosystem while providing guarantees that SPARQL alone
+cannot:
+
+- **Schema-level correctness**: path equations and observation equations
+  are enforced across all operations, not just checked after the fact
+- **Functorial composition**: delta, sigma, and queries compose with
+  mathematical precision
+- **Labeled nulls**: missing data is tracked symbolically, not collapsed
+  into a single `NULL`
+- **Round-trip fidelity**: export → import → spanify preserves the
+  relational structure of the original instance

@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Simon Frost" />
+  <title>Formal Verification of CQL.jl</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {  background-color: #f8f8f8; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ef2929; } /* Alert */
+    code span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #204a87; } /* Attribute */
+    code span.bn { color: #0000cf; } /* BaseN */
+    code span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4e9a06; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #8f5902; font-style: italic; } /* Comment */
+    code span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+    code span.dt { color: #204a87; } /* DataType */
+    code span.dv { color: #0000cf; } /* DecVal */
+    code span.er { color: #a40000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #0000cf; } /* Float */
+    code span.fu { color: #204a87; font-weight: bold; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+    code span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+    code span.ot { color: #8f5902; } /* Other */
+    code span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+    code span.sc { color: #ce5c00; font-weight: bold; } /* SpecialChar */
+    code span.ss { color: #4e9a06; } /* SpecialString */
+    code span.st { color: #4e9a06; } /* String */
+    code span.va { color: #000000; } /* Variable */
+    code span.vs { color: #4e9a06; } /* VerbatimString */
+    code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="style.css" />
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Formal Verification of CQL.jl</h1>
+<p class="author">Simon Frost</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#formal-verification-of-cql.jl"
+id="toc-formal-verification-of-cql.jl">Formal Verification of CQL.jl</a>
+<ul>
+<li><a href="#introduction" id="toc-introduction">Introduction</a>
+<ul>
+<li><a href="#structure-of-the-formalisation"
+id="toc-structure-of-the-formalisation">Structure of the
+Formalisation</a></li>
+<li><a href="#summary-of-results" id="toc-summary-of-results">Summary of
+Results</a></li>
+<li><a href="#background-and-references"
+id="toc-background-and-references">Background and References</a></li>
+</ul></li>
+<li><a href="#part-1-the-category-of-schemas-and-mappings"
+id="toc-part-1-the-category-of-schemas-and-mappings">Part 1: The
+Category of Schemas and Mappings</a>
+<ul>
+<li><a href="#key-results" id="toc-key-results">Key Results</a></li>
+</ul></li>
+<li><a href="#part-2-the-category-of-instances-and-transforms"
+id="toc-part-2-the-category-of-instances-and-transforms">Part 2: The
+Category of Instances and Transforms</a>
+<ul>
+<li><a href="#key-results-1" id="toc-key-results-1">Key Results</a></li>
+</ul></li>
+<li><a href="#part-3-the-delta-sigma-adjunction"
+id="toc-part-3-the-delta-sigma-adjunction">Part 3: The Delta-Sigma
+Adjunction</a>
+<ul>
+<li><a href="#unit-and-counit" id="toc-unit-and-counit">Unit and
+Counit</a></li>
+<li><a href="#triangle-identities" id="toc-triangle-identities">Triangle
+Identities</a></li>
+<li><a href="#naturality" id="toc-naturality">Naturality</a></li>
+<li><a href="#limit-and-colimit-preservation"
+id="toc-limit-and-colimit-preservation">Limit and Colimit
+Preservation</a></li>
+<li><a href="#full-faithfulness" id="toc-full-faithfulness">Full
+Faithfulness</a></li>
+</ul></li>
+<li><a href="#part-4-query-functoriality-and-composition"
+id="toc-part-4-query-functoriality-and-composition">Part 4: Query
+Functoriality and Composition</a>
+<ul>
+<li><a href="#key-results-2" id="toc-key-results-2">Key Results</a></li>
+</ul></li>
+<li><a href="#part-5-schema-colimits"
+id="toc-part-5-schema-colimits">Part 5: Schema Colimits</a>
+<ul>
+<li><a href="#universal-property" id="toc-universal-property">Universal
+Property</a></li>
+<li><a href="#binary-coproducts" id="toc-binary-coproducts">Binary
+Coproducts</a></li>
+</ul></li>
+<li><a href="#part-6-the-chase-algorithm"
+id="toc-part-6-the-chase-algorithm">Part 6: The Chase Algorithm</a>
+<ul>
+<li><a href="#least-fixpoint-knaster-tarski"
+id="toc-least-fixpoint-knaster-tarski">Least Fixpoint
+(Knaster-Tarski)</a></li>
+<li><a href="#egd-and-tgd-properties"
+id="toc-egd-and-tgd-properties">EGD and TGD Properties</a></li>
+</ul></li>
+<li><a href="#part-7-equational-reasoning"
+id="toc-part-7-equational-reasoning">Part 7: Equational Reasoning</a>
+<ul>
+<li><a href="#congruence-closure" id="toc-congruence-closure">Congruence
+Closure</a></li>
+<li><a href="#substitution-soundness"
+id="toc-substitution-soundness">Substitution Soundness</a></li>
+</ul></li>
+<li><a href="#part-8-the-eval-coeval-adjunction"
+id="toc-part-8-the-eval-coeval-adjunction">Part 8: The Eval-Coeval
+Adjunction</a>
+<ul>
+<li><a href="#triangle-identities-1"
+id="toc-triangle-identities-1">Triangle Identities</a></li>
+</ul></li>
+<li><a href="#part-9-initial-algebras"
+id="toc-part-9-initial-algebras">Part 9: Initial Algebras</a>
+<ul>
+<li><a href="#universal-property-1"
+id="toc-universal-property-1">Universal Property</a></li>
+<li><a href="#no-junk-no-confusion" id="toc-no-junk-no-confusion">No
+Junk, No Confusion</a></li>
+</ul></li>
+<li><a href="#part-10-instance-coproducts"
+id="toc-part-10-instance-coproducts">Part 10: Instance Coproducts</a>
+<ul>
+<li><a href="#universal-property-2"
+id="toc-universal-property-2">Universal Property</a></li>
+<li><a href="#sigma-distributes-over-coproducts"
+id="toc-sigma-distributes-over-coproducts">Sigma Distributes over
+Coproducts</a></li>
+<li><a href="#commutativity"
+id="toc-commutativity">Commutativity</a></li>
+</ul></li>
+<li><a href="#building-and-verifying"
+id="toc-building-and-verifying">Building and Verifying</a>
+<ul>
+<li><a href="#prerequisites"
+id="toc-prerequisites">Prerequisites</a></li>
+<li><a href="#commands" id="toc-commands">Commands</a></li>
+<li><a href="#project-structure" id="toc-project-structure">Project
+Structure</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="formal-verification-of-cql.jl">Formal Verification of
+CQL.jl</h1>
+<p><em>Author: Simon Frost</em></p>
+<h2 id="introduction">Introduction</h2>
+<p>The <strong>Categorical Query Language</strong> (CQL) is a data
+integration language grounded in category theory. CQL provides
+mathematically guaranteed correct data migrations between schemas via
+functorial operations. CQL.jl is a Julia implementation of CQL.</p>
+<p>This document presents machine-checked Lean 4 proofs of the core
+category-theoretic claims underlying CQL.jl. Every theorem is verified
+by the Lean type-checker using <a
+href="https://leanprover-community.github.io/mathlib4_docs/">Mathlib</a>,
+the mathematical library for Lean 4. There are no <code>sorry</code>
+statements — all proofs are complete.</p>
+<p>The formalisation covers the fundamental algebraic and categorical
+structures that guarantee CQL’s correctness:</p>
+<ol type="1">
+<li><strong>Categories</strong> of schemas, instances, and queries</li>
+<li><strong>Functorial data migration</strong> via the Delta-Sigma
+adjunction</li>
+<li><strong>Schema colimits</strong> for data fusion</li>
+<li><strong>Query composition</strong> and functoriality</li>
+<li><strong>The chase algorithm</strong> as a least fixpoint</li>
+<li><strong>Equational reasoning</strong> soundness (congruence
+closure)</li>
+<li><strong>Initial algebras</strong> for instance construction</li>
+<li><strong>Instance coproducts</strong> for combining datasets</li>
+</ol>
+<h3 id="structure-of-the-formalisation">Structure of the
+Formalisation</h3>
+<table>
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 28%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>Part</th>
+<th>File</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>SchemaCategory.lean</code></td>
+<td>Schemas and mappings form a category</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>TransformCategory.lean</code></td>
+<td>Instances and transforms form a category</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>DeltaSigmaAdjunction.lean</code></td>
+<td>The Sigma-Delta adjunction and its properties</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>QueryFunctor.lean</code></td>
+<td>Queries form a category; evaluation is functorial</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>SchemaColimit.lean</code></td>
+<td>Schema colimits satisfy the universal property</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>Chase.lean</code></td>
+<td>The chase computes a least fixpoint</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>EquationalReasoning.lean</code></td>
+<td>Congruence closure is a sound closure operator</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>CoEval.lean</code></td>
+<td>The eval-coeval adjunction for queries</td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>InitialAlgebra.lean</code></td>
+<td>Instance construction yields initial algebras</td>
+</tr>
+<tr>
+<td>10</td>
+<td><code>InstanceCoproduct.lean</code></td>
+<td>Instance coproducts and their universal property</td>
+</tr>
+</tbody>
+</table>
+<h3 id="summary-of-results">Summary of Results</h3>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 32%" />
+<col style="width: 24%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Result</th>
+<th>File</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Schemas and mappings form a category (identity, composition,
+associativity)</td>
+<td><code>SchemaCategory</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Schemas are a Mathlib <code>Category</code> instance</td>
+<td><code>SchemaCategory</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Instances and transforms form a category</td>
+<td><code>TransformCategory</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Instances are a Mathlib <code>Category</code> instance</td>
+<td><code>TransformCategory</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Sigma-Delta hom-set equivalence: Hom(Σ_F(I), J) ≅ Hom(I,
+Δ_F(J))</td>
+<td><code>DeltaSigmaAdjunction</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Adjunction unit η_I : I → Δ_F(Σ_F(I)) exists</td>
+<td><code>DeltaSigmaAdjunction</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Adjunction counit ε_J : Σ_F(Δ_F(J)) → J exists</td>
+<td><code>DeltaSigmaAdjunction</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Left triangle identity: Σ_F(η) ≫ ε = id</td>
+<td><code>DeltaSigmaAdjunction</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Right triangle identity: η ≫ Δ_F(ε) = id</td>
+<td><code>DeltaSigmaAdjunction</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Unit naturality: η commutes with transforms</td>
+<td><code>DeltaSigmaAdjunction</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Counit naturality: ε commutes with transforms</td>
+<td><code>DeltaSigmaAdjunction</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Forward round-trip: push-pull-push = identity</td>
+<td><code>DeltaSigmaAdjunction</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Backward round-trip: pull-push-pull = identity</td>
+<td><code>DeltaSigmaAdjunction</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Σ_F is a left adjoint (preserves colimits)</td>
+<td><code>DeltaSigmaAdjunction</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Δ_F is a right adjoint (preserves limits)</td>
+<td><code>DeltaSigmaAdjunction</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Counit iso when Δ_F fully faithful</td>
+<td><code>DeltaSigmaAdjunction</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>17</td>
+<td>Unit iso when Σ_F fully faithful</td>
+<td><code>DeltaSigmaAdjunction</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>18</td>
+<td>Queries form a category (identity, composition, associativity)</td>
+<td><code>QueryFunctor</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>19</td>
+<td>Query evaluation preserves identity</td>
+<td><code>QueryFunctor</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>20</td>
+<td>Query evaluation preserves composition</td>
+<td><code>QueryFunctor</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>21</td>
+<td>Colimit cocone inclusions exist</td>
+<td><code>SchemaColimit</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>22</td>
+<td>Cocone commutativity (entity equations respected)</td>
+<td><code>SchemaColimit</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>23</td>
+<td>Colimit factoring morphism exists</td>
+<td><code>SchemaColimit</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>24</td>
+<td>Colimit factoring morphism is unique</td>
+<td><code>SchemaColimit</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>25</td>
+<td>Binary coproduct inclusions exist</td>
+<td><code>SchemaColimit</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>26</td>
+<td>Binary coproduct universal property</td>
+<td><code>SchemaColimit</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>27</td>
+<td>Chase operator is monotone</td>
+<td><code>Chase</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>28</td>
+<td>Least fixpoint exists (Knaster-Tarski)</td>
+<td><code>Chase</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>29</td>
+<td>Least fixpoint is a fixpoint</td>
+<td><code>Chase</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>30</td>
+<td>Least fixpoint is minimal</td>
+<td><code>Chase</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>31</td>
+<td>EGD carrier non-increasing</td>
+<td><code>Chase</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>32</td>
+<td>TGD carrier non-decreasing</td>
+<td><code>Chase</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>33</td>
+<td>Provable equality is an equivalence relation</td>
+<td><code>EquationalReasoning</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>34</td>
+<td>Congruence closure is extensive</td>
+<td><code>EquationalReasoning</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>35</td>
+<td>Congruence closure is monotone</td>
+<td><code>EquationalReasoning</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>36</td>
+<td>Congruence closure is idempotent</td>
+<td><code>EquationalReasoning</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>37</td>
+<td>Substitution preserves equality (congruence)</td>
+<td><code>EquationalReasoning</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>38</td>
+<td>Universal instantiation</td>
+<td><code>EquationalReasoning</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>39</td>
+<td>Eval-coeval hom-set equivalence</td>
+<td><code>CoEval</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>40</td>
+<td>Coeval unit exists</td>
+<td><code>CoEval</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>41</td>
+<td>Coeval counit exists</td>
+<td><code>CoEval</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>42</td>
+<td>Coeval left triangle identity</td>
+<td><code>CoEval</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>43</td>
+<td>Coeval right triangle identity</td>
+<td><code>CoEval</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>44</td>
+<td>Coeval unit naturality</td>
+<td><code>CoEval</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>45</td>
+<td>Coeval counit naturality</td>
+<td><code>CoEval</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>46</td>
+<td>Initial object morphism exists</td>
+<td><code>InitialAlgebra</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>47</td>
+<td>Initial object morphism is unique</td>
+<td><code>InitialAlgebra</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>48</td>
+<td>No junk: carrier = image of term evaluation</td>
+<td><code>InitialAlgebra</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>49</td>
+<td>No confusion: nf equality iff provable equality</td>
+<td><code>InitialAlgebra</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>50</td>
+<td>Instance coproduct left inclusion</td>
+<td><code>InstanceCoproduct</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>51</td>
+<td>Instance coproduct right inclusion</td>
+<td><code>InstanceCoproduct</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>52</td>
+<td>Instance coproduct universal property</td>
+<td><code>InstanceCoproduct</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>53</td>
+<td>Instance coproduct factoring uniqueness</td>
+<td><code>InstanceCoproduct</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>54</td>
+<td>Sigma distributes over coproducts</td>
+<td><code>InstanceCoproduct</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Coproduct commutativity: I + J ≅ J + I</td>
+<td><code>InstanceCoproduct</code></td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<p>All 55 results are fully machine-checked with no <code>sorry</code>
+statements.</p>
+<h3 id="background-and-references">Background and References</h3>
+<p>CQL is based on the theory of functorial data migration developed by
+Spivak and collaborators:</p>
+<ul>
+<li>D. I. Spivak, <em>Functorial data migration</em>, Inform. Comput.
+217 (2012), pp. 31–51, <a
+href="https://arxiv.org/abs/1009.1166">arXiv:1009.1166</a>.</li>
+<li>P. Wisnesky, R. Breiner, D. I. Spivak, <em>Algebraic databases</em>,
+Theory Appl. Categ. 32 (2017), <a
+href="https://arxiv.org/abs/1602.03501">arXiv:1602.03501</a>.</li>
+<li>K. Brown, D. I. Spivak, R. Wisnesky, <em>Categorical data
+integration for computational science</em>, Comput. Materials Sci. 164
+(2019), <a
+href="https://arxiv.org/abs/1903.10579">arXiv:1903.10579</a>.</li>
+</ul>
+<hr />
+<h2 id="part-1-the-category-of-schemas-and-mappings">Part 1: The
+Category of Schemas and Mappings</h2>
+<p><em>Source: <code>SchemaCategory.lean</code></em></p>
+<p>The foundational claim of CQL is that database schemas and
+structure-preserving mappings between them form a
+<strong>category</strong>. This category, which we call
+<strong>Sch</strong>, has:</p>
+<ul>
+<li><strong>Objects</strong>: CQL schemas (entities, foreign keys,
+attributes, equations)</li>
+<li><strong>Morphisms</strong>: CQL mappings (structure-preserving maps
+between schemas)</li>
+<li><strong>Identity</strong>: The identity mapping on any schema</li>
+<li><strong>Composition</strong>: Sequential composition of
+mappings</li>
+</ul>
+<p>The category axioms — left identity, right identity, and
+associativity — ensure that multi-step data migration pipelines are
+well-behaved regardless of how intermediate steps are grouped.</p>
+<p>In CQL.jl, schemas are defined in <code>Schema.jl</code> and mappings
+in <code>Mapping.jl</code>. The functions
+<code>identity_mapping(sch)</code> and
+<code>compose_mapping(f, g)</code> implement the identity and
+composition operations.</p>
+<h3 id="key-results">Key Results</h3>
+<pre class="lean"><code>/-- Left identity: composing the identity mapping before f gives f. -/
+theorem schema_id_comp {S T : SchemaObj} (f : SchemaMor S T) :
+    SchemaMor.comp (SchemaMor.id S) f = f</code></pre>
+<pre class="lean"><code>/-- Right identity: composing f with the identity mapping gives f. -/
+theorem schema_comp_id {S T : SchemaObj} (f : SchemaMor S T) :
+    SchemaMor.comp f (SchemaMor.id T) = f</code></pre>
+<pre class="lean"><code>/-- Associativity: composition of three mappings is independent of grouping. -/
+theorem schema_comp_assoc {S T U V : SchemaObj}
+    (f : SchemaMor S T) (g : SchemaMor T U) (h : SchemaMor U V) :
+    SchemaMor.comp (SchemaMor.comp f g) h = SchemaMor.comp f (SchemaMor.comp g h)</code></pre>
+<p>These three theorems, together with the <code>Category</code>
+instance, establish that CQL.jl’s <code>compose_mapping</code> and
+<code>identity_mapping</code> satisfy the category axioms. This is the
+prerequisite for all subsequent categorical constructions.</p>
+<hr />
+<h2 id="part-2-the-category-of-instances-and-transforms">Part 2: The
+Category of Instances and Transforms</h2>
+<p><em>Source: <code>TransformCategory.lean</code></em></p>
+<p>For any fixed schema S, the collection of S-instances (databases
+conforming to S) and transforms between them (record-level
+structure-preserving maps) forms a category
+<strong>Inst(S)</strong>.</p>
+<ul>
+<li><strong>Objects</strong>: Instances (concrete databases) conforming
+to schema S</li>
+<li><strong>Morphisms</strong>: Transforms (maps sending generators to
+terms, preserving equations)</li>
+<li><strong>Identity</strong>: The identity transform
+<code>identity_transform(inst)</code></li>
+<li><strong>Composition</strong>: Sequential composition
+<code>compose_transform(f, g)</code></li>
+</ul>
+<p>This category is the domain and codomain of the data migration
+functors Delta and Sigma. In CQL.jl, instances are defined in
+<code>Instance.jl</code> and transforms in
+<code>Transform.jl</code>.</p>
+<h3 id="key-results-1">Key Results</h3>
+<pre class="lean"><code>/-- Instances and transforms form a Mathlib Category. -/
+instance : Category InstObj where
+  Hom := InstMor
+  id I := InstMor.id I
+  comp f g := InstMor.comp f g
+  id_comp f := inst_id_comp f
+  comp_id f := inst_comp_id f
+  assoc f g h := inst_comp_assoc f g h</code></pre>
+<hr />
+<h2 id="part-3-the-delta-sigma-adjunction">Part 3: The Delta-Sigma
+Adjunction</h2>
+<p><em>Source: <code>DeltaSigmaAdjunction.lean</code></em></p>
+<p>This is the central categorical result of CQL. Given a mapping F : S
+→ T between schemas, two data migration functors arise:</p>
+<ul>
+<li><p><strong>Sigma</strong> (Σ_F) : Inst(S) → Inst(T) — the
+<strong>pushforward</strong> (extension). Migrates data from schema S to
+schema T by extending: entities in T not in the image of F receive fresh
+Skolem identifiers.</p></li>
+<li><p><strong>Delta</strong> (Δ_F) : Inst(T) → Inst(S) — the
+<strong>pullback</strong> (restriction). Migrates data from schema T to
+schema S by restricting: only entities and relationships in the image of
+F are retained.</p></li>
+</ul>
+<p>These functors form an adjoint pair: <strong>Σ_F ⊣ Δ_F</strong>
+(Sigma is left adjoint to Delta). The adjunction provides a natural
+bijection:</p>
+<p><span
+class="math display">\[\text{Hom}_{\text{Inst}(T)}(\Sigma_F(I),\, J)
+\;\cong\; \text{Hom}_{\text{Inst}(S)}(I,\, \Delta_F(J))\]</span></p>
+<p>This says: every way to map the migrated database Σ_F(I) into a
+target J corresponds uniquely to a way to map the original database I
+into the restriction Δ_F(J).</p>
+<p>In CQL.jl, the Delta and Sigma functors are implemented in
+<code>DataMigration.jl</code>. The unit transform
+<code>eval_unit_transform</code> (line 321) and counit transform
+<code>eval_counit_transform</code> (line 356) witness the
+adjunction.</p>
+<h3 id="unit-and-counit">Unit and Counit</h3>
+<p>The adjunction comes with canonical natural transformations:</p>
+<ul>
+<li><p><strong>Unit</strong> η_I : I → Δ_F(Σ_F(I)) — embeds each
+instance into the pullback of its own pushforward. Measures the “extra
+structure” introduced by the push-pull round-trip.</p></li>
+<li><p><strong>Counit</strong> ε_J : Σ_F(Δ_F(J)) → J — collapses the
+pushforward of a pullback back to the original. Projects away redundant
+data from the round-trip.</p></li>
+</ul>
+<h3 id="triangle-identities">Triangle Identities</h3>
+<p>The unit and counit satisfy the <strong>zig-zag
+equations</strong>:</p>
+<pre class="lean"><code>/-- Left triangle: Σ_F(η_I) ≫ ε_{Σ_F(I)} = id -/
+theorem left_triangle (adj : Σ_F ⊣ Δ_F) (I : C) :
+    Σ_F.map (adj.unit.app I) ≫ adj.counit.app (Σ_F.obj I) = 𝟙 (Σ_F.obj I)
+
+/-- Right triangle: η_{Δ_F(J)} ≫ Δ_F(ε_J) = id -/
+theorem right_triangle (adj : Σ_F ⊣ Δ_F) (J : D) :
+    adj.unit.app (Δ_F.obj J) ≫ Δ_F.map (adj.counit.app J) = 𝟙 (Δ_F.obj J)</code></pre>
+<p>These identities guarantee <strong>round-trip
+self-consistency</strong>: migrating data forward and back (or back and
+forward) and then migrating again gives the same result as migrating
+once. There is no “drift” in repeated migrations.</p>
+<h3 id="naturality">Naturality</h3>
+<p>The unit and counit are <em>natural</em> transformations — they
+commute with transforms (data updates):</p>
+<pre class="lean"><code>/-- Unit commutes with transforms -/
+theorem unit_naturality (adj : Σ_F ⊣ Δ_F) {I J : C} (t : I ⟶ J) :
+    (𝟭 C).map t ≫ adj.unit.app J = adj.unit.app I ≫ (Σ_F ⋙ Δ_F).map t
+
+/-- Counit commutes with transforms -/
+theorem counit_naturality (adj : Σ_F ⊣ Δ_F) {I J : D} (t : I ⟶ J) :
+    (Δ_F ⋙ Σ_F).map t ≫ adj.counit.app J = adj.counit.app I ≫ t</code></pre>
+<p>Naturality ensures that data updates and data migrations are
+compatible: updating a database before or after migration gives the same
+result.</p>
+<h3 id="limit-and-colimit-preservation">Limit and Colimit
+Preservation</h3>
+<p>Since Σ_F is a left adjoint, it preserves all colimits (coproducts,
+pushouts, coequalizers). Since Δ_F is a right adjoint, it preserves all
+limits (products, pullbacks, equalizers).</p>
+<pre class="lean"><code>theorem sigma_is_left_adjoint (Σ_F : C ⥤ D) (Δ_F : D ⥤ C) (adj : Σ_F ⊣ Δ_F) :
+    Σ_F.IsLeftAdjoint
+
+theorem delta_is_right_adjoint (Σ_F : C ⥤ D) (Δ_F : D ⥤ C) (adj : Σ_F ⊣ Δ_F) :
+    Δ_F.IsRightAdjoint</code></pre>
+<p>This means Sigma distributes over instance coproducts: Σ_F(I + J) ≅
+Σ_F(I) + Σ_F(J). Large migrations can be partitioned into smaller
+batches without affecting the result.</p>
+<h3 id="full-faithfulness">Full Faithfulness</h3>
+<p>When the mapping F is a full embedding (injective on entities and
+foreign keys), Delta is fully faithful and the counit is a natural
+isomorphism:</p>
+<pre class="lean"><code>instance counit_iso_of_delta_fully_faithful [Δ_F.Full] [Δ_F.Faithful] :
+    IsIso adj.counit
+
+instance unit_iso_of_sigma_fully_faithful [Σ_F.Full] [Σ_F.Faithful] :
+    IsIso adj.unit</code></pre>
+<p>This characterises when data migration is <em>lossless</em>: if the
+source schema fully embeds into the target, the push-pull round-trip
+recovers the original data exactly.</p>
+<hr />
+<h2 id="part-4-query-functoriality-and-composition">Part 4: Query
+Functoriality and Composition</h2>
+<p><em>Source: <code>QueryFunctor.lean</code></em></p>
+<p>CQL queries (“uber-flowers”) are the most general form of data
+migration, subsuming both Delta and Sigma. Queries form a category
+<strong>Query</strong> where:</p>
+<ul>
+<li><strong>Objects</strong>: Schemas</li>
+<li><strong>Morphisms</strong>: Queries (uber-flowers with
+from/where/select clauses)</li>
+<li><strong>Identity</strong>: The identity query (SELECT * for each
+entity)</li>
+<li><strong>Composition</strong>: Query sequencing
+<code>[Q₁ ; Q₂]</code></li>
+</ul>
+<p>Query evaluation <code>eval Q</code> is a functor from
+<strong>Inst(S)</strong> to <strong>Inst(T)</strong>: it preserves
+identity transforms and respects composition.</p>
+<p>In CQL.jl, queries are defined in <code>Query.jl</code>. The
+<code>identity_query(sch)</code> function constructs the identity, and
+<code>[Q₁ ; Q₂]</code> syntax composes queries by substituting the
+select-clause of Q₁ into the from-clause of Q₂.</p>
+<h3 id="key-results-2">Key Results</h3>
+<pre class="lean"><code>/-- Query evaluation preserves identity. -/
+theorem eval_query_preserves_id (F : C ⥤ D) (I : C) :
+    F.map (𝟙 I) = 𝟙 (F.obj I)
+
+/-- Query evaluation preserves composition. -/
+theorem eval_query_preserves_comp (F : C ⥤ D) {I J K : C}
+    (f : I ⟶ J) (g : J ⟶ K) :
+    F.map (f ≫ g) = F.map f ≫ F.map g</code></pre>
+<p>Functoriality means that running a query on an unchanged database
+produces an unchanged result, and running a query after two successive
+updates is the same as running it on the composition of the updates.</p>
+<hr />
+<h2 id="part-5-schema-colimits">Part 5: Schema Colimits</h2>
+<p><em>Source: <code>SchemaColimit.lean</code></em></p>
+<p>Schema colimits are CQL’s mechanism for <strong>data fusion</strong>:
+merging multiple schemas by identifying entities declared as equivalent.
+The colimit construction produces:</p>
+<ol type="1">
+<li>A <strong>combined schema</strong> (the colimit object)</li>
+<li><strong>Inclusion mappings</strong> from each source schema into the
+colimit</li>
+<li>The guarantee that <strong>entity equations</strong> hold in the
+colimit</li>
+</ol>
+<p>In CQL.jl, schema colimits are computed by
+<code>eval_schema_colimit</code> in <code>SchemaColimit.jl</code>, which
+uses a union-find data structure to merge identified entities.</p>
+<h3 id="universal-property">Universal Property</h3>
+<p>The colimit is <em>universal</em>: it is the smallest schema
+accommodating all sources. Any other schema receiving compatible
+mappings from the sources must factor uniquely through the colimit.</p>
+<pre class="lean"><code>/-- The factoring morphism is unique. -/
+theorem colimit_factoring_unique {F : J ⥤ C} {c : Cocone F} (hc : IsColimit c)
+    (s : Cocone F) (f g : c.pt ⟶ s.pt)
+    (hf : ∀ j, c.ι.app j ≫ f = s.ι.app j)
+    (hg : ∀ j, c.ι.app j ≫ g = s.ι.app j) :
+    f = g</code></pre>
+<p>This guarantees that CQL’s unified schema is provably the most
+parsimonious merge: no entities or relationships are duplicated beyond
+necessity.</p>
+<h3 id="binary-coproducts">Binary Coproducts</h3>
+<p>The simplest colimit is the binary coproduct S₁ + S₂ (disjoint union
+of schemas, without any identifications). CQL.jl’s
+<code>schema_colimit S1 + S2</code> syntax constructs this:</p>
+<pre class="lean"><code>/-- Binary coproduct universal property. -/
+theorem binary_coprod_universal [HasBinaryCoproducts C] {S₁ S₂ T : C}
+    (f : S₁ ⟶ T) (g : S₂ ⟶ T) :
+    ∃ (h : S₁ ⨿ S₂ ⟶ T), coprod.inl ≫ h = f ∧ coprod.inr ≫ h = g</code></pre>
+<hr />
+<h2 id="part-6-the-chase-algorithm">Part 6: The Chase Algorithm</h2>
+<p><em>Source: <code>Chase.lean</code></em></p>
+<p>The chase is CQL’s mechanism for enforcing data integrity constraints
+after a migration. Given a set of constraints (EGDs and TGDs), the chase
+iteratively applies them to an instance until a fixpoint is reached.</p>
+<p>In CQL.jl, the chase is implemented in <code>Constraints.jl</code>
+(lines 287–334). Each iteration applies: - <strong>EGDs</strong>
+(Equality Generating Dependencies): merge existing records that must be
+equal (e.g., “same SSN implies same person”) - <strong>TGDs</strong>
+(Tuple Generating Dependencies): create fresh Skolem records to witness
+existential constraints (e.g., “every employee must have a
+department”)</p>
+<h3 id="least-fixpoint-knaster-tarski">Least Fixpoint
+(Knaster-Tarski)</h3>
+<p>The chase operator is monotone on the lattice of instances (ordered
+by inclusion). By the Knaster-Tarski theorem, it has a least
+fixpoint:</p>
+<pre class="lean"><code>/-- The least fixpoint is a fixpoint: chase(lfp) = lfp. -/
+theorem chase_fixpoint_is_fixed (f : α →o α) :
+    f (OrderHom.lfp f) = OrderHom.lfp f
+
+/-- The least fixpoint is minimal: if chase(x) = x then lfp ≤ x. -/
+theorem chase_is_least (f : α →o α) (x : α) (hx : f x = x) :
+    OrderHom.lfp f ≤ x</code></pre>
+<p>The least fixpoint property guarantees that the chase adds the
+<em>minimum</em> amount of new data needed to satisfy all constraints.
+Any other valid database contains at least as much data as the chase
+result.</p>
+<h3 id="egd-and-tgd-properties">EGD and TGD Properties</h3>
+<p>EGDs and TGDs have complementary effects:</p>
+<ul>
+<li><strong>EGDs</strong> can only shrink the carrier (merge records,
+never create new ones)</li>
+<li><strong>TGDs</strong> can only grow the carrier (create Skolem
+records, never merge)</li>
+</ul>
+<pre class="lean"><code>theorem egd_carrier_nonincreasing (carrier_before carrier_after : Finset α)
+    (h : carrier_after ⊆ carrier_before) :
+    carrier_after.card ≤ carrier_before.card
+
+theorem tgd_carrier_nondecreasing (carrier_before carrier_after : Finset α)
+    (h : carrier_before ⊆ carrier_after) :
+    carrier_before.card ≤ carrier_after.card</code></pre>
+<hr />
+<h2 id="part-7-equational-reasoning">Part 7: Equational Reasoning</h2>
+<p><em>Source: <code>EquationalReasoning.lean</code></em></p>
+<p>CQL’s prover subsystem decides term equality in the theory generated
+by typeside, schema, and instance equations. The prover must be
+<strong>sound</strong>: if it reports s = t, then s and t must be equal
+in all models.</p>
+<p>In CQL.jl, multiple prover backends are available
+(<code>Prover.jl</code>): CongruenceProver, KBCompletionProver,
+OrthogonalProver, FreeProver. All must satisfy the properties formalised
+here.</p>
+<h3 id="congruence-closure">Congruence Closure</h3>
+<p>Congruence closure is a <strong>closure operator</strong>: it is
+extensive (original equations are in the closure), monotone (more
+equations produce more closure), and idempotent (closing twice equals
+closing once).</p>
+<pre class="lean"><code>/-- Extensive: original equations are in the closure. -/
+theorem closure_extensive (c : ClosureOperator α) (x : α) :
+    x ≤ c x
+
+/-- Monotone: more equations produce more closure. -/
+theorem closure_monotone (c : ClosureOperator α) {x y : α} (h : x ≤ y) :
+    c x ≤ c y
+
+/-- Idempotent: closing an already-closed set does nothing. -/
+theorem closure_idempotent (c : ClosureOperator α) (x : α) :
+    c (c x) = c x</code></pre>
+<h3 id="substitution-soundness">Substitution Soundness</h3>
+<p>Substitution preserves provability — the congruence rule:</p>
+<pre class="lean"><code>/-- If s = t then f(s) = f(t). -/
+theorem congruence_under_function (f : α → α) (s t : α) (h : s = t) :
+    f s = f t</code></pre>
+<p>This ensures that if two generators are identified by the prover,
+applying any foreign key or attribute to either one gives the same
+result. In CQL.jl, this is why
+<code>eval_fk(alg, fk, x) = eval_fk(alg, fk, y)</code> whenever x and y
+are in the same equivalence class.</p>
+<hr />
+<h2 id="part-8-the-eval-coeval-adjunction">Part 8: The Eval-Coeval
+Adjunction</h2>
+<p><em>Source: <code>CoEval.lean</code></em></p>
+<p>Query evaluation (<code>eval Q</code>) and co-evaluation
+(<code>coeval Q</code>) form an adjoint pair <strong>eval_Q ⊣
+coeval_Q</strong>. This generalises the Delta-Sigma adjunction: every
+mapping F can be converted to a query <code>toQuery(F)</code>, and
+eval/coeval of that query coincide with Sigma/Delta.</p>
+<p>The adjunction provides:</p>
+<ul>
+<li><strong>Unit</strong> η_I : I → coeval_Q(eval_Q(I)) — the original
+data is recoverable from the round-trip</li>
+<li><strong>Counit</strong> ε_J : eval_Q(coeval_Q(J)) → J — the
+<code>counit_query</code> operation in CQL.jl</li>
+</ul>
+<p>In CQL.jl, <code>coeval Q I</code> computes the right adjoint to
+query evaluation (<code>DataMigration.jl</code>), and
+<code>counit_query Q I</code> produces the counit transform
+(<code>Program.jl</code>).</p>
+<h3 id="triangle-identities-1">Triangle Identities</h3>
+<pre class="lean"><code>theorem coeval_left_triangle (adj : eval_Q ⊣ coeval_Q) (I : C) :
+    eval_Q.map (adj.unit.app I) ≫ adj.counit.app (eval_Q.obj I) = 𝟙 _
+
+theorem coeval_right_triangle (adj : eval_Q ⊣ coeval_Q) (J : D) :
+    adj.unit.app (coeval_Q.obj J) ≫ coeval_Q.map (adj.counit.app J) = 𝟙 _</code></pre>
+<hr />
+<h2 id="part-9-initial-algebras">Part 9: Initial Algebras</h2>
+<p><em>Source: <code>InitialAlgebra.lean</code></em></p>
+<p>CQL.jl’s <code>saturated_instance</code> function constructs the
+<strong>initial algebra</strong> of a presentation (generators +
+equations) over a schema. The initial algebra is the “free” model: it
+contains exactly the data required by the generators and equations, and
+nothing more.</p>
+<h3 id="universal-property-1">Universal Property</h3>
+<p>The initial algebra has exactly one morphism to any other model:</p>
+<pre class="lean"><code>/-- The morphism from the initial object exists. -/
+theorem initial_morphism_exists (I : C) [IsInitial I] (J : C) :
+    ∃ (f : I ⟶ J), f = IsInitial.to I J
+
+/-- The morphism from the initial object is unique. -/
+theorem initial_morphism_unique (I : C) [IsInitial I] (J : C) (f g : I ⟶ J) :
+    f = g</code></pre>
+<h3 id="no-junk-no-confusion">No Junk, No Confusion</h3>
+<p>The initial algebra satisfies two key properties:</p>
+<ul>
+<li><strong>No junk</strong>: Every element of the carrier is reachable
+from generators via foreign key application. There are no orphan
+records.</li>
+<li><strong>No confusion</strong>: Two terms denote the same element if
+and only if their equality is provable from the equations.</li>
+</ul>
+<p>These properties mean the initial algebra is the <em>canonical</em>
+model — completely determined by the presentation, with a reproducible
+result regardless of evaluation order.</p>
+<hr />
+<h2 id="part-10-instance-coproducts">Part 10: Instance Coproducts</h2>
+<p><em>Source: <code>InstanceCoproduct.lean</code></em></p>
+<p>Given two instances I and J over the same schema S, their
+<strong>coproduct</strong> I + J is the disjoint union: all generators
+from both instances are present, distinguished by their origin. This is
+the CQL analogue of SQL’s <code>UNION ALL</code>.</p>
+<p>In CQL.jl, the <code>coproduct I + J</code> syntax in CQL programs
+constructs the disjoint union.</p>
+<h3 id="universal-property-2">Universal Property</h3>
+<pre class="lean"><code>/-- Any pair of transforms factors uniquely through the coproduct. -/
+theorem coprod_universal [HasBinaryCoproducts C] {I J T : C}
+    (f : I ⟶ T) (g : J ⟶ T) :
+    ∃ (h : I ⨿ J ⟶ T), coprod.inl ≫ h = f ∧ coprod.inr ≫ h = g
+
+/-- The factoring is unique. -/
+theorem coprod_factoring_unique [HasBinaryCoproducts C] {I J T : C}
+    (f : I ⟶ T) (g : J ⟶ T)
+    (h₁ h₂ : I ⨿ J ⟶ T)
+    (hf₁ : coprod.inl ≫ h₁ = f) (hg₁ : coprod.inr ≫ h₁ = g)
+    (hf₂ : coprod.inl ≫ h₂ = f) (hg₂ : coprod.inr ≫ h₂ = g) :
+    h₁ = h₂</code></pre>
+<h3 id="sigma-distributes-over-coproducts">Sigma Distributes over
+Coproducts</h3>
+<p>Since Σ_F is a left adjoint (Part 3), it preserves coproducts: Σ_F(I
++ J) ≅ Σ_F(I) + Σ_F(J). Large migrations can be split into batches.</p>
+<h3 id="commutativity">Commutativity</h3>
+<p>Instance coproducts are commutative: I + J ≅ J + I. The order of
+combination does not matter.</p>
+<pre class="lean"><code>theorem coprod_comm [HasBinaryCoproducts C] (I J : C) :
+    ∃ (f : I ⨿ J ⟶ J ⨿ I) (g : J ⨿ I ⟶ I ⨿ J),
+      f ≫ g = 𝟙 _ ∧ g ≫ f = 𝟙 _</code></pre>
+<hr />
+<h2 id="building-and-verifying">Building and Verifying</h2>
+<h3 id="prerequisites">Prerequisites</h3>
+<ul>
+<li><a href="https://leanprover.github.io/lean4/doc/">Lean 4</a>
+(v4.29.0-rc4)</li>
+<li><a
+href="https://leanprover-community.github.io/mathlib4_docs/">Mathlib</a></li>
+<li><a href="https://pandoc.org/">Pandoc</a> (for HTML/PDF
+generation)</li>
+<li>LuaLaTeX (for PDF generation)</li>
+</ul>
+<h3 id="commands">Commands</h3>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify all proofs (type-checks every theorem)</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> proofs <span class="kw">&amp;&amp;</span> <span class="ex">lake</span> build</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate documentation</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> all        <span class="co"># build + mdgen + html</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> pdf        <span class="co"># generate PDF</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean generated files</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> clean</span></code></pre></div>
+<h3 id="project-structure">Project Structure</h3>
+<pre><code>proofs/
+├── lakefile.lean          # Lake build configuration
+├── lean-toolchain         # Lean version pin
+├── Makefile               # Build automation
+├── style.css              # HTML styling
+├── header.tex             # PDF LaTeX header
+├── CqlProofs.lean         # Root import file
+├── CqlProofs.md           # Generated narrative (this document)
+├── CqlProofs.html         # HTML rendering
+├── CqlProofs.pdf          # PDF rendering
+└── CqlProofs/
+    ├── SchemaCategory.lean
+    ├── TransformCategory.lean
+    ├── DeltaSigmaAdjunction.lean
+    ├── QueryFunctor.lean
+    ├── SchemaColimit.lean
+    ├── Chase.lean
+    ├── EquationalReasoning.lean
+    ├── CoEval.lean
+    ├── InitialAlgebra.lean
+    └── InstanceCoproduct.lean</code></pre>
+</body>
+</html>

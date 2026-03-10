@@ -1,0 +1,7 @@
+id,loc_name,loc_type
+hosp1,Royal Infirmary,Hospital
+hosp2,General Hospital,Hospital
+care1,Sunrise Care Home,CareHome
+care2,Meadow Care Home,CareHome
+sch1,Westside Primary,School
+sch2,Eastgate Academy,School

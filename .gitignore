@@ -1,0 +1,5 @@
+Manifest.toml
+*.DS_Store
+tmp/
+test/compare/compare.sh
+test_si.jl

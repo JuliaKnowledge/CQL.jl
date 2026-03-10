@@ -1,0 +1,6 @@
+id,level_name
+producer,producer
+primary_consumer,primary consumer
+secondary_consumer,secondary consumer
+tertiary_consumer,tertiary consumer
+apex_predator,apex predator
