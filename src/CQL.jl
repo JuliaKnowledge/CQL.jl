@@ -82,6 +82,9 @@ include("OdbcSupport.jl")
 # RDF support
 include("RdfSupport.jl")
 
+# Julia-native DSL
+include("DSL/DSL.jl")
+
 # ============================================================================
 # Public API
 # ============================================================================
@@ -161,6 +164,12 @@ macro cql(expr)
 end
 
 export @cql_str, @cql
+
+# DSL macros
+export @typeside, @schema, @instance, @mapping, @query
+
+# Unicode operators
+export Δ, Σ
 
 # ============================================================================
 # Precompilation workloads
