@@ -12,6 +12,7 @@ makedocs(;
     pages = [
         "Home" => "index.md",
         "Tutorial" => "tutorial.md",
+        "Vignettes" => "vignettes.md",
         "API Reference" => [
             "Core Types" => "api/types.md",
             "Parsing & Evaluation" => "api/evaluation.md",
