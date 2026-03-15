@@ -7,7 +7,7 @@ makedocs(;
     modules = [CQL],
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", nothing) == "true",
-        canonical = "https://ecorecipes.github.io/CQL.jl",
+        canonical = "https://JuliaKnowledge.github.io/CQL.jl",
     ),
     pages = [
         "Home" => "index.md",
@@ -24,7 +24,7 @@ makedocs(;
 )
 
 deploydocs(;
-    repo = "github.com/ecorecipes/CQL.jl.git",
+    repo = "github.com/JuliaKnowledge/CQL.jl.git",
     devbranch = "main",
     push_preview = true,
 )

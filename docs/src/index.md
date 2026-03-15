@@ -21,7 +21,7 @@ CQL.jl provides a complete implementation of the [Categorical Query Language](ht
 
 ```julia
 using Pkg
-Pkg.add(url="https://github.com/ecorecipes/CQL.jl")
+Pkg.add(url="https://github.com/JuliaKnowledge/CQL.jl")
 ```
 
 ## Quick Start
