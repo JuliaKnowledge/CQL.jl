@@ -136,3 +136,7 @@ Pkg.add(url="https://github.com/JuliaKnowledge/CQL.jl")
 - D. I. Spivak, *Functorial data migration*, Inform. Comput. 217 (2012), pp. 31–51, [arXiv:1009.1166](https://arxiv.org/abs/1009.1166).
 - P. Wisnesky, R. Breiner, D. I. Spivak, *Algebraic databases*, Theory Appl. Categ. 32 (2017), [arXiv:1602.03501](https://arxiv.org/abs/1602.03501).
 - K. Brown, D. I. Spivak, R. Wisnesky, *Categorical data integration for computational science*, Comput. Materials Sci. 164 (2019), [arXiv:1903.10579](https://arxiv.org/abs/1903.10579).
+
+## License
+
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE), consistent with the [reference Java CQL implementation](https://github.com/CategoricalData/CQL). For commercial licensing options, please see https://github.com/CategoricalData/CQL.
