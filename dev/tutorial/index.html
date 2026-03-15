@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Tutorial · CQL.jl</title><meta name="title" content="Tutorial · CQL.jl"/><meta property="og:title" content="Tutorial · CQL.jl"/><meta property="twitter:title" content="Tutorial · CQL.jl"/><meta name="description" content="Documentation for CQL.jl."/><meta property="og:description" content="Documentation for CQL.jl."/><meta property="twitter:description" content="Documentation for CQL.jl."/><meta property="og:url" content="https://ecorecipes.github.io/CQL.jl/tutorial/"/><meta property="twitter:url" content="https://ecorecipes.github.io/CQL.jl/tutorial/"/><link rel="canonical" href="https://ecorecipes.github.io/CQL.jl/tutorial/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CQL.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li class="is-active"><a class="tocitem" href>Tutorial</a><ul class="internal"><li><a class="tocitem" href="#Typesides"><span>Typesides</span></a></li><li><a class="tocitem" href="#Schemas"><span>Schemas</span></a></li><li><a class="tocitem" href="#Instances"><span>Instances</span></a></li><li><a class="tocitem" href="#Mappings-and-Delta-Migration"><span>Mappings and Delta Migration</span></a></li><li><a class="tocitem" href="#Queries"><span>Queries</span></a></li><li><a class="tocitem" href="#Sigma-Migration"><span>Sigma Migration</span></a></li></ul></li><li><span class="tocitem">API Reference</span><ul><li><a class="tocitem" href="../api/types/">Core Types</a></li><li><a class="tocitem" href="../api/evaluation/">Parsing &amp; Evaluation</a></li><li><a class="tocitem" href="../api/migration/">Data Migration</a></li><li><a class="tocitem" href="../api/queries/">Queries</a></li><li><a class="tocitem" href="../api/utilities/">Utilities</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Tutorial</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Tutorial</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/ecorecipes/CQL.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/ecorecipes/CQL.jl/blob/main/docs/src/tutorial.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Tutorial"><a class="docs-heading-anchor" href="#Tutorial">Tutorial</a><a id="Tutorial-1"></a><a class="docs-heading-anchor-permalink" href="#Tutorial" title="Permalink"></a></h1><p>This tutorial walks through the core concepts of CQL.jl: typesides, schemas, instances, mappings, and data migration.</p><h2 id="Typesides"><a class="docs-heading-anchor" href="#Typesides">Typesides</a><a id="Typesides-1"></a><a class="docs-heading-anchor-permalink" href="#Typesides" title="Permalink"></a></h2><p>A <em>typeside</em> defines the foundation types and functions available to schemas and instances. The simplest useful typeside declares just <code>String</code>:</p><pre><code class="language-julia hljs">using CQL
+
+env = cql&quot;&quot;&quot;
+typeside Ty = literal {
+    types
+        String
+}
+&quot;&quot;&quot;
+
+env.Ty</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">typeside {
+  types
+    String
+  functions
+  equations
+}
+</code></pre><h2 id="Schemas"><a class="docs-heading-anchor" href="#Schemas">Schemas</a><a id="Schemas-1"></a><a class="docs-heading-anchor-permalink" href="#Schemas" title="Permalink"></a></h2><p>A <em>schema</em> defines the structure of data: entities, foreign keys between entities, and attributes from entities to types.</p><pre><code class="language-julia hljs">env = cql&quot;&quot;&quot;
+typeside Ty = literal {
+    types
+        String
+        Int
+}
+
+schema Dept = literal : Ty {
+    entities
+        Employee
+        Department
+    foreign_keys
+        worksIn : Employee -&gt; Department
+    attributes
+        ename : Employee -&gt; String
+        dname : Department -&gt; String
+        budget : Department -&gt; Int
+}
+&quot;&quot;&quot;
+
+env.Dept</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">schema {
+  entities
+    Department
+    Employee
+  foreign_keys
+    worksIn : Employee -&gt; Department
+  attributes
+    dname : Department -&gt; String
+    budget : Department -&gt; Int
+    ename : Employee -&gt; String
+  path_equations
+  observation_equations
+}
+</code></pre><h2 id="Instances"><a class="docs-heading-anchor" href="#Instances">Instances</a><a id="Instances-1"></a><a class="docs-heading-anchor-permalink" href="#Instances" title="Permalink"></a></h2><p>An <em>instance</em> populates a schema with concrete data: generators (rows) and equations (values).</p><pre><code class="language-julia hljs">env = cql&quot;&quot;&quot;
+typeside Ty = literal {
+    types
+        String
+        Int
+    constants
+        Alice Bob Carol : String
+        &quot;100&quot; &quot;250&quot; : Int
+}
+
+schema S = literal : Ty {
+    entities
+        Employee
+        Department
+    foreign_keys
+        worksIn : Employee -&gt; Department
+    attributes
+        ename : Employee -&gt; String
+        dname : Department -&gt; String
+}
+
+instance I = literal : S {
+    generators
+        e1 e2 e3 : Employee
+        d1 d2 : Department
+    equations
+        e1.worksIn = d1
+        e2.worksIn = d1
+        e3.worksIn = d2
+        e1.ename = Alice
+        e2.ename = Bob
+        e3.ename = Carol
+        d1.dname = Alice
+        d2.dname = Bob
+}
+&quot;&quot;&quot;
+
+env.I</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">instance {
+  presentation {
+  generators
+    e1 : Employee
+    e2 : Employee
+    e3 : Employee
+    d2 : Department
+    d1 : Department
+  equations
+    d2.dname = Bob
+    e1.ename = Alice
+    e1.worksIn = d1
+    e2.ename = Bob
+    e2.worksIn = d1
+    e3.ename = Carol
+    d1.dname = Alice
+    e3.worksIn = d2
+}
+
+  algebra {
+    Department (2 rows)
+      d2: dname=Bob
+      d1: dname=Alice
+    Employee (3 rows)
+      e1: worksIn=d1, ename=Alice
+      e2: worksIn=d1, ename=Bob
+      e3: worksIn=d2, ename=Carol
+  }
+}
+</code></pre><h2 id="Mappings-and-Delta-Migration"><a class="docs-heading-anchor" href="#Mappings-and-Delta-Migration">Mappings and Delta Migration</a><a id="Mappings-and-Delta-Migration-1"></a><a class="docs-heading-anchor-permalink" href="#Mappings-and-Delta-Migration" title="Permalink"></a></h2><p>A <em>mapping</em> is a structure-preserving morphism between schemas. Given a mapping F: S -&gt; T, the <em>delta</em> migration pulls back an instance on T to an instance on S.</p><pre><code class="language-julia hljs">env = cql&quot;&quot;&quot;
+typeside Ty = literal {
+    types
+        String
+    constants
+        Alice Bob : String
+}
+
+schema Source = literal : Ty {
+    entities
+        Person
+    attributes
+        name : Person -&gt; String
+}
+
+schema Target = literal : Ty {
+    entities
+        Employee
+        Department
+    foreign_keys
+        worksIn : Employee -&gt; Department
+    attributes
+        ename : Employee -&gt; String
+        dname : Department -&gt; String
+}
+
+mapping F = literal : Source -&gt; Target {
+    entity
+        Person -&gt; Employee
+    attributes
+        name -&gt; ename
+}
+
+instance J = literal : Target {
+    generators
+        e1 e2 : Employee
+        d1 : Department
+    equations
+        e1.worksIn = d1
+        e2.worksIn = d1
+        e1.ename = Alice
+        e2.ename = Bob
+        d1.dname = Alice
+}
+
+instance Delta_J = delta F J
+&quot;&quot;&quot;
+
+env.Delta_J</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">instance {
+  presentation {
+  generators
+    delta_1 : Person
+    delta_2 : Person
+  equations
+    delta_2.name = Bob
+    delta_1.name = Alice
+}
+
+  algebra {
+    Person (2 rows)
+      Person_e1: name=Alice
+      Person_e2: name=Bob
+  }
+}
+</code></pre><h2 id="Queries"><a class="docs-heading-anchor" href="#Queries">Queries</a><a id="Queries-1"></a><a class="docs-heading-anchor-permalink" href="#Queries" title="Permalink"></a></h2><p>CQL queries (uber-flowers) are a generalization of relational queries with categorical guarantees. They map instances on one schema to instances on another.</p><pre><code class="language-julia hljs">env = cql&quot;&quot;&quot;
+typeside Ty = literal {
+    types
+        String
+    constants
+        Alice Bob : String
+}
+
+schema S = literal : Ty {
+    entities
+        Employee
+        Department
+    foreign_keys
+        worksIn : Employee -&gt; Department
+    attributes
+        ename : Employee -&gt; String
+        dname : Department -&gt; String
+}
+
+instance I = literal : S {
+    generators
+        e1 e2 : Employee
+        d1 : Department
+    equations
+        e1.worksIn = d1
+        e2.worksIn = d1
+        e1.ename = Alice
+        e2.ename = Bob
+        d1.dname = Alice
+}
+
+schema T = literal : Ty {
+    entities
+        EmployeeWithDept
+    attributes
+        emp_name : EmployeeWithDept -&gt; String
+        dept_name : EmployeeWithDept -&gt; String
+}
+
+query Q = literal : S -&gt; T {
+    entity
+        EmployeeWithDept -&gt; {
+            from
+                e : Employee
+            attributes
+                emp_name -&gt; e.ename
+                dept_name -&gt; e.worksIn.dname
+        }
+}
+
+instance Result = eval Q I
+&quot;&quot;&quot;
+
+env.Result</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">instance {
+  presentation {
+  generators
+    q_EmployeeWithDept_2 : EmployeeWithDept
+    q_EmployeeWithDept_1 : EmployeeWithDept
+  equations
+    q_EmployeeWithDept_1.dept_name = Alice
+    q_EmployeeWithDept_1.emp_name = Alice
+    q_EmployeeWithDept_2.emp_name = Bob
+    q_EmployeeWithDept_2.dept_name = Alice
+}
+
+  algebra {
+    EmployeeWithDept (2 rows)
+      q_EmployeeWithDept_2: emp_name=Bob, dept_name=Alice
+      q_EmployeeWithDept_1: emp_name=Alice, dept_name=Alice
+  }
+}
+</code></pre><h2 id="Sigma-Migration"><a class="docs-heading-anchor" href="#Sigma-Migration">Sigma Migration</a><a id="Sigma-Migration-1"></a><a class="docs-heading-anchor-permalink" href="#Sigma-Migration" title="Permalink"></a></h2><p>While delta pulls data back along a mapping, <em>sigma</em> pushes data forward. Given a mapping F: S -&gt; T, sigma computes a pushforward that merges generators according to the mapping.</p><pre><code class="language-julia hljs">env = cql&quot;&quot;&quot;
+typeside Ty = literal {
+    types
+        String
+    constants
+        Alice Bob : String
+}
+
+schema S = literal : Ty {
+    entities
+        Person
+    attributes
+        name : Person -&gt; String
+}
+
+schema T = literal : Ty {
+    entities
+        Employee
+        Department
+    foreign_keys
+        worksIn : Employee -&gt; Department
+    attributes
+        ename : Employee -&gt; String
+        dname : Department -&gt; String
+}
+
+mapping G = literal : S -&gt; T {
+    entity
+        Person -&gt; Employee
+    attributes
+        name -&gt; ename
+}
+
+instance IS = literal : S {
+    generators
+        p1 p2 : Person
+    equations
+        p1.name = Alice
+        p2.name = Bob
+}
+
+instance Sigma_IS = sigma G IS
+&quot;&quot;&quot;
+
+env.Sigma_IS</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">instance {
+  presentation {
+  generators
+    p2 : Employee
+    p1 : Employee
+  equations
+    p1.ename = Alice
+    p2.ename = Bob
+}
+
+  algebra {
+    Department (2 rows)
+      p2.worksIn: dname=p2.worksIn.dname
+      p1.worksIn: dname=p1.worksIn.dname
+    Employee (2 rows)
+      p1: worksIn=p1.worksIn, ename=Alice
+      p2: worksIn=p2.worksIn, ename=Bob
+  }
+}
+</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../api/types/">Core Types »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Sunday 15 March 2026 18:46">Sunday 15 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
