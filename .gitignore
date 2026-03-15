@@ -3,3 +3,5 @@ Manifest.toml
 tmp/
 test/compare/compare.sh
 test_si.jl
+docs/build/
+docs/Manifest.toml

@@ -1,5 +1,7 @@
 # CQL.jl
 
+[![Dev Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://ecorecipes.github.io/CQL.jl/dev/)
+
 A Julia implementation of the **Categorical Query Language** (CQL) — a data integration language grounded in category theory that provides mathematically guaranteed correct data migrations between schemas via functorial operations, built on [Catlab.jl](https://github.com/AlgebraicJulia/Catlab.jl).
 
 ## Features
