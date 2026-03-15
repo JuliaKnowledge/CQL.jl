@@ -2,14 +2,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.9.28">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="CQL.jl">
+<meta name="author" content="Simon Frost">
 
 <title>Unit Conversion in CQL</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -59,17 +62,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="unitconv_files/libs/clipboard/clipboard.min.js"></script>
-<script src="unitconv_files/libs/quarto-html/quarto.js" type="module"></script>
-<script src="unitconv_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="unitconv_files/libs/quarto-html/popper.min.js"></script>
-<script src="unitconv_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="unitconv_files/libs/quarto-html/anchor.min.js"></script>
-<link href="unitconv_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="unitconv_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="unitconv_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="unitconv_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="unitconv_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="07_unitconv_files/libs/clipboard/clipboard.min.js"></script>
+<script src="07_unitconv_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="07_unitconv_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="07_unitconv_files/libs/quarto-html/popper.min.js"></script>
+<script src="07_unitconv_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="07_unitconv_files/libs/quarto-html/anchor.min.js"></script>
+<link href="07_unitconv_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="07_unitconv_files/libs/quarto-html/quarto-syntax-highlighting-49e51e44f424ea8c7044b429bdbbbfe2.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="07_unitconv_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="07_unitconv_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="07_unitconv_files/libs/bootstrap/bootstrap-138a6193a3bd40baf1e627da441a4734.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -115,7 +118,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>CQL.jl </p>
+             <p>Simon Frost </p>
           </div>
   </div>
     
@@ -141,14 +144,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ol>
 <p>This example is adapted from the <a href="https://categoricaldata.net/unitconv.html">CQL unit conversion tutorial</a>.</p>
 <div id="2" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="typed-units-in-the-typeside" class="level2">
 <h2 class="anchored" data-anchor-id="typed-units-in-the-typeside">Typed Units in the Typeside</h2>
 <p>We define a typeside with two distinct types — <code>Inches</code> and <code>Cm</code> — and a conversion function <code>inToCm</code>:</p>
 <div id="4" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">        Inches</span></span>
@@ -162,7 +165,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>ts <span class="op">=</span> env.Ty</span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Types: "</span>, ts.tys)</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Functions: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(ts.syms)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Functions: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(ts.syms)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Types: Set([:Cm, :Inches])
 Functions: [:v500, :inToCm]</code></pre>
@@ -174,7 +177,7 @@ Functions: [:v500, :inToCm]</code></pre>
 <h2 class="anchored" data-anchor-id="two-schemas-american-and-european">Two Schemas: American and European</h2>
 <p>An American airplane has wing lengths in inches; a European airplane has wing lengths in centimeters:</p>
 <div id="6" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">        Inches</span></span>
@@ -204,7 +207,7 @@ Functions: [:v500, :inToCm]</code></pre>
 <span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  wingLength : Wing -&gt; "</span>, env.AmericanAirplane.atts[<span class="op">:</span>wingLength][<span class="fl">2</span>])</span>
 <span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">European schema:"</span>)</span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  wingLength : Wing -&gt; "</span>, env.EuropeanAirplane.atts[<span class="op">:</span>wingLength][<span class="fl">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  wingLength : Wing -&gt; "</span>, env.EuropeanAirplane.atts[<span class="op">:</span>wingLength][<span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>American schema:
   wingLength : Wing -&gt; Inches
@@ -218,7 +221,7 @@ European schema:
 <section id="sample-data-a-boeing-747" class="level2">
 <h2 class="anchored" data-anchor-id="sample-data-a-boeing-747">Sample Data: A Boeing 747</h2>
 <div id="8" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">        Inches</span></span>
@@ -251,12 +254,12 @@ European schema:
 <span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>Wing)</span>
 <span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>    wl <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>wingLength, x)</span>
 <span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">repr_x</span>(alg, x), <span class="st">": wingLength = "</span>, wl)</span>
-<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Boeing 747 (American) ===
 Wings: 2
-  left: wingLength = v500
-  right: wingLength = v500</code></pre>
+  right: wingLength = v500
+  left: wingLength = v500</code></pre>
 </div>
 </div>
 <p>The left and right wings have equal length (500 inches), enforced by the equation <code>wingLength(left) = wingLength(right)</code>.</p>
@@ -265,7 +268,7 @@ Wings: 2
 <h2 class="anchored" data-anchor-id="the-correct-query-with-conversion">The Correct Query: With Conversion</h2>
 <p>To convert the Boeing 747’s data to the European schema, we write a query that applies <code>inToCm</code> to each wing length:</p>
 <div id="10" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="st">        Inches</span></span>
@@ -322,11 +325,11 @@ Wings: 2
 <span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg_eu, <span class="op">:</span>Wing)</span>
 <span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>    wl <span class="op">=</span> <span class="fu">eval_att</span>(alg_eu, <span class="op">:</span>wingLength, x)</span>
 <span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">repr_x</span>(alg_eu, x), <span class="st">": wingLength = "</span>, wl)</span>
-<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Boeing 747 (American, Inches) ===
-  left: wingLength = v500
   right: wingLength = v500
+  left: wingLength = v500
 
 === Boeing 747 (European, Cm) ===
   q_Wing_2: wingLength = inToCm(v500)
@@ -338,12 +341,12 @@ Wings: 2
 <h3 class="anchored" data-anchor-id="constraint-preservation">Constraint Preservation</h3>
 <p>The original equation <code>wingLength(left) = wingLength(right)</code> is preserved through the query:</p>
 <div id="12" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>wings <span class="op">=</span> <span class="fu">collect</span>(<span class="fu">carrier</span>(alg_eu, <span class="op">:</span>Wing))</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>wings <span class="op">=</span> <span class="fu">collect</span>(<span class="fu">carrier</span>(alg_eu, <span class="op">:</span>Wing))</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>wl1 <span class="op">=</span> <span class="fu">eval_att</span>(alg_eu, <span class="op">:</span>wingLength, wings[<span class="fl">1</span>])</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>wl2 <span class="op">=</span> <span class="fu">eval_att</span>(alg_eu, <span class="op">:</span>wingLength, wings[<span class="fl">2</span>])</span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Left wing length:  "</span>, wl1)</span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Right wing length: "</span>, wl2)</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Still equal: "</span>, wl1 <span class="op">==</span> wl2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Still equal: "</span>, wl1 <span class="op">==</span> wl2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Left wing length:  inToCm(v500)
 Right wing length: inToCm(v500)
@@ -357,7 +360,7 @@ Still equal: true</code></pre>
 <h2 class="anchored" data-anchor-id="the-rejected-query-without-conversion">The Rejected Query: Without Conversion</h2>
 <p>Now consider a careless query that simply copies the wing length without converting:</p>
 <div id="14" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    env_bad <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="st">    typeside Ty = literal {</span></span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="st">        types</span></span>
@@ -397,7 +400,7 @@ Still equal: true</code></pre>
 <span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"Query correctly rejected!"</span>)</span>
 <span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>()</span>
 <span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"Error: "</span>, <span class="cn">e</span>.msg)</span>
-<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Query correctly rejected!
 
@@ -413,7 +416,7 @@ Error: Error evaluating QUERY DisastrousConversion: Type mismatch in query attri
 <p>In 1999, NASA’s Mars Climate Orbiter was lost because one software component produced thrust values in <strong>pound-force seconds</strong> while another expected <strong>newton-seconds</strong>. The missing conversion caused the spacecraft to enter the atmosphere at the wrong angle and disintegrate.</p>
 <p>CQL’s type system would have caught this error:</p>
 <div id="16" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    env_mars <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="st">    typeside Units = literal {</span></span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="st">        types</span></span>
@@ -443,7 +446,7 @@ Error: Error evaluating QUERY DisastrousConversion: Type mismatch in query attri
 <span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"ERROR: Should have been caught!"</span>)</span>
 <span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a><span class="cf">catch</span> <span class="cn">e</span></span>
 <span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"Caught at compile time: "</span>, <span class="cn">e</span>.msg)</span>
-<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Caught at compile time: Error evaluating QUERY BadIntegration: Type mismatch in query attribute thrust: expected NewtonSeconds, got PoundForceSeconds</code></pre>
 </div>
@@ -454,13 +457,13 @@ Error: Error evaluating QUERY DisastrousConversion: Type mismatch in query attri
 <section id="cql-vs-sql" class="level2">
 <h2 class="anchored" data-anchor-id="cql-vs-sql">CQL vs SQL</h2>
 <p>In SQL, all numeric values are just <code>DOUBLE</code> or <code>DECIMAL</code> — there is no distinction between inches and centimeters at the type level:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- SQL: No type safety for units</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- SQL: No type safety for units</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> AmericanWing (<span class="kw">id</span> <span class="dt">INT</span>, wingLength <span class="dt">DOUBLE</span>);  <span class="co">-- inches</span></span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> EuropeanWing (<span class="kw">id</span> <span class="dt">INT</span>, wingLength <span class="dt">DOUBLE</span>);  <span class="co">-- cm</span></span>
 <span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- This compiles and runs, but is WRONG:</span></span>
 <span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="kw">INSERT</span> <span class="kw">INTO</span> EuropeanWing <span class="kw">SELECT</span> <span class="kw">id</span>, wingLength <span class="kw">FROM</span> AmericanWing;</span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co">-- Silently copies inches into a centimeters column!</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co">-- Silently copies inches into a centimeters column!</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 44%">
@@ -590,13 +593,14 @@ Error: Error evaluating QUERY DisastrousConversion: Type mismatch in query attri
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

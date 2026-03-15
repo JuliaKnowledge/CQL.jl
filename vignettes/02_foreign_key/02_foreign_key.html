@@ -2,14 +2,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.9.28">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="CQL.jl">
+<meta name="author" content="Simon Frost">
 
 <title>Foreign Key Queries in CQL</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -59,17 +62,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="foreign_key_files/libs/clipboard/clipboard.min.js"></script>
-<script src="foreign_key_files/libs/quarto-html/quarto.js" type="module"></script>
-<script src="foreign_key_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="foreign_key_files/libs/quarto-html/popper.min.js"></script>
-<script src="foreign_key_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="foreign_key_files/libs/quarto-html/anchor.min.js"></script>
-<link href="foreign_key_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="foreign_key_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="foreign_key_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="foreign_key_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="foreign_key_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="02_foreign_key_files/libs/clipboard/clipboard.min.js"></script>
+<script src="02_foreign_key_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="02_foreign_key_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="02_foreign_key_files/libs/quarto-html/popper.min.js"></script>
+<script src="02_foreign_key_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="02_foreign_key_files/libs/quarto-html/anchor.min.js"></script>
+<link href="02_foreign_key_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="02_foreign_key_files/libs/quarto-html/quarto-syntax-highlighting-49e51e44f424ea8c7044b429bdbbbfe2.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="02_foreign_key_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="02_foreign_key_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="02_foreign_key_files/libs/bootstrap/bootstrap-138a6193a3bd40baf1e627da441a4734.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -115,7 +118,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>CQL.jl </p>
+             <p>Simon Frost </p>
           </div>
   </div>
     
@@ -140,14 +143,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ol>
 <p>This example is adapted from the <a href="https://categoricaldata.net/fk.html">CQL foreign key tutorial</a>.</p>
 <div id="2" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="source-schema-a-university" class="level2">
 <h2 class="anchored" data-anchor-id="source-schema-a-university">Source Schema: A University</h2>
 <p>The university has three entities: professors, students, and departments. Each professor works in a department, and each student majors in a department.</p>
 <div id="4" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
@@ -174,7 +177,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>sch <span class="op">=</span> env.University</span>
 <span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, sch.ens)</span>
 <span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(sch.fks)))</span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Attributes: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(sch.atts)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Attributes: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(sch.atts)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Entities: Set([:Professor, :Department, :Student])
 Foreign keys: [:worksIn, :majoringIn]
@@ -189,7 +192,7 @@ Student   --majoringIn-&gt; Department</code></pre>
 <section id="sample-data-university-of-x" class="level2">
 <h2 class="anchored" data-anchor-id="sample-data-university-of-x">Sample Data: University of X</h2>
 <div id="6" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
@@ -246,23 +249,23 @@ Student   --majoringIn-&gt; Department</code></pre>
 <span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>    dept <span class="op">=</span> <span class="fu">eval_fk</span>(alg, <span class="op">:</span>majoringIn, x)</span>
 <span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>    dnm <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>deptName, dept)</span>
 <span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="fu">rpad</span>(<span class="fu">string</span>(nm), <span class="fl">13</span>), <span class="st">"| "</span>, dnm)</span>
-<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Professors ===
 Name         | Department
 -------------+-----------
-Chlipala     | CompSci
+Morrisett    | CompSci
 Wisnesky     | Math
 Spivak       | Math
-Morrisett    | CompSci
+Chlipala     | CompSci
 
 === Students ===
 Name         | Major
 -------------+-----------
+Spivak       | CompSci
 Chlipala     | CompSci
 Morrisett    | English
-Wisnesky     | Math
-Spivak       | CompSci</code></pre>
+Wisnesky     | Math</code></pre>
 </div>
 </div>
 <p>The data breaks down by department:</p>
@@ -276,7 +279,7 @@ Spivak       | CompSci</code></pre>
 <h2 class="anchored" data-anchor-id="target-schema-advisor-matches">Target Schema: Advisor Matches</h2>
 <p>The target schema adds a <code>Match</code> entity that pairs a professor with a student. The key feature is a <strong>path equation</strong> that constrains matches:</p>
 <div id="8" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
@@ -308,7 +311,7 @@ Spivak       | CompSci</code></pre>
 <span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>sch <span class="op">=</span> env.AdvisorMatches</span>
 <span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, sch.ens)</span>
 <span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(sch.fks)))</span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Path equations: "</span>, <span class="fu">length</span>(sch.path_eqs), <span class="st">" equation(s)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Path equations: "</span>, <span class="fu">length</span>(sch.path_eqs), <span class="st">" equation(s)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Entities: Set([:Professor, :Department, :Match, :Student])
 Foreign keys: [:worksIn, :professorOf, :studentOf, :majoringIn]
@@ -329,7 +332,7 @@ Path equations: 1 equation(s)</code></pre>
 <h2 class="anchored" data-anchor-id="the-query-finding-matches">The Query: Finding Matches</h2>
 <p>The CQL query computes all valid professor-student pairs by using a <strong>multi-variable from-clause</strong> with a <strong>where-clause</strong> that enforces the department constraint:</p>
 <div id="10" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
@@ -407,7 +410,7 @@ Path equations: 1 equation(s)</code></pre>
 <span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
 <span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(env.findMatches)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(env.findMatches)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>query {
   entity Professor -&gt; {
@@ -469,7 +472,7 @@ Path equations: 1 equation(s)</code></pre>
 <section id="query-results" class="level2">
 <h2 class="anchored" data-anchor-id="query-results">Query Results</h2>
 <div id="12" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
@@ -577,17 +580,17 @@ Path equations: 1 equation(s)</code></pre>
 <span id="cb12-106"><a href="#cb12-106" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="fu">rpad</span>(<span class="fu">string</span>(pn), <span class="fl">13</span>), <span class="st">"| "</span>, <span class="fu">rpad</span>(<span class="fu">string</span>(sn), <span class="fl">13</span>), <span class="st">"| "</span>, dn)</span>
 <span id="cb12-107"><a href="#cb12-107" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
 <span id="cb12-108"><a href="#cb12-108" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-109"><a href="#cb12-109" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Total matches: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>Match)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-109"><a href="#cb12-109" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Total matches: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>Match)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Advisor Matches ===
 Professor    | Student      | Department
 -------------+--------------+-----------
-Morrisett    | Spivak       | CompSci
-Chlipala     | Spivak       | CompSci
 Spivak       | Wisnesky     | Math
-Chlipala     | Chlipala     | CompSci
 Wisnesky     | Wisnesky     | Math
+Chlipala     | Chlipala     | CompSci
+Morrisett    | Spivak       | CompSci
 Morrisett    | Chlipala     | CompSci
+Chlipala     | Spivak       | CompSci
 
 Total matches: 6</code></pre>
 </div>
@@ -602,7 +605,7 @@ Total matches: 6</code></pre>
 <h3 class="anchored" data-anchor-id="verifying-the-path-equation">Verifying the Path Equation</h3>
 <p>The path equation <code>studentOf.majoringIn = professorOf.worksIn</code> holds for every match:</p>
 <div id="14" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Verifying path equation: studentOf.majoringIn = professorOf.worksIn</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Verifying path equation: studentOf.majoringIn = professorOf.worksIn</span><span class="sc">\n</span><span class="st">"</span>)</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>all_ok <span class="op">=</span> <span class="cn">true</span></span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>Match)</span>
@@ -621,16 +624,16 @@ Total matches: 6</code></pre>
 <span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>            ok ? <span class="st">" ✓"</span> <span class="op">:</span> <span class="st">" ✗"</span>)</span>
 <span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
 <span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">All matches satisfy path equation: "</span>, all_ok)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">All matches satisfy path equation: "</span>, all_ok)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Verifying path equation: studentOf.majoringIn = professorOf.worksIn
 
-  Morrisett &lt;-&gt; Spivak: prof dept = CompSci, stud dept = CompSci ✓
-  Chlipala &lt;-&gt; Spivak: prof dept = CompSci, stud dept = CompSci ✓
   Spivak &lt;-&gt; Wisnesky: prof dept = Math, stud dept = Math ✓
-  Chlipala &lt;-&gt; Chlipala: prof dept = CompSci, stud dept = CompSci ✓
   Wisnesky &lt;-&gt; Wisnesky: prof dept = Math, stud dept = Math ✓
+  Chlipala &lt;-&gt; Chlipala: prof dept = CompSci, stud dept = CompSci ✓
+  Morrisett &lt;-&gt; Spivak: prof dept = CompSci, stud dept = CompSci ✓
   Morrisett &lt;-&gt; Chlipala: prof dept = CompSci, stud dept = CompSci ✓
+  Chlipala &lt;-&gt; Spivak: prof dept = CompSci, stud dept = CompSci ✓
 
 All matches satisfy path equation: true</code></pre>
 </div>
@@ -640,10 +643,10 @@ All matches satisfy path equation: true</code></pre>
 <section id="cql-vs-sql" class="level2">
 <h2 class="anchored" data-anchor-id="cql-vs-sql">CQL vs SQL</h2>
 <p>The equivalent SQL query requires an explicit join:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> p.profName, s.studName, d.deptName</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> p.profName, s.studName, d.deptName</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> Professor p</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> Student s <span class="kw">ON</span> p.worksIn <span class="op">=</span> s.majoringIn</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> Department d <span class="kw">ON</span> p.worksIn <span class="op">=</span> d.<span class="kw">id</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> Department d <span class="kw">ON</span> p.worksIn <span class="op">=</span> d.<span class="kw">id</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>But the SQL approach has no way to express the path equation constraint at the schema level. In SQL, you could insert a match where the professor and student are in different departments — the constraint exists only in application logic. In CQL, the path equation <code>studentOf.majoringIn = professorOf.worksIn</code> is part of the schema itself, and any instance must satisfy it.</p>
 <table class="caption-top table">
 <colgroup>
@@ -781,13 +784,14 @@ All matches satisfy path equation: true</code></pre>
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

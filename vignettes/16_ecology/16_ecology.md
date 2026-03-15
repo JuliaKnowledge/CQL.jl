@@ -1,5 +1,5 @@
 # Ecological Data Integration with CQL
-CQL.jl
+Simon Frost
 
 - [Introduction](#introduction)
 - [1. Schema: The Ecosystem Data
@@ -844,12 +844,12 @@ end
 ```
 
     === Forward: extract vulnerable species ===
-      European Eel
       Atlantic Cod
+      European Eel
 
     === Backward (coeval): reconstruct from vulnerability list ===
-      European Eel      status=Vulnerable
       Atlantic Cod      status=Vulnerable
+      European Eel      status=Vulnerable
 
 The coeval reconstructs only the species visible through the query —
 Blue Mussel and Killer Whale are absent because they were filtered out.

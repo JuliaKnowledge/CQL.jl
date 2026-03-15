@@ -1,5 +1,5 @@
 # CQL.jl Tutorial
-CQL.jl
+Simon Frost
 
 ## Introduction
 
@@ -236,13 +236,13 @@ end
     Department carrier size: 2
 
     Employee table:
-      [1] first=Al, last=Akin, manager=Al, worksIn=Math
+      [1] first=Bob, last=Bo, manager=Carl, worksIn=CS
       [2] first=Carl, last=Cork, manager=Carl, worksIn=CS
-      [3] first=Bob, last=Bo, manager=Carl, worksIn=CS
+      [3] first=Al, last=Akin, manager=Al, worksIn=Math
 
     Department table:
-      [1] name=Math, secretary=Al
-      [2] name=CS, secretary=Carl
+      [1] name=CS, secretary=Carl
+      [2] name=Math, secretary=Al
 
 The instance `I` has 3 employees and 2 departments. CQL automatically
 computes the initial algebra, which resolves all equations and finds the

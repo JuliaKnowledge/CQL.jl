@@ -2,14 +2,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.9.28">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="CQL.jl">
+<meta name="author" content="Simon Frost">
 
 <title>Quotients and Merging in CQL</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -59,17 +62,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="quotient_files/libs/clipboard/clipboard.min.js"></script>
-<script src="quotient_files/libs/quarto-html/quarto.js" type="module"></script>
-<script src="quotient_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="quotient_files/libs/quarto-html/popper.min.js"></script>
-<script src="quotient_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="quotient_files/libs/quarto-html/anchor.min.js"></script>
-<link href="quotient_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="quotient_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="quotient_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="quotient_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="quotient_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="06_quotient_files/libs/clipboard/clipboard.min.js"></script>
+<script src="06_quotient_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="06_quotient_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="06_quotient_files/libs/quarto-html/popper.min.js"></script>
+<script src="06_quotient_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="06_quotient_files/libs/quarto-html/anchor.min.js"></script>
+<link href="06_quotient_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="06_quotient_files/libs/quarto-html/quarto-syntax-highlighting-49e51e44f424ea8c7044b429bdbbbfe2.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="06_quotient_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="06_quotient_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="06_quotient_files/libs/bootstrap/bootstrap-138a6193a3bd40baf1e627da441a4734.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -111,7 +114,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>CQL.jl </p>
+             <p>Simon Frost </p>
           </div>
   </div>
     
@@ -135,14 +138,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>A Simpsons-themed example from the <a href="https://categoricaldata.net/quotient.html">CQL quotient tutorial</a></li>
 </ol>
 <div id="2" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="direct-merging-equating-generators" class="level2">
 <h2 class="anchored" data-anchor-id="direct-merging-equating-generators">Direct Merging: Equating Generators</h2>
 <p>The simplest form of merging in CQL is adding <strong>equations between generators</strong>. When you declare <code>a = c</code> in an instance, CQL’s theorem prover automatically merges the two elements into a single equivalence class.</p>
 <div id="4" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
@@ -175,15 +178,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>Person)</span>
 <span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">repr_x</span>(alg, x), <span class="st">": name = "</span>, <span class="fu">eval_att</span>(alg, <span class="op">:</span>name, x))</span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Started with 5 generators: a, b, c, d, e
 Added equations: a = c, b = d
 Result: 3 distinct persons
 
+  b: name = Bob
   e: name = Eve
-  a: name = Alice
-  b: name = Dave</code></pre>
+  a: name = Alice</code></pre>
 </div>
 </div>
 <p>The prover reduced 5 generators to 3 elements:</p>
@@ -207,7 +210,7 @@ Result: 3 distinct persons
 <section id="the-likes-schema" class="level4">
 <h4 class="anchored" data-anchor-id="the-likes-schema">The Likes Schema</h4>
 <div id="6" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = empty</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">schema Likes = literal : Ty {</span></span>
@@ -222,7 +225,7 @@ Result: 3 distinct persons
 <span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>sch <span class="op">=</span> env.Likes</span>
 <span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, sch.ens)</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(sch.fks)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(sch.fks)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Entities: Set([:Person, :Like])
 Foreign keys: [:likee, :liker]</code></pre>
@@ -233,7 +236,7 @@ Foreign keys: [:likee, :liker]</code></pre>
 <section id="the-simpsons-data" class="level4">
 <h4 class="anchored" data-anchor-id="the-simpsons-data">The Simpsons Data</h4>
 <div id="8" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = empty</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">schema Likes = literal : Ty {</span></span>
@@ -268,16 +271,16 @@ Foreign keys: [:likee, :liker]</code></pre>
 <span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>    liker <span class="op">=</span> <span class="fu">eval_fk</span>(alg, <span class="op">:</span>liker, x)</span>
 <span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>    likee <span class="op">=</span> <span class="fu">eval_fk</span>(alg, <span class="op">:</span>likee, x)</span>
 <span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">repr_x</span>(alg, liker), <span class="st">" likes "</span>, <span class="fu">repr_x</span>(alg, likee))</span>
-<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Person Table ===
 Persons: 6
 
 === Like Table (Social Graph Edges) ===
-  l2.likee likes l3.likee
-  l1.liker likes l1.likee
-  l1.likee likes l2.likee
-  l4.liker likes l4.likee</code></pre>
+  Ned likes Maud
+  Rodd likes Todd
+  Smithers likes MrBurns
+  Maud likes Rodd</code></pre>
 </div>
 </div>
 <p>The social graph has two connected components:</p>
@@ -290,7 +293,7 @@ Persons: 6
 <h4 class="anchored" data-anchor-id="the-connections-mapping">The Connections Mapping</h4>
 <p>To find connected components, we define a <strong>target schema</strong> with a single entity <code>Connection</code> and a mapping that sends both <code>Person</code> and <code>Like</code> to <code>Connection</code>:</p>
 <div id="10" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = empty</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="st">schema Likes = literal : Ty {</span></span>
@@ -323,7 +326,7 @@ Persons: 6
 <span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Person -&gt; Connection"</span>)</span>
 <span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Like   -&gt; Connection"</span>)</span>
 <span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  likee  -&gt; identity on Connection"</span>)</span>
-<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  liker  -&gt; identity on Connection"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  liker  -&gt; identity on Connection"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Mapping: Likes -&gt; Connections
   Person -&gt; Connection
@@ -337,7 +340,7 @@ Persons: 6
 <section id="computing-the-quotient-with-sigma" class="level4">
 <h4 class="anchored" data-anchor-id="computing-the-quotient-with-sigma">Computing the Quotient with Sigma</h4>
 <div id="12" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = empty</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="st">schema Likes = literal : Ty {</span></span>
@@ -387,7 +390,7 @@ Persons: 6
 <span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Total:   "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg_likes, <span class="op">:</span>Person)) <span class="op">+</span> <span class="fu">length</span>(<span class="fu">carrier</span>(alg_likes, <span class="op">:</span>Like)))</span>
 <span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">After sigma:"</span>)</span>
-<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Connections: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg_conn, <span class="op">:</span>Connection)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Connections: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg_conn, <span class="op">:</span>Connection)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Before sigma:
   Persons: 6
@@ -404,7 +407,7 @@ After sigma:
 <h4 class="anchored" data-anchor-id="tracing-group-membership">Tracing Group Membership</h4>
 <p>We can determine which group each original person belongs to by checking which equivalence class their generator falls into:</p>
 <div id="14" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dp <span class="op">=</span> env.SimpsonsConnections.dp</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dp <span class="op">=</span> env.SimpsonsConnections.dp</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>groups <span class="op">=</span> <span class="fu">collect</span>(<span class="fu">carrier</span>(alg_conn, <span class="op">:</span>Connection))</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Connected Components ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
@@ -430,17 +433,17 @@ After sigma:
 <span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>        <span class="fu">println</span>(<span class="st">"  - </span><span class="sc">$</span>m<span class="st">"</span>)</span>
 <span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
 <span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>()</span>
-<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Connected Components ===
 
-Group 1 (representative: l3):
+Group 1 (representative: Ned):
   - Ned
   - Maud
   - Rodd
   - Todd
 
-Group 2 (representative: Smithers):
+Group 2 (representative: MrBurns):
   - MrBurns
   - Smithers
 </code></pre>
@@ -460,7 +463,7 @@ Group 2 (representative: Smithers):
 </ol>
 <p>Let’s trace through the chain for the Flanders family:</p>
 <div id="16" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Tracing the Flanders chain ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Tracing the Flanders chain ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Original equations:"</span>)</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  liker(l1) = Ned,  likee(l1) = Maud"</span>)</span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  liker(l2) = Maud, likee(l2) = Rodd"</span>)</span>
@@ -473,7 +476,7 @@ Group 2 (representative: Smithers):
 <span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>()</span>
 <span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Transitive closure:"</span>)</span>
 <span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Ned = Maud = Rodd = Todd = l1 = l2 = l3"</span>)</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  (all in one equivalence class)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  (all in one equivalence class)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Tracing the Flanders chain ===
 
@@ -496,7 +499,7 @@ Transitive closure:
 <section id="why-this-is-hard-in-sql" class="level2">
 <h2 class="anchored" data-anchor-id="why-this-is-hard-in-sql">Why This Is Hard in SQL</h2>
 <p>In SQL, finding connected components requires computing a <strong>transitive closure</strong>, which needs recursive CTEs:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- SQL: Finding connected components (simplified)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- SQL: Finding connected components (simplified)</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="kw">WITH</span> RECURSIVE connected(person, component) <span class="kw">AS</span> (</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">-- Base case: each person is their own component</span></span>
 <span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SELECT</span> <span class="kw">DISTINCT</span> p.<span class="kw">id</span>, p.<span class="kw">id</span> <span class="kw">FROM</span> Person p</span>
@@ -512,7 +515,7 @@ Transitive closure:
 <span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> person, <span class="fu">MIN</span>(component) <span class="kw">as</span> <span class="fu">group_id</span></span>
 <span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> connected</span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> person;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> person;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>This SQL solution is:</p>
 <ul>
 <li><strong>Verbose</strong>: ~15 lines vs.&nbsp;CQL’s single <code>sigma</code> call</li>
@@ -527,7 +530,7 @@ Transitive closure:
 <h2 class="anchored" data-anchor-id="another-example-deduplication">Another Example: Deduplication</h2>
 <p>Sigma is also useful for <strong>deduplication</strong>: merging records that represent the same real-world entity but appear in different tables.</p>
 <div id="18" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
@@ -591,24 +594,24 @@ Transitive closure:
 <span id="cb18-62"><a href="#cb18-62" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Person: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg_after, <span class="op">:</span>Person)), <span class="st">" records"</span>)</span>
 <span id="cb18-63"><a href="#cb18-63" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg_after, <span class="op">:</span>Person)</span>
 <span id="cb18-64"><a href="#cb18-64" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">repr_x</span>(alg_after, x), <span class="st">": "</span>, <span class="fu">eval_att</span>(alg_after, <span class="op">:</span>name, x))</span>
-<span id="cb18-65"><a href="#cb18-65" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-65"><a href="#cb18-65" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Before Merge ===
 Source1: 2 records
-  s1b: Bob
   s1a: Alice
+  s1b: Bob
 Source2: 3 records
-  s2b: Charlie
   s2c: Bob
   s2a: Alice
+  s2b: Charlie
 
 === After Sigma Merge ===
 Person: 5 records
-  s1b: Bob
-  s2b: Charlie
-  s2c: Bob
+  s1a: Alice
   s2a: Alice
-  s1a: Alice</code></pre>
+  s2c: Bob
+  s1b: Bob
+  s2b: Charlie</code></pre>
 </div>
 </div>
 <p>The sigma migration merges both sources into a single <code>Person</code> entity. Records with the same name from different sources are <strong>not</strong> automatically identified (they remain distinct unless explicitly equated), but the unified schema allows downstream operations to work on a single entity.</p>
@@ -705,13 +708,14 @@ Person: 5 records
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

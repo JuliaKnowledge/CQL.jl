@@ -1,5 +1,5 @@
 # Algebraic Property Graphs
-CQL.jl
+Simon Frost
 
 ## Introduction
 
@@ -129,9 +129,9 @@ for x in carrier(alg, :UnixTime)
 end
 ```
 
-      s2 = v4
-      s3 = v3
       s1 = v1
+      s3 = v3
+      s2 = v4
 
 ### Product Labels: Structured Records
 
@@ -244,8 +244,8 @@ for x in carrier(alg, :Rider)
 end
 ```
 
-    Driver d1: drives trip t1 for user u1
-    Rider  r1: rides trip t1 as user u2
+    Driver d1: drives trip r1.rider_trip for user u1
+    Rider  r1: rides trip r1.rider_trip as user u2
 
 Each edge element is a first-class object with its own identity, linked
 to its endpoints by foreign keys.
@@ -420,19 +420,19 @@ end
     === Ride-Sharing Graph ===
 
     Trips:
-      t1: Arthur → Zaphod
-      t2: Arthur → Ford
+      r1.rider_trip: Arthur → Zaphod
+      r2.rider_trip: Arthur → Ford
 
     Driver/Rider assignments:
-      Driver: Arthur on trip t1
-      Driver: Arthur on trip t2
-      Rider:  Ford on trip t2
-      Rider:  Zaphod on trip t1
+      Driver: Arthur on trip r2.rider_trip
+      Driver: Arthur on trip r1.rider_trip
+      Rider:  Ford on trip r2.rider_trip
+      Rider:  Zaphod on trip r1.rider_trip
 
     Place events:
       e1: place=p1 time=v1
-      e4: place=p3 time=v3
       e2: place=p2 time=v1
+      e4: place=p3 time=v3
       e3: place=p2 time=v4
 
 The graph has 3 users (Arthur, Zaphod, Ford), 2 trips, 3 places, 4 place
@@ -552,8 +552,8 @@ end
 
     Driver    | Rider
     ----------+----------
-    Arthur    | Zaphod
     Arthur    | Ford
+    Arthur    | Zaphod
 
 The query binds four variables (`d`, `r`, `dn`, `rn`), constrains
 drivers and riders to the same trip and matches each to their name
@@ -613,8 +613,8 @@ end
     Before deduplication: 4 plates
 
       q2: MX/SN/vuk1775
-      q1: US/CA/v6trj244
       p1: US/CA/v6trj244
+      q1: US/CA/v6trj244
       p2: MX/BC/ahd4102
 
 Plates `p1` and `q1` are the same real-world plate (US/CA/6trj244) from
@@ -827,8 +827,8 @@ end
 
     Delta pullback: Records → Persons
 
-      Person_r2: name=Bob age=v30
       Person_r1: name=Alice age=v40
+      Person_r2: name=Bob age=v30
 
 The delta functor pulls the `Records` instance back along the mapping,
 renaming `rec_name` → `name` and `rec_age` → `age`. In the APG

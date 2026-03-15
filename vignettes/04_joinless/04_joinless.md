@@ -1,5 +1,5 @@
 # Joinless Queries in CQL
-CQL.jl
+Simon Frost
 
 ## Introduction
 
@@ -152,11 +152,11 @@ end
     Name         | School  | Department   | School's Biggest Dept
     -------------+---------+--------------+---------------------
     Chlipala     | MIT     | CompSci      | CompSci
-    Morrisett    | Harvard | CompSci      | Mathematics
     Spivak       | MIT     | Mathematics  | CompSci
-    Gross        | MIT     | CompSci      | CompSci
-    Wisnesky     | Harvard | Mathematics  | Mathematics
+    Morrisett    | Harvard | CompSci      | Mathematics
     Malecha      | Harvard | CompSci      | Mathematics
+    Wisnesky     | Harvard | Mathematics  | Mathematics
+    Gross        | MIT     | CompSci      | CompSci
 
     === School Table ===
     School  | Biggest Dept
@@ -301,9 +301,9 @@ end
 
     Name         | School
     -------------+---------
-    Malecha      | Harvard
-    Morrisett    | Harvard
     Wisnesky     | Harvard
+    Morrisett    | Harvard
+    Malecha      | Harvard
 
 Only the three Harvard people survive the filter, because Harvard’s
 biggest department is Mathematics while MIT’s is CompSci.
@@ -433,8 +433,8 @@ end
 
     Name         | School
     -------------+---------
-    Gross        | MIT
     Malecha      | Harvard
+    Gross        | MIT
     Chlipala     | MIT
     Morrisett    | Harvard
 

@@ -1,5 +1,5 @@
 # CQL vs SQL: Difficult Queries
-CQL.jl
+Simon Frost
 
 ## Introduction
 
@@ -205,21 +205,7 @@ alg_I = inst_I.algebra
       path_equations
       observation_equations
     }
-    , Dict{Symbol, Set{CQLTerm}}(:Department => Set([e102.worksIn, e101.worksIn]), :Employee => Set([e102, e101.manager, e101])), Dict{Symbol, CQLTerm}(:e103 => e101.manager, :e101 => e101, :e102 => e102, :d2 => e102.worksIn, :d10 => e101.worksIn), Dict{Symbol, Dict{CQLTerm, CQLTerm}}(:worksIn => Dict(e102 => e102.worksIn, e101.manager => e101.worksIn, e101 => e101.worksIn), :manager => Dict(e102 => e102, e101.manager => e101.manager, e101 => e101.manager), :secretary => Dict(e102.worksIn => e102, e101.worksIn => e101)), Dict{CQLTerm, CQLTerm}(e102.worksIn => e102.worksIn, e102 => e102, e101.manager => e101.manager, e101.worksIn => e101.worksIn, e101 => e101), Dict{Symbol, Set{CQL.TalgGen}}(:String => Set([Audrey, Alan, Pure Math, Camille, Applied Math])), CQL.var"#simplify_algebra##4#simplify_algebra##5"{Algebra{CQLTerm, CQL.TalgGen}, Vector{Tuple{CQLTerm, CQLTerm}}, Vector{Tuple{CQL.Head, CQLTerm}}}(Algebra{CQLTerm, CQL.TalgGen}(schema {
-      entities
-        Department
-        Employee
-      foreign_keys
-        worksIn : Employee -> Department
-        manager : Employee -> Employee
-        secretary : Department -> Employee
-      attributes
-        first : Employee -> String
-        name : Department -> String
-      path_equations
-      observation_equations
-    }
-    , Dict{Symbol, Set{CQLTerm}}(:Department => Set([e102.worksIn, e101.worksIn]), :Employee => Set([e102, e101.manager, e101])), Dict{Symbol, CQLTerm}(:e103 => e101.manager, :e101 => e101, :e102 => e102, :d2 => e102.worksIn, :d10 => e101.worksIn), Dict{Symbol, Dict{CQLTerm, CQLTerm}}(:worksIn => Dict(e102 => e102.worksIn, e101.manager => e101.worksIn, e101 => e101.worksIn), :manager => Dict(e102 => e102, e101.manager => e101.manager, e101 => e101.manager), :secretary => Dict(e102.worksIn => e102, e101.worksIn => e101)), Dict{CQLTerm, CQLTerm}(e102.worksIn => e102.worksIn, e102 => e102, e101.manager => e101.manager, e101.worksIn => e101.worksIn, e101 => e101), Dict{Symbol, Set{CQL.TalgGen}}(:String => Set([Audrey, Alan, Pure Math, e101.worksIn.name, Camille, Applied Math, e102.worksIn.name, e102.first, e101.first, e101.manager.first])), CQL.var"#125#126"{Dict{Symbol, Tuple{Vector{Symbol}, Symbol}}}(Dict(:Camille => ([], :String), :Audrey => ([], :String), :Alan => ([], :String), Symbol("Applied Math") => ([], :String), Symbol("Pure Math") => ([], :String))), Dict{CQL.TalgGen, CQLTerm}(Audrey => Audrey, Alan => Alan, Pure Math => Pure Math, e101.worksIn.name => e101.worksIn.name, Camille => Camille, Applied Math => Applied Math, e102.worksIn.name => e102.worksIn.name, e102.first => e102.first, e101.first => e101.first, e101.manager.first => e101.manager.first…), Set(Equation[e101.manager.first = Audrey, e102.worksIn.name = Pure Math, e101.first = Alan, e101.worksIn.name = Applied Math, e102.first = Camille])), Tuple{CQLTerm, CQLTerm}[], Tuple{CQL.Head, CQLTerm}[(CQL.Head(CQL.H_SK, Symbol("e102.worksIn.name")), Pure Math), (CQL.Head(CQL.H_SK, Symbol("e101.first")), Alan), (CQL.Head(CQL.H_SK, Symbol("e101.manager.first")), Audrey), (CQL.Head(CQL.H_SK, Symbol("e102.first")), Camille), (CQL.Head(CQL.H_SK, Symbol("e101.worksIn.name")), Applied Math)]), Dict{CQL.TalgGen, CQLTerm}(Audrey => Audrey, Alan => Alan, Pure Math => Pure Math, e101.worksIn.name => e101.worksIn.name, Camille => Camille, Applied Math => Applied Math, e102.worksIn.name => e102.worksIn.name, e102.first => e102.first, e101.first => e101.first, e101.manager.first => e101.manager.first…), Set{Equation}())
+    , Dict{Symbol, Set{CQLTerm}}(:Department => Set([d2, d10]), :Employee => Set([d10.secretary, e101.manager, d2.secretary])), Dict{Symbol, CQLTerm}(:e103 => e101.manager, :e101 => d10.secretary, :e102 => d2.secretary, :d2 => d2, :d10 => d10), Dict{Symbol, Dict{CQLTerm, CQLTerm}}(:worksIn => Dict(d10.secretary => d10, e101.manager => d10, d2.secretary => d2), :manager => Dict(d10.secretary => e101.manager, e101.manager => e101.manager, d2.secretary => d2.secretary), :secretary => Dict(d2 => d2.secretary, d10 => d10.secretary)), Dict{CQLTerm, CQLTerm}(d10.secretary => d10.secretary, e101.manager => e101.manager, d2 => d2, d10 => d10, d2.secretary => d2.secretary), Dict{Symbol, Set{CQL.TalgGen}}(:String => Set([Applied Math, Alan, Pure Math, Audrey, Camille])), CQL.var"#simplify_algebra##4#simplify_algebra##5"{Dict{Any, CQLTerm}, CQL.var"#128#129"{Dict{Symbol, Tuple{Vector{Symbol}, Symbol}}}, Vector{Tuple{CQLTerm, CQLTerm}}, Vector{Tuple{CQL.Head, CQLTerm}}}(Dict{Any, CQLTerm}(), CQL.var"#128#129"{Dict{Symbol, Tuple{Vector{Symbol}, Symbol}}}(Dict(:Camille => ([], :String), :Audrey => ([], :String), :Alan => ([], :String), Symbol("Applied Math") => ([], :String), Symbol("Pure Math") => ([], :String))), Tuple{CQLTerm, CQLTerm}[], Tuple{CQL.Head, CQLTerm}[(CQL.Head(CQL.H_SK, Symbol("e101.manager.first")), Audrey), (CQL.Head(CQL.H_SK, Symbol("d2.name")), Pure Math), (CQL.Head(CQL.H_SK, Symbol("d2.secretary.first")), Camille), (CQL.Head(CQL.H_SK, Symbol("d10.name")), Applied Math), (CQL.Head(CQL.H_SK, Symbol("d10.secretary.first")), Alan)]), Dict{CQL.TalgGen, CQLTerm}(Applied Math => Applied Math, d2.name => d2.name, d10.secretary.first => d10.secretary.first, d10.name => d10.name, Alan => Alan, Pure Math => Pure Math, e101.manager.first => e101.manager.first, Audrey => Audrey, Camille => Camille, d2.secretary.first => d2.secretary.first…), Set{Equation}())
 
 Let’s examine this data:
 
@@ -250,9 +236,9 @@ end
     === Employee Table ===
     Name       | Manager  | Works In
     -----------+----------+-------------
-    Camille    | Camille  | Pure Math
-    Audrey     | Audrey   | Applied Math
     Alan       | Audrey   | Applied Math
+    Audrey     | Audrey   | Applied Math
+    Camille    | Camille  | Pure Math
 
     === Department Table ===
     Name         | Secretary
@@ -290,9 +276,9 @@ end
     === Checking Business Rules ===
 
     Rule 1: manager.worksIn = worksIn (manager works in same dept)
-      Camille: OK
-      Audrey: OK
       Alan: OK
+      Audrey: OK
+      Camille: OK
 
     Rule 2: secretary.worksIn = department (secretary works in their dept)
       Pure Math: OK
@@ -419,8 +405,8 @@ println(env.good1)
         from
           e : Employee
         where
-          e.manager = e
           e.worksIn.secretary = e
+          e.manager = e
       }
       foreign_key worksIn -> {
         d -> e.worksIn
@@ -546,20 +532,20 @@ end
 
     === Why Each Person Was Included or Excluded ===
 
-    Camille:
-      Self-managed (e.manager = e)? true
+    Alan:
+      Self-managed (e.manager = e)? false
       Secretary of own dept (e.worksIn.secretary = e)? true
-      => INCLUDED in result
+      => EXCLUDED (not self-managed)
 
     Audrey:
       Self-managed (e.manager = e)? true
       Secretary of own dept (e.worksIn.secretary = e)? false
       => EXCLUDED (not secretary of own department)
 
-    Alan:
-      Self-managed (e.manager = e)? false
+    Camille:
+      Self-managed (e.manager = e)? true
       Secretary of own dept (e.worksIn.secretary = e)? true
-      => EXCLUDED (not self-managed)
+      => INCLUDED in result
 
 ## Verifying the Result
 

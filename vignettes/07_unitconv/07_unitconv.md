@@ -1,5 +1,5 @@
 # Unit Conversion in CQL
-CQL.jl
+Simon Frost
 
 ## Introduction
 
@@ -153,8 +153,8 @@ end
 
     === Boeing 747 (American) ===
     Wings: 2
-      left: wingLength = v500
       right: wingLength = v500
+      left: wingLength = v500
 
 The left and right wings have equal length (500 inches), enforced by the
 equation `wingLength(left) = wingLength(right)`.
@@ -226,8 +226,8 @@ end
 ```
 
     === Boeing 747 (American, Inches) ===
-      left: wingLength = v500
       right: wingLength = v500
+      left: wingLength = v500
 
     === Boeing 747 (European, Cm) ===
       q_Wing_2: wingLength = inToCm(v500)

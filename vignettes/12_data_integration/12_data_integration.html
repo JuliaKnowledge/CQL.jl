@@ -2,14 +2,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.9.28">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="CQL.jl">
+<meta name="author" content="Simon Frost">
 
 <title>Categorical Data Integration</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -59,17 +62,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="data_integration_files/libs/clipboard/clipboard.min.js"></script>
-<script src="data_integration_files/libs/quarto-html/quarto.js" type="module"></script>
-<script src="data_integration_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="data_integration_files/libs/quarto-html/popper.min.js"></script>
-<script src="data_integration_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="data_integration_files/libs/quarto-html/anchor.min.js"></script>
-<link href="data_integration_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="data_integration_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="data_integration_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="data_integration_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="data_integration_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="12_data_integration_files/libs/clipboard/clipboard.min.js"></script>
+<script src="12_data_integration_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="12_data_integration_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="12_data_integration_files/libs/quarto-html/popper.min.js"></script>
+<script src="12_data_integration_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="12_data_integration_files/libs/quarto-html/anchor.min.js"></script>
+<link href="12_data_integration_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="12_data_integration_files/libs/quarto-html/quarto-syntax-highlighting-49e51e44f424ea8c7044b429bdbbbfe2.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="12_data_integration_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="12_data_integration_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="12_data_integration_files/libs/bootstrap/bootstrap-138a6193a3bd40baf1e627da441a4734.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -106,7 +109,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>CQL.jl </p>
+             <p>Simon Frost </p>
           </div>
   </div>
     
@@ -131,7 +134,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Decompose</strong> the pipeline into reusable query + mapping + sigma steps, demonstrating <strong>labeled nulls</strong> for missing data</li>
 </ol>
 <div id="2" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="the-source-data" class="level2">
@@ -139,7 +142,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Our source is a denormalized library database with three entities: <code>Book</code> (with inline author name), <code>Chapter</code>, and <code>Reader</code>. The <code>Reader</code> entity has a <code>borrowed</code> attribute storing a comma-separated list of book titles the reader has checked out — this is typical of denormalized data where a structured relationship is collapsed into a single string field.</p>
 <p>The typeside includes a <code>contains</code> function that tests whether a string contains a substring. Since CQL.jl uses symbolic computation (unlike the Java CQL which can execute Java code), we provide ground equations that define <code>contains</code> for each (borrowed-list, title) pair in our data.</p>
 <div id="4" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">        Str</span></span>
@@ -201,11 +204,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a><span class="st">        reader_fav   -&gt; {r1 b1, r2 b2}</span></span>
 <span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
 <span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The source has three books (with a deliberate typo: <code>Kakfa</code> instead of <code>Kafka</code> for <em>Metamorphosis</em>), four chapters, and two readers. Reader <code>r1</code> (KSB) has borrowed <em>Magic Mountain</em> and <em>Metamorphosis</em>; reader <code>r2</code> (BR) has borrowed only <em>Metamorphosis</em>.</p>
 <div id="6" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>alg <span class="op">=</span> env.LibraryData.algebra</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>alg <span class="op">=</span> env.LibraryData.algebra</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Books: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>Book)))</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>Book)</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    t <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>title, x)</span>
@@ -216,12 +219,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>Reader)</span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">eval_att</span>(alg, <span class="op">:</span>reader_name, x),</span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>            <span class="st">" (borrowed: "</span>, <span class="fu">eval_att</span>(alg, <span class="op">:</span>borrowed, x), <span class="st">")"</span>)</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Books: 3
-  Meta by Kakfa
-  Magic by Mann
   Castle by Kafka
+  Magic by Mann
+  Meta by Kakfa
 
 Readers:
   BR (borrowed: borrowed_m)
@@ -242,7 +245,7 @@ Readers:
 <li><code>Borrow</code> is generated from the Cartesian product of <code>Book</code> and <code>Reader</code>, filtered by the <code>where</code> clause: <code>contains(r.borrowed, b.title) = strue</code>. This tests whether the reader’s borrowed-list includes the book’s title, turning the denormalized string into structured borrow records.</li>
 </ul>
 <div id="8" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>env2 <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>env2 <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types Str Bool</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
@@ -352,17 +355,17 @@ Readers:
 <span id="cb5-108"><a href="#cb5-108" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-109"><a href="#cb5-109" aria-hidden="true" tabindex="-1"></a><span class="st">instance Result = eval Integrate LibraryData</span></span>
 <span id="cb5-110"><a href="#cb5-110" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb5-111"><a href="#cb5-111" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-111"><a href="#cb5-111" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s inspect the result:</p>
 <div id="10" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>alg2 <span class="op">=</span> env2.Result.algebra</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>alg2 <span class="op">=</span> env2.Result.algebra</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Target instance:"</span>)</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Novels:   "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg2, <span class="op">:</span>Novel)))</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Chapters: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg2, <span class="op">:</span>Chapter)))</span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Authors:  "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg2, <span class="op">:</span>Author)))</span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Readers:  "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg2, <span class="op">:</span>Reader)))</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Borrows:  "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg2, <span class="op">:</span>Borrow)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Borrows:  "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg2, <span class="op">:</span>Borrow)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Target instance:
   Novels:   3
@@ -373,63 +376,63 @@ Readers:
 </div>
 </div>
 <div id="12" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Novels (with extracted Author):"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Novels (with extracted Author):"</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg2, <span class="op">:</span>Novel)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    t <span class="op">=</span> <span class="fu">eval_att</span>(alg2, <span class="op">:</span>novel_title, x)</span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    a <span class="op">=</span> <span class="fu">eval_fk</span>(alg2, <span class="op">:</span>novel_author, x)</span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    an <span class="op">=</span> <span class="fu">eval_att</span>(alg2, <span class="op">:</span>author_name, a)</span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>t<span class="st"> by </span><span class="sc">$</span>an<span class="st">"</span>)</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Novels (with extracted Author):
   Magic by Mann
-  Castle by Kafka
-  Meta by Kakfa</code></pre>
+  Meta by Kakfa
+  Castle by Kafka</code></pre>
 </div>
 </div>
 <div id="14" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Chapters (with computed word count):"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Chapters (with computed word count):"</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg2, <span class="op">:</span>Chapter)</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> <span class="fu">eval_fk</span>(alg2, <span class="op">:</span>chapter_novel, x)</span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    t <span class="op">=</span> <span class="fu">eval_att</span>(alg2, <span class="op">:</span>novel_title, n)</span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    num <span class="op">=</span> <span class="fu">eval_att</span>(alg2, <span class="op">:</span>chapter_num, x)</span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    nw <span class="op">=</span> <span class="fu">eval_att</span>(alg2, <span class="op">:</span>chapter_nwords, x)</span>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>t<span class="st"> ch.</span><span class="sc">$</span>num<span class="st"> — n_words = </span><span class="sc">$</span>nw<span class="st">"</span>)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Chapters (with computed word count):
-  Magic ch.v1 — n_words = count_words(text_mm1)
-  Castle ch.v1 — n_words = count_words(text_cas)
   Magic ch.v2 — n_words = count_words(text_mm2)
+  Castle ch.v1 — n_words = count_words(text_cas)
+  Magic ch.v1 — n_words = count_words(text_mm1)
   Meta ch.v1 — n_words = count_words(text_met)</code></pre>
 </div>
 </div>
 <p>The word counts appear as symbolic expressions <code>count_words(text_mm1)</code> etc. because <code>count_words</code> is declared as a typeside function without ground evaluation equations — CQL treats it as an uninterpreted function symbol. In the original Python/Java pipeline, <code>count_words</code> has a Java implementation that evaluates immediately.</p>
 <div id="16" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Authors (one per book — note the typo):"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Authors (one per book — note the typo):"</span>)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg2, <span class="op">:</span>Author)</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">eval_att</span>(alg2, <span class="op">:</span>author_name, x))</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Authors (one per book — note the typo):
-  Kakfa
   Kafka
+  Kakfa
   Mann</code></pre>
 </div>
 </div>
 <div id="18" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Borrows (generated from contains-based join):"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Borrows (generated from contains-based join):"</span>)</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg2, <span class="op">:</span>Borrow)</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> <span class="fu">eval_fk</span>(alg2, <span class="op">:</span>borrow_reader, x)</span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> <span class="fu">eval_fk</span>(alg2, <span class="op">:</span>borrow_novel, x)</span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    tl <span class="op">=</span> <span class="fu">eval_att</span>(alg2, <span class="op">:</span>total_len, x)</span>
 <span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">eval_att</span>(alg2, <span class="op">:</span>reader_name, r), <span class="st">" borrowed "</span>,</span>
 <span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>            <span class="fu">eval_att</span>(alg2, <span class="op">:</span>novel_title, n), <span class="st">"  (total_len = </span><span class="sc">$</span>tl<span class="st">)"</span>)</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Borrows (generated from contains-based join):
-  KSB borrowed Magic  (total_len = plus(str_len(KSB),str_len(Magic)))
   KSB borrowed Meta  (total_len = plus(str_len(KSB),str_len(Meta)))
+  KSB borrowed Magic  (total_len = plus(str_len(KSB),str_len(Magic)))
   BR borrowed Meta  (total_len = plus(str_len(BR),str_len(Meta)))</code></pre>
 </div>
 </div>
@@ -439,7 +442,7 @@ Readers:
 <h2 class="anchored" data-anchor-id="correcting-and-deduplicating">Correcting and Deduplicating</h2>
 <p>In the original paper, a <em>coequalizer</em> merges duplicate authors. Here we demonstrate the corrected target instance directly, fixing the <code>Kakfa</code> typo and sharing a single <code>kafka</code> author between <em>Metamorphosis</em> and <em>The Castle</em>.</p>
 <div id="20" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>env3 <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>env3 <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types Str Bool</span></span>
 <span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
@@ -508,10 +511,10 @@ Readers:
 <span id="cb16-67"><a href="#cb16-67" aria-hidden="true" tabindex="-1"></a><span class="st">        interpret_as_algebra = true</span></span>
 <span id="cb16-68"><a href="#cb16-68" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
 <span id="cb16-69"><a href="#cb16-69" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb16-70"><a href="#cb16-70" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-70"><a href="#cb16-70" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="22" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>alg3 <span class="op">=</span> env3.Corrected.algebra</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>alg3 <span class="op">=</span> env3.Corrected.algebra</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Corrected instance:"</span>)</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Authors: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg3, <span class="op">:</span>Author)))</span>
 <span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg3, <span class="op">:</span>Author)</span>
@@ -523,7 +526,7 @@ Readers:
 <span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    novels <span class="op">=</span> [<span class="fu">eval_att</span>(alg3, <span class="op">:</span>novel_title, n) for n <span class="kw">in</span> <span class="fu">carrier</span>(alg3, <span class="op">:</span>Novel)</span>
 <span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>              if <span class="fu">eval_fk</span>(alg3, <span class="op">:</span>novel_author, n) <span class="op">==</span> a]</span>
 <span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"    </span><span class="sc">$</span>an<span class="st">: "</span>, <span class="fu">join</span>(<span class="fu">string</span>.(novels), <span class="st">", "</span>))</span>
-<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Corrected instance:
   Authors: 2
@@ -547,7 +550,7 @@ Readers:
 </ol>
 <p>This decomposition separates <em>structural enrichment</em> (adding new entities and computed attributes) from <em>naming conventions</em> (aligning with the target schema vocabulary). The target schema here includes a <code>Library</code> entity with a <code>most_popular</code> foreign key to <code>Novel</code>, following the original Python code — even though the source has no library data.</p>
 <div id="24" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>common_typeside <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>common_typeside <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types Str Bool</span></span>
 <span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
@@ -572,10 +575,10 @@ Readers:
 <span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a><span class="st">        contains(borrowed_m, Castle) = sfalse</span></span>
 <span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
 <span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="26" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>env4 <span class="op">=</span> <span class="fu">run_program</span>(common_typeside <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>env4 <span class="op">=</span> <span class="fu">run_program</span>(common_typeside <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema Source = literal : Ty {</span></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="st">    entities Book Chapter Reader</span></span>
 <span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
@@ -719,18 +722,18 @@ Readers:
 <span id="cb20-142"><a href="#cb20-142" aria-hidden="true" tabindex="-1"></a><span class="st">    options allow_empty_sorts_unsafe = true</span></span>
 <span id="cb20-143"><a href="#cb20-143" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
 <span id="cb20-144"><a href="#cb20-144" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span>)</span>
-<span id="cb20-145"><a href="#cb20-145" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-145"><a href="#cb20-145" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s inspect the migrated instance:</p>
 <div id="28" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>alg4 <span class="op">=</span> env4.Migrated.algebra</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>alg4 <span class="op">=</span> env4.Migrated.algebra</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"After Enrich (query) + Rename (sigma):"</span>)</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Novels:    "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg4, <span class="op">:</span>Novel)))</span>
 <span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Chapters:  "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg4, <span class="op">:</span>Chapter)))</span>
 <span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Authors:   "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg4, <span class="op">:</span>Author)))</span>
 <span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Readers:   "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg4, <span class="op">:</span>Reader)))</span>
 <span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Borrows:   "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg4, <span class="op">:</span>Borrow)))</span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Libraries: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg4, <span class="op">:</span>Library)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Libraries: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg4, <span class="op">:</span>Library)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>After Enrich (query) + Rename (sigma):
   Novels:    6
@@ -746,7 +749,7 @@ Readers:
 <p>Each Borrow has a <code>borrow_library</code> FK that must point somewhere, so 3 Library entities are generated (one per Borrow — we have no reason to conclude they are the same library). Each Library has a <code>most_popular</code> FK to Novel, generating 3 more Novels. Each of those Novels has a <code>novel_author</code> FK, generating 3 more Authors.</p>
 </blockquote>
 <div id="30" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Borrows:"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Borrows:"</span>)</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg4, <span class="op">:</span>Borrow)</span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> <span class="fu">eval_fk</span>(alg4, <span class="op">:</span>borrow_reader, x)</span>
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> <span class="fu">eval_fk</span>(alg4, <span class="op">:</span>borrow_novel, x)</span>
@@ -756,46 +759,46 @@ Readers:
 <span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"    total_len:  "</span>, <span class="fu">eval_att</span>(alg4, <span class="op">:</span>total_len, x))</span>
 <span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"    date:       "</span>, <span class="fu">eval_att</span>(alg4, <span class="op">:</span>borrow_date, x))</span>
 <span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"    library:    "</span>, <span class="fu">eval_att</span>(alg4, <span class="op">:</span>library_name, lib))</span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Borrows:
-  KSB borrowed Magic
-    total_len:  plus(str_len(KSB),str_len(Magic))
+  KSB borrowed Meta
+    total_len:  plus(str_len(KSB),str_len(Meta))
     date:       q_Borrow_3.borrow_date
     library:    q_Borrow_3.borrow_library.library_name
   BR borrowed Meta
     total_len:  plus(str_len(BR),str_len(Meta))
     date:       q_Borrow_1.borrow_date
     library:    q_Borrow_1.borrow_library.library_name
-  KSB borrowed Meta
-    total_len:  plus(str_len(KSB),str_len(Meta))
+  KSB borrowed Magic
+    total_len:  plus(str_len(KSB),str_len(Magic))
     date:       q_Borrow_2.borrow_date
     library:    q_Borrow_2.borrow_library.library_name</code></pre>
 </div>
 </div>
 <p>The <code>borrow_date</code> and <code>library_name</code> values are Skolem terms (labeled nulls) — distinct unknown values that participate in the algebra like variables. This is CQL’s approach to handling missing data: rather than SQL’s single <code>NULL</code>, each unknown gets a unique symbolic term that tracks its provenance.</p>
 <div id="32" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Authors (3 real + 3 from labeled null cascade):"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Authors (3 real + 3 from labeled null cascade):"</span>)</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg4, <span class="op">:</span>Author)</span>
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    an <span class="op">=</span> <span class="fu">eval_att</span>(alg4, <span class="op">:</span>author_name, x)</span>
 <span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    born <span class="op">=</span> <span class="fu">eval_att</span>(alg4, <span class="op">:</span>author_born, x)</span>
 <span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  name = </span><span class="sc">$</span>an<span class="st">"</span>)</span>
 <span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"    born = </span><span class="sc">$</span>born<span class="st">"</span>)</span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Authors (3 real + 3 from labeled null cascade):
-  name = q_Borrow_3.borrow_library.most_popular.novel_author.author_name
-    born = q_Borrow_3.borrow_library.most_popular.novel_author.author_born
-  name = Kafka
+  name = Kakfa
     born = q_Book_3.novel_author.author_born
+  name = Kafka
+    born = q_Book_1.novel_author.author_born
   name = q_Borrow_2.borrow_library.most_popular.novel_author.author_name
     born = q_Borrow_2.borrow_library.most_popular.novel_author.author_born
   name = q_Borrow_1.borrow_library.most_popular.novel_author.author_name
     born = q_Borrow_1.borrow_library.most_popular.novel_author.author_born
-  name = Kakfa
-    born = q_Borrow_1.borrow_novel.novel_author.author_born
   name = Mann
-    born = q_Borrow_3.borrow_novel.novel_author.author_born</code></pre>
+    born = q_Book_2.novel_author.author_born
+  name = q_Borrow_3.borrow_library.most_popular.novel_author.author_name
+    born = q_Borrow_3.borrow_library.most_popular.novel_author.author_born</code></pre>
 </div>
 </div>
 <p>The 3 original authors (Mann, Kakfa, Kafka) have unknown <code>born</code> values (Skolem terms). The 3 cascade-generated authors have unknown names and unknown birth years. The <code>chapter_page_start</code> attributes are similarly Skolem terms for all 4 chapters.</p>
@@ -950,13 +953,14 @@ Readers:
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

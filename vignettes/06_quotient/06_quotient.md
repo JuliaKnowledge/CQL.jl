@@ -1,5 +1,5 @@
 # Quotients and Merging in CQL
-CQL.jl
+Simon Frost
 
 ## Introduction
 
@@ -73,9 +73,9 @@ end
     Added equations: a = c, b = d
     Result: 3 distinct persons
 
+      b: name = Bob
       e: name = Eve
       a: name = Alice
-      b: name = Dave
 
 The prover reduced 5 generators to 3 elements:
 
@@ -180,10 +180,10 @@ end
     Persons: 6
 
     === Like Table (Social Graph Edges) ===
-      Rodd likes Todd
       Ned likes Maud
-      Maud likes Rodd
+      Rodd likes Todd
       Smithers likes MrBurns
+      Maud likes Rodd
 
 The social graph has two connected components:
 
@@ -523,20 +523,20 @@ end
 
     === Before Merge ===
     Source1: 2 records
-      s1b: Bob
       s1a: Alice
+      s1b: Bob
     Source2: 3 records
-      s2b: Charlie
       s2c: Bob
       s2a: Alice
+      s2b: Charlie
 
     === After Sigma Merge ===
     Person: 5 records
+      s1a: Alice
+      s2a: Alice
+      s2c: Bob
       s1b: Bob
       s2b: Charlie
-      s2c: Bob
-      s2a: Alice
-      s1a: Alice
 
 The sigma migration merges both sources into a single `Person` entity.
 Records with the same name from different sources are **not**

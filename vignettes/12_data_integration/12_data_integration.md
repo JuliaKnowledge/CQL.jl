@@ -1,5 +1,5 @@
 # Categorical Data Integration
-CQL.jl
+Simon Frost
 
 ## Introduction
 
@@ -131,9 +131,9 @@ end
 ```
 
     Books: 3
-      Meta by Kakfa
       Castle by Kafka
       Magic by Mann
+      Meta by Kakfa
 
     Readers:
       BR (borrowed: borrowed_m)
@@ -311,9 +311,9 @@ end
 ```
 
     Novels (with extracted Author):
-      Castle by Kafka
       Magic by Mann
       Meta by Kakfa
+      Castle by Kafka
 
 ``` julia
 println("Chapters (with computed word count):")
@@ -327,9 +327,9 @@ end
 ```
 
     Chapters (with computed word count):
-      Magic ch.v1 — n_words = count_words(text_mm1)
-      Castle ch.v1 — n_words = count_words(text_cas)
       Magic ch.v2 — n_words = count_words(text_mm2)
+      Castle ch.v1 — n_words = count_words(text_cas)
+      Magic ch.v1 — n_words = count_words(text_mm1)
       Meta ch.v1 — n_words = count_words(text_met)
 
 The word counts appear as symbolic expressions `count_words(text_mm1)`
@@ -346,9 +346,9 @@ end
 ```
 
     Authors (one per book — note the typo):
+      Kafka
       Kakfa
       Mann
-      Kafka
 
 ``` julia
 println("Borrows (generated from contains-based join):")
@@ -362,8 +362,8 @@ end
 ```
 
     Borrows (generated from contains-based join):
-      KSB borrowed Magic  (total_len = plus(str_len(KSB),str_len(Magic)))
       KSB borrowed Meta  (total_len = plus(str_len(KSB),str_len(Meta)))
+      KSB borrowed Magic  (total_len = plus(str_len(KSB),str_len(Magic)))
       BR borrowed Meta  (total_len = plus(str_len(BR),str_len(Meta)))
 
 We now have 3 Borrow records, derived from the denormalized `borrowed`
@@ -730,16 +730,16 @@ end
 ```
 
     Borrows:
-      KSB borrowed Magic
-        total_len:  plus(str_len(KSB),str_len(Magic))
+      KSB borrowed Meta
+        total_len:  plus(str_len(KSB),str_len(Meta))
         date:       q_Borrow_3.borrow_date
         library:    q_Borrow_3.borrow_library.library_name
       BR borrowed Meta
         total_len:  plus(str_len(BR),str_len(Meta))
         date:       q_Borrow_1.borrow_date
         library:    q_Borrow_1.borrow_library.library_name
-      KSB borrowed Meta
-        total_len:  plus(str_len(KSB),str_len(Meta))
+      KSB borrowed Magic
+        total_len:  plus(str_len(KSB),str_len(Magic))
         date:       q_Borrow_2.borrow_date
         library:    q_Borrow_2.borrow_library.library_name
 
@@ -760,18 +760,18 @@ end
 ```
 
     Authors (3 real + 3 from labeled null cascade):
-      name = q_Borrow_3.borrow_library.most_popular.novel_author.author_name
-        born = q_Borrow_3.borrow_library.most_popular.novel_author.author_born
-      name = Mann
+      name = Kakfa
         born = q_Book_3.novel_author.author_born
+      name = Kafka
+        born = q_Book_1.novel_author.author_born
       name = q_Borrow_2.borrow_library.most_popular.novel_author.author_name
         born = q_Borrow_2.borrow_library.most_popular.novel_author.author_born
       name = q_Borrow_1.borrow_library.most_popular.novel_author.author_name
         born = q_Borrow_1.borrow_library.most_popular.novel_author.author_born
-      name = Kafka
-        born = q_Chapter_4.chapter_novel.novel_author.author_born
-      name = Kakfa
-        born = q_Chapter_1.chapter_novel.novel_author.author_born
+      name = Mann
+        born = q_Book_2.novel_author.author_born
+      name = q_Borrow_3.borrow_library.most_popular.novel_author.author_name
+        born = q_Borrow_3.borrow_library.most_popular.novel_author.author_born
 
 The 3 original authors (Mann, Kakfa, Kafka) have unknown `born` values
 (Skolem terms). The 3 cascade-generated authors have unknown names and

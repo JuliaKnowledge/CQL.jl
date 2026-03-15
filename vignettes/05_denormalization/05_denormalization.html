@@ -2,14 +2,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.9.28">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="CQL.jl">
+<meta name="author" content="Simon Frost">
 
 <title>Denormalization in CQL</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -59,17 +62,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="denormalization_files/libs/clipboard/clipboard.min.js"></script>
-<script src="denormalization_files/libs/quarto-html/quarto.js" type="module"></script>
-<script src="denormalization_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="denormalization_files/libs/quarto-html/popper.min.js"></script>
-<script src="denormalization_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="denormalization_files/libs/quarto-html/anchor.min.js"></script>
-<link href="denormalization_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="denormalization_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="denormalization_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="denormalization_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="denormalization_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="05_denormalization_files/libs/clipboard/clipboard.min.js"></script>
+<script src="05_denormalization_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="05_denormalization_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="05_denormalization_files/libs/quarto-html/popper.min.js"></script>
+<script src="05_denormalization_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="05_denormalization_files/libs/quarto-html/anchor.min.js"></script>
+<link href="05_denormalization_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="05_denormalization_files/libs/quarto-html/quarto-syntax-highlighting-49e51e44f424ea8c7044b429bdbbbfe2.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="05_denormalization_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="05_denormalization_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="05_denormalization_files/libs/bootstrap/bootstrap-138a6193a3bd40baf1e627da441a4734.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -112,7 +115,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>CQL.jl </p>
+             <p>Simon Frost </p>
           </div>
   </div>
     
@@ -138,14 +141,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ol>
 <p>This example is adapted from the <a href="https://categoricaldata.net/denorm.html">CQL denormalization tutorial</a>.</p>
 <div id="2" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="the-normalized-schema" class="level2">
 <h2 class="anchored" data-anchor-id="the-normalized-schema">The Normalized Schema</h2>
 <p>Consider a database tracking males and females, where each male has a mother (a female). The normalized schema stores each person’s name in their own entity:</p>
 <div id="4" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
@@ -168,7 +171,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>sch <span class="op">=</span> env.NormalizedSchema</span>
 <span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, sch.ens)</span>
 <span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(sch.fks)))</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Attributes: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(sch.atts)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Attributes: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(sch.atts)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Entities: Set([:Male, :Female])
 Foreign keys: [:mother]
@@ -180,7 +183,7 @@ Attributes: [:female_name, :male_name]</code></pre>
 <section id="normalized-data" class="level2">
 <h2 class="anchored" data-anchor-id="normalized-data">Normalized Data</h2>
 <div id="6" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
@@ -229,20 +232,20 @@ Attributes: [:female_name, :male_name]</code></pre>
 <span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"-----------"</span>)</span>
 <span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>Female)</span>
 <span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="fu">eval_att</span>(alg, <span class="op">:</span>female_name, x))</span>
-<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Male Table ===
 Name       | Mother
 -----------+----------
-George     | Elaine
 Albert     | Elaine
 Charles    | Francine
+George     | Elaine
 
 === Female Table ===
 Name
 -----------
-Francine
-Elaine</code></pre>
+Elaine
+Francine</code></pre>
 </div>
 </div>
 <p>Notice that to display each male’s mother’s name, we had to follow the foreign key (<code>eval_fk</code>) and then read the attribute (<code>eval_att</code>). This is the normalized way — no redundancy, but requires a join.</p>
@@ -251,7 +254,7 @@ Elaine</code></pre>
 <h2 class="anchored" data-anchor-id="the-denormalized-schema">The Denormalized Schema</h2>
 <p>Now suppose we want a <strong>denormalized</strong> schema that adds a <code>mother_name</code> attribute directly to <code>Male</code>, so we can read the mother’s name without following a foreign key. The denormalized schema <strong>imports</strong> the normalized one and adds the redundant attribute:</p>
 <div id="8" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
@@ -283,7 +286,7 @@ Elaine</code></pre>
 <span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>sch_denorm <span class="op">=</span> env.DeNormalizedSchema</span>
 <span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, sch_denorm.ens)</span>
 <span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Attributes: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(sch_denorm.atts)))</span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Observation equations: "</span>, <span class="fu">length</span>(sch_denorm.obs_eqs))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Observation equations: "</span>, <span class="fu">length</span>(sch_denorm.obs_eqs))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Entities: Set([:Male, :Female])
 Attributes: [:mother_name, :female_name, :male_name]
@@ -302,7 +305,7 @@ Observation equations: 1</code></pre>
 <h2 class="anchored" data-anchor-id="denormalized-data">Denormalized Data</h2>
 <p>We populate the denormalized schema, providing the <code>mother_name</code> values that must be consistent with the observation equation:</p>
 <div id="10" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
@@ -355,7 +358,7 @@ Observation equations: 1</code></pre>
 <span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>    mom_nm_fk <span class="op">=</span> <span class="fu">eval_att</span>(alg_d, <span class="op">:</span>female_name, mom)</span>
 <span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>    mom_nm_attr <span class="op">=</span> <span class="fu">eval_att</span>(alg_d, <span class="op">:</span>mother_name, x)</span>
 <span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="fu">rpad</span>(<span class="fu">string</span>(nm), <span class="fl">11</span>), <span class="st">"| "</span>, <span class="fu">rpad</span>(<span class="fu">string</span>(mom_nm_fk), <span class="fl">12</span>), <span class="st">"| "</span>, mom_nm_attr)</span>
-<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Denormalized Male Table ===
 Name       | Mother (FK) | mother_name (redundant)
@@ -371,7 +374,7 @@ Charles    | Francine    | Francine</code></pre>
 <h2 class="anchored" data-anchor-id="verifying-the-observation-equation">Verifying the Observation Equation</h2>
 <p>Let’s programmatically verify that the observation equation holds for every male:</p>
 <div id="12" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Verifying: mother_name(m) = female_name(mother(m))</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Verifying: mother_name(m) = female_name(mother(m))</span><span class="sc">\n</span><span class="st">"</span>)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>all_ok <span class="op">=</span> <span class="cn">true</span></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg_d, <span class="op">:</span>Male)</span>
@@ -385,7 +388,7 @@ Charles    | Francine    | Francine</code></pre>
 <span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>            <span class="st">", female_name(mother)="</span>, derived_val,</span>
 <span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>            <span class="st">" -&gt; "</span>, ok ? <span class="st">"CONSISTENT"</span> <span class="op">:</span> <span class="st">"INCONSISTENT"</span>)</span>
 <span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">All consistent: "</span>, all_ok)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">All consistent: "</span>, all_ok)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Verifying: mother_name(m) = female_name(mother(m))
 
@@ -402,7 +405,7 @@ All consistent: true</code></pre>
 <p>If we tried to populate <code>mother_name</code> with values that don’t match the observation equation, the data would be <strong>inconsistent</strong> with the schema’s constraints. For example, if Albert’s <code>mother_name</code> were <code>"Francine"</code> but his mother is Ellie (whose name is <code>"Elaine"</code>), this would violate the observation equation.</p>
 <p>Let’s demonstrate detecting such inconsistency:</p>
 <div id="14" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create intentionally inconsistent data</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create intentionally inconsistent data</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>env2 <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
@@ -456,7 +459,7 @@ All consistent: true</code></pre>
 <span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a>    ok <span class="op">=</span> <span class="fu">string</span>(mn) <span class="op">==</span> <span class="fu">string</span>(derived)</span>
 <span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a>    status <span class="op">=</span> ok ? <span class="st">"OK"</span> <span class="op">:</span> <span class="st">"VIOLATION: </span><span class="sc">$</span>(mn)<span class="st"> != </span><span class="sc">$</span>(derived)<span class="st">"</span></span>
 <span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, nm, <span class="st">": "</span>, status)</span>
-<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Checking observation equation on potentially bad data ===
 
@@ -469,7 +472,7 @@ All consistent: true</code></pre>
 <section id="normalized-vs.-denormalized-a-comparison" class="level2">
 <h2 class="anchored" data-anchor-id="normalized-vs.-denormalized-a-comparison">Normalized vs.&nbsp;Denormalized: A Comparison</h2>
 <div id="16" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>sch_n <span class="op">=</span> env.NormalizedSchema</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>sch_n <span class="op">=</span> env.NormalizedSchema</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>sch_d <span class="op">=</span> env.DeNormalizedSchema</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Normalized Schema:"</span>)</span>
@@ -482,7 +485,7 @@ All consistent: true</code></pre>
 <span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Entities: "</span>, sch_d.ens)</span>
 <span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Attributes: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(sch_d.atts)))</span>
 <span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Observation equations: "</span>, <span class="fu">length</span>(sch_d.obs_eqs))</span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  To get mother's name: read mother_name directly (no join)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  To get mother's name: read mother_name directly (no join)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Normalized Schema:
   Entities: Set([:Male, :Female])
@@ -591,13 +594,14 @@ Denormalized Schema:
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

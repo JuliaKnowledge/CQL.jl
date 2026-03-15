@@ -2,14 +2,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.9.28">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="CQL.jl">
+<meta name="author" content="Simon Frost">
 
 <title>CQL.jl Tutorial</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -59,17 +62,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="tutorial_files/libs/clipboard/clipboard.min.js"></script>
-<script src="tutorial_files/libs/quarto-html/quarto.js" type="module"></script>
-<script src="tutorial_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="tutorial_files/libs/quarto-html/popper.min.js"></script>
-<script src="tutorial_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="tutorial_files/libs/quarto-html/anchor.min.js"></script>
-<link href="tutorial_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="tutorial_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="tutorial_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="tutorial_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="tutorial_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="01_tutorial_files/libs/clipboard/clipboard.min.js"></script>
+<script src="01_tutorial_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="01_tutorial_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="01_tutorial_files/libs/quarto-html/popper.min.js"></script>
+<script src="01_tutorial_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="01_tutorial_files/libs/quarto-html/anchor.min.js"></script>
+<link href="01_tutorial_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="01_tutorial_files/libs/quarto-html/quarto-syntax-highlighting-49e51e44f424ea8c7044b429bdbbbfe2.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="01_tutorial_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="01_tutorial_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="01_tutorial_files/libs/bootstrap/bootstrap-138a6193a3bd40baf1e627da441a4734.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -123,7 +126,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>CQL.jl </p>
+             <p>Simon Frost </p>
           </div>
   </div>
     
@@ -150,29 +153,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Uber-flowers (Queries)</strong> - SQL-like queries with categorical guarantees</li>
 </ol>
 <div id="2" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="using-cql" class="level2">
 <h2 class="anchored" data-anchor-id="using-cql">Using CQL</h2>
 <p>CQL.jl provides two convenient macros for writing CQL programs directly in Julia, without needing to wrap them in strings and call <code>run_program</code> manually.</p>
 <p><strong>String macro</strong> — <code>cql"..."</code> or <code>cql"""..."""</code>:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal { types String }</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">schema S = literal : Ty { entities Person }</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><strong>Regular macro</strong> — <code>@cql</code>:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> <span class="pp">@cql</span> <span class="st">"typeside Ty = literal { types String }"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> <span class="pp">@cql</span> <span class="st">"typeside Ty = literal { types String }"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Both macros return an <code>Env</code> object. Named declarations in the program can be accessed directly as properties:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>env.Ty   <span class="co"># =&gt; Typeside</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>env.S    <span class="co"># =&gt; CQLSchema</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>env.Ty   <span class="co"># =&gt; Typeside</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>env.S    <span class="co"># =&gt; CQLSchema</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>This is equivalent to looking up values by name in the underlying dictionaries (e.g.&nbsp;<code>env.typesides["Ty"]</code>), but is more concise and supports tab-completion.</p>
 </section>
 <section id="typesides" class="level2">
 <h2 class="anchored" data-anchor-id="typesides">Typesides</h2>
 <p>Every CQL program begins with a <strong>typeside</strong> that defines the available data types and operations. In the original Java CQL, typesides bind to Java types. In CQL.jl, we define types and constants directly.</p>
 <div id="4" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Integer</span></span>
@@ -186,7 +189,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>ts <span class="op">=</span> env.Ty</span>
 <span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Types: "</span>, ts.tys)</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Function symbols: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(ts.syms)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Function symbols: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(ts.syms)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Types: Set([:Integer, :String])
 Function symbols: [:Al, :five, :Bo, :Carl, :Bob, :three, :Cork, :zero, :plus, :Akin, :one, :Math, :CS, :Dan, :four, :Dunn, :two]</code></pre>
@@ -205,7 +208,7 @@ Function symbols: [:Al, :five, :Bo, :Carl, :Bob, :three, :Cork, :zero, :plus, :A
 <li><strong>Observation equations</strong> - constraints involving attributes</li>
 </ul>
 <div id="6" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Integer</span></span>
@@ -238,7 +241,7 @@ Function symbols: [:Al, :five, :Bo, :Carl, :Bob, :three, :Cork, :zero, :plus, :A
 <span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, sch.ens)</span>
 <span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(sch.fks)))</span>
 <span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Attributes: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(sch.atts)))</span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Path equations: "</span>, <span class="fu">length</span>(sch.path_eqs))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Path equations: "</span>, <span class="fu">length</span>(sch.path_eqs))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Entities: Set([:Department, :Employee])
 Foreign keys: [:worksIn, :manager, :secretary]
@@ -261,7 +264,7 @@ Path equations: 2</code></pre>
 <h2 class="anchored" data-anchor-id="instances">Instances</h2>
 <p>An <strong>instance</strong> populates a schema with concrete data. Generators create elements, and equations specify their properties and relationships.</p>
 <div id="8" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Integer</span></span>
@@ -329,19 +332,19 @@ Path equations: 2</code></pre>
 <span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a>    sec <span class="op">=</span> <span class="fu">eval_fk</span>(alg, <span class="op">:</span>secretary, x)</span>
 <span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a>    sec_name <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>first, sec)</span>
 <span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  [</span><span class="sc">$</span>i<span class="st">] name=</span><span class="sc">$</span>dept_name<span class="st">, secretary=</span><span class="sc">$</span>sec_name<span class="st">"</span>)</span>
-<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Employee carrier size: 3
 Department carrier size: 2
 
 Employee table:
-  [1] first=Al, last=Akin, manager=Al, worksIn=Math
+  [1] first=Bob, last=Bo, manager=Carl, worksIn=CS
   [2] first=Carl, last=Cork, manager=Carl, worksIn=CS
-  [3] first=Bob, last=Bo, manager=Carl, worksIn=CS
+  [3] first=Al, last=Akin, manager=Al, worksIn=Math
 
 Department table:
-  [1] name=Math, secretary=Al
-  [2] name=CS, secretary=Carl</code></pre>
+  [1] name=CS, secretary=Carl
+  [2] name=Math, secretary=Al</code></pre>
 </div>
 </div>
 <p>The instance <code>I</code> has 3 employees and 2 departments. CQL automatically computes the initial algebra, which resolves all equations and finds the canonical representatives.</p>
@@ -350,7 +353,7 @@ Department table:
 <h2 class="anchored" data-anchor-id="mappings">Mappings</h2>
 <p>A <strong>mapping</strong> is a structure-preserving translation between schemas. It specifies how entities, foreign keys, and attributes in one schema correspond to those in another.</p>
 <div id="10" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Integer</span></span>
@@ -399,7 +402,7 @@ Department table:
 <span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Entity mappings:"</span>)</span>
 <span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (src_en, tgt_en) <span class="kw">in</span> mapping.ens</span>
 <span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"    </span><span class="sc">$</span>src_en<span class="st"> -&gt; </span><span class="sc">$</span>tgt_en<span class="st">"</span>)</span>
-<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Mapping F: C -&gt; D
   Entity mappings:
@@ -418,7 +421,7 @@ Department table:
 <p><strong>Delta</strong> pulls data backward along a mapping. Given a mapping <code>F: C -&gt; D</code> and an instance <code>J</code> on <code>D</code>, <code>delta F J</code> produces an instance on <code>C</code>.</p>
 <p>Think of delta as a “projection” or “restriction” - it restructures data from the target schema back to the source schema.</p>
 <div id="12" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Integer</span></span>
@@ -483,7 +486,7 @@ Department table:
 <span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-64"><a href="#cb13-64" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== Delta F J on schema C ==="</span>)</span>
 <span id="cb13-65"><a href="#cb13-65" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  N1: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(d_inst.algebra, <span class="op">:</span>N1)), <span class="st">" elements"</span>)</span>
-<span id="cb13-66"><a href="#cb13-66" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  N2: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(d_inst.algebra, <span class="op">:</span>N2)), <span class="st">" elements"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-66"><a href="#cb13-66" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  N2: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(d_inst.algebra, <span class="op">:</span>N2)), <span class="st">" elements"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Source instance J on schema D ===
   N: 3 elements
@@ -500,7 +503,7 @@ Department table:
 <p><strong>Sigma</strong> pushes data forward along a mapping. Given a mapping <code>F: C -&gt; D</code> and an instance <code>I</code> on <code>C</code>, <code>sigma F I</code> produces an instance on <code>D</code>.</p>
 <p>Think of sigma as a “union followed by merge” - it combines data from the source schema into the target schema, merging elements that become identified.</p>
 <div id="14" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Integer</span></span>
@@ -566,7 +569,7 @@ Department table:
 <span id="cb15-64"><a href="#cb15-64" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  N: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(s_inst.algebra, <span class="op">:</span>N)), <span class="st">" elements"</span>)</span>
 <span id="cb15-65"><a href="#cb15-65" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-66"><a href="#cb15-66" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Sigma after delta gives back the original!"</span>)</span>
-<span id="cb15-67"><a href="#cb15-67" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Original J had "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(j_inst.algebra, <span class="op">:</span>N)), <span class="st">" elements in N"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-67"><a href="#cb15-67" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Original J had "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(j_inst.algebra, <span class="op">:</span>N)), <span class="st">" elements in N"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Sigma F (Delta F J) on schema D ===
   N: 3 elements
@@ -585,7 +588,7 @@ Sigma after delta gives back the original!
 <section id="delta-as-a-query" class="level3">
 <h3 class="anchored" data-anchor-id="delta-as-a-query">Delta as a Query</h3>
 <div id="16" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Integer</span></span>
@@ -673,7 +676,7 @@ Sigma after delta gives back the original!
 <span id="cb17-86"><a href="#cb17-86" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  N1: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(dp_inst.algebra, <span class="op">:</span>N1)))</span>
 <span id="cb17-87"><a href="#cb17-87" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  N2: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(dp_inst.algebra, <span class="op">:</span>N2)))</span>
 <span id="cb17-88"><a href="#cb17-88" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-89"><a href="#cb17-89" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Both methods produce the same result!"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb17-89"><a href="#cb17-89" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Both methods produce the same result!"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Delta via functor ===
   N1: 3
@@ -691,7 +694,7 @@ Both methods produce the same result!</code></pre>
 <section id="sigma-as-a-query" class="level3">
 <h3 class="anchored" data-anchor-id="sigma-as-a-query">Sigma as a Query</h3>
 <div id="18" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Integer</span></span>
@@ -787,7 +790,7 @@ Both methods produce the same result!</code></pre>
 <span id="cb19-94"><a href="#cb19-94" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  N: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(sp_inst.algebra, <span class="op">:</span>N)))</span>
 <span id="cb19-95"><a href="#cb19-95" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb19-96"><a href="#cb19-96" aria-hidden="true" tabindex="-1"></a>j_inst <span class="op">=</span> env.J</span>
-<span id="cb19-97"><a href="#cb19-97" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Full round-trip: J -&gt; delta -&gt; sigma recovers "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(j_inst.algebra, <span class="op">:</span>N)), <span class="st">" elements"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb19-97"><a href="#cb19-97" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Full round-trip: J -&gt; delta -&gt; sigma recovers "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(j_inst.algebra, <span class="op">:</span>N)), <span class="st">" elements"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Sigma via query (round-trip) ===
   N: 3
@@ -1088,13 +1091,14 @@ Full round-trip: J -&gt; delta -&gt; sigma recovers 3 elements</code></pre>
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

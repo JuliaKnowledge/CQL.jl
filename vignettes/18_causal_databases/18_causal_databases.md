@@ -1,5 +1,5 @@
 # Causal Databases with CQL
-CQL.jl
+Simon Frost
 
 - [Introduction](#introduction)
 - [1. Schema: The Causal Atlas Data

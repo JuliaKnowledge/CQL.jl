@@ -2,14 +2,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.9.28">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="CQL.jl">
+<meta name="author" content="Simon Frost">
 
 <title>RDF Integration with CQL</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -59,17 +62,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="rdf_files/libs/clipboard/clipboard.min.js"></script>
-<script src="rdf_files/libs/quarto-html/quarto.js" type="module"></script>
-<script src="rdf_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="rdf_files/libs/quarto-html/popper.min.js"></script>
-<script src="rdf_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="rdf_files/libs/quarto-html/anchor.min.js"></script>
-<link href="rdf_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="rdf_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="rdf_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="rdf_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="rdf_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="11_rdf_files/libs/clipboard/clipboard.min.js"></script>
+<script src="11_rdf_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="11_rdf_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="11_rdf_files/libs/quarto-html/popper.min.js"></script>
+<script src="11_rdf_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="11_rdf_files/libs/quarto-html/anchor.min.js"></script>
+<link href="11_rdf_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="11_rdf_files/libs/quarto-html/quarto-syntax-highlighting-49e51e44f424ea8c7044b429bdbbbfe2.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="11_rdf_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="11_rdf_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="11_rdf_files/libs/bootstrap/bootstrap-138a6193a3bd40baf1e627da441a4734.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -113,7 +116,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>CQL.jl </p>
+             <p>Simon Frost </p>
           </div>
   </div>
     
@@ -138,14 +141,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ol>
 <p>This round-trip demonstrates CQL’s ability to interoperate with RDF while providing stronger guarantees than SPARQL alone.</p>
 <div id="2" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="the-source-instance" class="level2">
 <h2 class="anchored" data-anchor-id="the-source-instance">The Source Instance</h2>
 <p>We start with a schema describing employees and departments — the same structure used throughout the CQL documentation — and populate it with sample data.</p>
 <div id="4" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>rdf_path <span class="op">=</span> <span class="fu">joinpath</span>(<span class="fu">tempdir</span>(), <span class="st">"employees.rdf.xml"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>rdf_path <span class="op">=</span> <span class="fu">joinpath</span>(<span class="fu">tempdir</span>(), <span class="st">"employees.rdf.xml"</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> <span class="fu">run_program</span>(<span class="st">"""</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
@@ -192,12 +195,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>    l <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>last, x)</span>
 <span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>name, <span class="fu">eval_fk</span>(alg, <span class="op">:</span>worksIn, x))</span>
 <span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>f<span class="st"> </span><span class="sc">$</span>l<span class="st"> — works in </span><span class="sc">$</span>d<span class="st">"</span>)</span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Source instance:
   Carl Cork — works in CS
-  Al Akin — works in Math
-  Bob Bo — works in Math</code></pre>
+  Bob Bo — works in Math
+  Al Akin — works in Math</code></pre>
 </div>
 </div>
 <p>The instance has 3 employees and 2 departments, with path equations enforcing that managers work in the same department as their reports.</p>
@@ -211,7 +214,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>Elements are identified by URIs of the form <code>cql://entity/Employee/0</code>, attributes by <code>cql://attribute/Employee/first</code>, and foreign keys by <code>cql://foreign_key/Employee/manager</code>.</p>
 <div id="6" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>env2 <span class="op">=</span> <span class="fu">run_program</span>(<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>env2 <span class="op">=</span> <span class="fu">run_program</span>(<span class="st">"""</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Integer</span></span>
@@ -253,21 +256,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a><span class="st">        String -&gt; "http://www.w3.org/2001/XMLSchema#string"</span></span>
 <span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
 <span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span>)</span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Exported to: </span><span class="sc">$</span>rdf_path<span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Exported to: </span><span class="sc">$</span>rdf_path<span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Exported to: /var/folders/yh/30rj513j6mn1n7x556c2v4w80000gn/T/employees.rdf.xml</code></pre>
 </div>
 </div>
 <p>Let’s examine the generated RDF/XML:</p>
 <div id="8" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>rdf_xml <span class="op">=</span> <span class="fu">read</span>(rdf_path, <span class="dt">String</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>rdf_xml <span class="op">=</span> <span class="fu">read</span>(rdf_path, <span class="dt">String</span>)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Show a manageable excerpt</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>lines <span class="op">=</span> <span class="fu">split</span>(rdf_xml, <span class="ch">'\n'</span>)</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"RDF/XML (</span><span class="sc">$</span>(<span class="fu">length</span>(lines))<span class="st"> lines, first 40 shown):"</span>)</span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="fu">join</span>(lines[<span class="fl">1</span><span class="op">:</span><span class="fu">min</span>(<span class="fl">40</span>, <span class="fu">length</span>(lines))], <span class="ch">'\n'</span>))</span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="fu">length</span>(lines) <span class="op">&gt;</span> <span class="fl">40</span></span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"..."</span>)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>RDF/XML (77 lines, first 40 shown):
 &lt;?xml version="1.0" encoding="UTF-8"?&gt;
@@ -319,7 +322,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="importing-rdfxml">Importing RDF/XML</h2>
 <p>The <code>import_rdf_all</code> expression reads an RDF/XML file and produces a CQL instance on a fixed schema with a single entity <code>R</code> carrying three attributes: <code>subject</code>, <code>predicate</code>, and <code>object</code>, all of type <code>Dom</code>. Every triple in the RDF file becomes one generator in the instance.</p>
 <div id="10" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>env3 <span class="op">=</span> <span class="fu">run_program</span>(<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>env3 <span class="op">=</span> <span class="fu">run_program</span>(<span class="st">"""</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Integer</span></span>
@@ -377,7 +380,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"    </span><span class="sc">$</span>p<span class="st">"</span>)</span>
 <span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"    </span><span class="sc">$</span>o<span class="st">"</span>)</span>
 <span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>()</span>
-<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Imported 41 triples into instance J
 
@@ -430,7 +433,7 @@ Sample triples (first 10):
 <h2 class="anchored" data-anchor-id="spanifying-from-triples-to-structure">Spanifying: From Triples to Structure</h2>
 <p>The <code>spanify</code> operation restructures a flat triple instance into a schema with <strong>one entity per distinct predicate</strong>. Each entity has <code>subject</code> and <code>object</code> attributes of type <code>Dom</code>. This transforms the unstructured triple store into a structured schema that CQL can reason about.</p>
 <div id="12" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>env4 <span class="op">=</span> <span class="fu">run_program</span>(<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>env4 <span class="op">=</span> <span class="fu">run_program</span>(<span class="st">"""</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Integer</span></span>
@@ -483,7 +486,7 @@ Sample triples (first 10):
 <span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> en <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(sch_k.ens))</span>
 <span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> <span class="fu">length</span>(<span class="fu">carrier</span>(alg_k, en))</span>
 <span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>en<span class="st">: </span><span class="sc">$</span>n<span class="st"> rows"</span>)</span>
-<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Spanified schema entities:
   cql://attribute/Department/name: 2 rows
@@ -727,13 +730,14 @@ instance Merged = coproduct (sigma mappingA dataA) + (sigma mappingB dataB) : Co
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

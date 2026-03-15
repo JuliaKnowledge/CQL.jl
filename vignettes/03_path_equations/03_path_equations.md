@@ -1,5 +1,5 @@
 # Path Equations in CQL
-CQL.jl
+Simon Frost
 
 ## Introduction
 
@@ -227,7 +227,7 @@ end
     Persons after:  2 (prover merged elements)
 
       a: name=Al, boss=a.boss
-      a.boss: name=Carl, boss=a.boss
+      a.boss: name=Bob, boss=a.boss
 
 The prover reduced 3 generators to 2 elements by identifying Bob and
 Carl. This is because:

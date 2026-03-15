@@ -2,14 +2,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.9.28">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="CQL.jl">
+<meta name="author" content="Simon Frost">
 
 <title>Ecological Data Integration with CQL</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -59,20 +62,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="ecology_files/libs/clipboard/clipboard.min.js"></script>
-<script src="ecology_files/libs/quarto-html/quarto.js" type="module"></script>
-<script src="ecology_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="ecology_files/libs/quarto-html/popper.min.js"></script>
-<script src="ecology_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="ecology_files/libs/quarto-html/anchor.min.js"></script>
-<link href="ecology_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="ecology_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="ecology_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="ecology_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="ecology_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="16_ecology_files/libs/clipboard/clipboard.min.js"></script>
+<script src="16_ecology_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="16_ecology_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="16_ecology_files/libs/quarto-html/popper.min.js"></script>
+<script src="16_ecology_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="16_ecology_files/libs/quarto-html/anchor.min.js"></script>
+<link href="16_ecology_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="16_ecology_files/libs/quarto-html/quarto-syntax-highlighting-49e51e44f424ea8c7044b429bdbbbfe2.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="16_ecology_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="16_ecology_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="16_ecology_files/libs/bootstrap/bootstrap-138a6193a3bd40baf1e627da441a4734.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -85,7 +88,7 @@ const typesetMath = (el) => {
     var macros = [];
     for (var i = 0; i < mathElements.length; i++) {
       var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
         window.katex.render(texText.data, mathElements[i], {
           displayMode: mathElements[i].classList.contains('display'),
           throwOnError: false,
@@ -132,7 +135,7 @@ window.Quarto = {
   <li><a href="#comparison-with-rdfsparql" id="toc-comparison-with-rdfsparql" class="nav-link" data-scroll-target="#comparison-with-rdfsparql">Comparison with RDF/SPARQL</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
-<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="ecology.md"><i class="bi bi-file-code"></i>Github (GFM)</a></li><li><a href="ecology.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="16_ecology.md"><i class="bi bi-file-code"></i>Github (GFM)</a></li><li><a href="../../16_ecology.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
 </div>
 <main class="content" id="quarto-document-content">
 
@@ -149,7 +152,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>CQL.jl </p>
+             <p>Simon Frost </p>
           </div>
   </div>
     
@@ -222,7 +225,7 @@ window.Quarto = {
 </tbody>
 </table>
 <div id="2" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="schema-the-ecosystem-data-model" class="level2">
@@ -248,7 +251,7 @@ window.Quarto = {
                                  Observation</code></pre>
 <p>Each arrow is a <strong>foreign key</strong> — a total function. Given a feeding link, the <code>predator</code> FK returns exactly one species; given an observation, <code>observed_species</code> returns exactly one species. This strictness prevents dangling references: every observation must point to a known species, and every feeding link must connect two real species.</p>
 <div id="4" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>typeside_and_schema <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>typeside_and_schema <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">  types</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="st">    String</span></span>
@@ -276,7 +279,7 @@ window.Quarto = {
 <span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="st">    method              : Observation -&gt; String</span></span>
 <span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="st">    obs_date            : Observation -&gt; String</span></span>
 <span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="csv-import-loading-the-food-web" class="level2">
@@ -291,7 +294,7 @@ window.Quarto = {
 <li><code>Observation.csv</code> — 20 field observations across 4 survey sites</li>
 </ul>
 <div id="6" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>import_program <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>import_program <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance FoodWeb = import_csv "ecology_data" : Ecosystem</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -301,7 +304,7 @@ window.Quarto = {
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Ecosystem loaded:"</span>)</span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> en <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(env.schemas[<span class="st">"Ecosystem"</span>].ens))</span>
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>(<span class="fu">rpad</span>(<span class="fu">string</span>(en), <span class="fl">18</span>))<span class="st"> </span><span class="sc">$</span>(<span class="fu">length</span>(CQL.<span class="fu">carrier</span>(alg, en)))<span class="st"> records"</span>)</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Ecosystem loaded:
   FeedingLink        18 records
@@ -318,7 +321,7 @@ window.Quarto = {
 <p>A <strong>Delta migration</strong> pulls data backward along a schema mapping. In ecological terms, it <em>denormalises</em> a complex relational structure into a simpler report format.</p>
 <p>Here we define a flat <code>PredPreyReport</code> schema with a single entity type and use a mapping to extract each feeding link as a row with predator name, prey name, and their trophic levels. The <code>lambda</code> expressions follow foreign key chains: <code>common_name(predator(fl))</code> reads “the common name of the predator of this feeding link.”</p>
 <div id="8" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>delta_program <span class="op">=</span> import_program <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>delta_program <span class="op">=</span> import_program <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema PredPreyReport = literal : Ty {</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entities Link</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">  attributes</span></span>
@@ -354,7 +357,7 @@ window.Quarto = {
 <span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="fu">string</span>(CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>predator_level, x)), <span class="fl">22</span>), <span class="st">"→ "</span>,</span>
 <span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="fu">string</span>(CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>prey_name, x)), <span class="fl">18</span>),</span>
 <span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>        CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>prey_level, x))</span>
-<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Food Web (18 trophic links):
   Predator          Level                   Prey              Level
@@ -388,7 +391,7 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="q1-observations-at-a-single-site">Q1: Observations at a single site</h3>
 <p>Field ecologists often need to extract data from a specific survey site. This query selects all observations recorded at “St Andrews”:</p>
 <div id="10" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>q_site <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>q_site <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="st">query StAndrewsObs = literal : Ecosystem -&gt; Ecosystem {</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entity TrophicLevel -&gt; {from tl:TrophicLevel attributes level_name -&gt; tl.level_name}</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="st">  entity Habitat -&gt; {from h:Habitat attributes hab_name -&gt; h.hab_name hab_description -&gt; h.hab_description}</span></span>
@@ -403,14 +406,14 @@ window.Quarto = {
 <span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes site_name -&gt; o.site_name count -&gt; o.count method -&gt; o.method obs_date -&gt; o.obs_date</span></span>
 <span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys observed_species -&gt; {s -&gt; o.observed_species}}</span></span>
 <span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="q2-quadrat-surveys-only" class="level3">
 <h3 class="anchored" data-anchor-id="q2-quadrat-surveys-only">Q2: Quadrat surveys only</h3>
 <p>Different survey methods measure different things. Quadrat counts give reliable abundance estimates for sessile or slow-moving organisms. This query selects only quadrat surveys:</p>
 <div id="12" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>q_quadrat <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>q_quadrat <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="st">query QuadratSurveys = literal : Ecosystem -&gt; Ecosystem {</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entity TrophicLevel -&gt; {from tl:TrophicLevel attributes level_name -&gt; tl.level_name}</span></span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="st">  entity Habitat -&gt; {from h:Habitat attributes hab_name -&gt; h.hab_name hab_description -&gt; h.hab_description}</span></span>
@@ -425,11 +428,11 @@ window.Quarto = {
 <span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes site_name -&gt; o.site_name count -&gt; o.count method -&gt; o.method obs_date -&gt; o.obs_date</span></span>
 <span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys observed_species -&gt; {s -&gt; o.observed_species}}</span></span>
 <span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s apply each filter:</p>
 <div id="14" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">show_observations</span>(alg; label<span class="op">=</span><span class="st">""</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">show_observations</span>(alg; label<span class="op">=</span><span class="st">""</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    obs <span class="op">=</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(alg, <span class="op">:</span>Observation)), by<span class="op">=</span>string)</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"</span><span class="sc">$</span>label<span class="st"> (</span><span class="sc">$</span>(<span class="fu">length</span>(obs))<span class="st"> observations):"</span>)</span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">rpad</span>(<span class="st">"Species"</span>, <span class="fl">18</span>), <span class="fu">rpad</span>(<span class="st">"Site"</span>, <span class="fl">14</span>), <span class="fu">rpad</span>(<span class="st">"Method"</span>, <span class="fl">10</span>), <span class="st">"Count"</span>)</span>
@@ -452,7 +455,7 @@ window.Quarto = {
 <span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> <span class="fu">run_program</span>(queries_program)</span>
 <span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="fu">show_observations</span>(env.instances[<span class="st">"st_andrews"</span>].algebra, label<span class="op">=</span><span class="st">"St Andrews observations"</span>)</span>
 <span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>()</span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="fu">show_observations</span>(env.instances[<span class="st">"quadrats"</span>].algebra, label<span class="op">=</span><span class="st">"All quadrat surveys"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="fu">show_observations</span>(env.instances[<span class="st">"quadrats"</span>].algebra, label<span class="op">=</span><span class="st">"All quadrat surveys"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>St Andrews observations (5 observations):
   Species           Site          Method    Count
@@ -487,7 +490,7 @@ All quadrat surveys (11 observations):
 <p><span class="math display">\[\text{eval}([Q_1; Q_2], I) = \text{eval}(Q_2, \text{eval}(Q_1, I))\]</span></p>
 <p>This means ecologists can build complex data selection criteria from simple, tested building blocks — “quadrat surveys at St Andrews” is literally the composition of the site filter and the method filter.</p>
 <div id="16" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>compose_program <span class="op">=</span> queries_program <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>compose_program <span class="op">=</span> queries_program <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="st">query QuadratsAtStAndrews = [StAndrewsObs ; QuadratSurveys]</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="st">instance composed  = eval QuadratsAtStAndrews FoodWeb</span></span>
@@ -503,7 +506,7 @@ All quadrat surveys (11 observations):
 <span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>()</span>
 <span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Stepwise: eval QuadratSurveys (eval StAndrewsObs FoodWeb) ==="</span>)</span>
 <span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="fu">show_observations</span>(env.instances[<span class="st">"step2"</span>].algebra,</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>                  label<span class="op">=</span><span class="st">"Quadrat surveys at St Andrews (two-step)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>                  label<span class="op">=</span><span class="st">"Quadrat surveys at St Andrews (two-step)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Composed: [StAndrewsObs ; QuadratSurveys] ===
 Quadrat surveys at St Andrews (one-step) (3 observations):
@@ -528,7 +531,7 @@ Quadrat surveys at St Andrews (two-step) (3 observations):
 <h2 class="anchored" data-anchor-id="delta-for-species-profiles">6. Delta for Species Profiles</h2>
 <p>Beyond food web reports, Delta can create species profile cards. Here we flatten each observation into a self-contained record with denormalised species and trophic information:</p>
 <div id="18" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>profile_program <span class="op">=</span> import_program <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>profile_program <span class="op">=</span> import_program <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema SurveyReport = literal : Ty {</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entities Record</span></span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="st">  attributes</span></span>
@@ -567,7 +570,7 @@ Quadrat surveys at St Andrews (two-step) (3 observations):
 <span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="fu">string</span>(CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>site, x)), <span class="fl">14</span>),</span>
 <span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="fu">string</span>(CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>survey_method, x)), <span class="fl">10</span>),</span>
 <span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a>        CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>abundance, x))</span>
-<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Field Survey Report (20 records):
   Species           Trophic Level         Site          Method    Count
@@ -600,7 +603,7 @@ Quadrat surveys at St Andrews (two-step) (3 observations):
 <p>Different monitoring programmes use different data schemas. A university research group might record <code>species_name</code>, <code>abundance</code>, and <code>survey_method</code>, while a government agency tracks <code>taxon</code>, <code>individuals</code>, and <code>protocol</code>. Before combining their data, both must be <strong>aligned</strong> to a common standard.</p>
 <p><strong>Sigma migration</strong> (<code>sigma F I</code>) pushes an instance forward along a mapping, renaming and restructuring attributes. In ecological terms, this is taxonomic and methodological harmonisation — mapping local terminology to a shared vocabulary.</p>
 <div id="20" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>sigma_program <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>sigma_program <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal { types String }</span></span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="st">schema UniSurvey = literal : Ty {</span></span>
@@ -665,7 +668,7 @@ Quadrat surveys at St Andrews (two-step) (3 observations):
 <span id="cb16-63"><a href="#cb16-63" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-64"><a href="#cb16-64" aria-hidden="true" tabindex="-1"></a><span class="fu">show_standard</span>(env.instances[<span class="st">"StdUni"</span>].algebra, label<span class="op">=</span><span class="st">"University survey → Standard"</span>)</span>
 <span id="cb16-65"><a href="#cb16-65" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>()</span>
-<span id="cb16-66"><a href="#cb16-66" aria-hidden="true" tabindex="-1"></a><span class="fu">show_standard</span>(env.instances[<span class="st">"StdGov"</span>].algebra, label<span class="op">=</span><span class="st">"Government survey → Standard"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-66"><a href="#cb16-66" aria-hidden="true" tabindex="-1"></a><span class="fu">show_standard</span>(env.instances[<span class="st">"StdGov"</span>].algebra, label<span class="op">=</span><span class="st">"Government survey → Standard"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>University survey → Standard (4 records):
   Blue Mussel       n=342   quadrat
@@ -686,13 +689,13 @@ Government survey → Standard (3 records):
 <p>Once survey data from different sources has been aligned to a common schema, the next step is <strong>merging</strong>. A CQL <strong>coproduct</strong> creates the disjoint union of two instances — in ecological terms, it pools data from independent survey sites into a combined dataset.</p>
 <p>The coproduct preserves all records without deduplication. This is ecologically correct: if two independent teams both recorded Blue Mussels, both observations should be retained because they represent separate measurements at different sites.</p>
 <div id="22" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>coprod_program <span class="op">=</span> sigma_program <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>coprod_program <span class="op">=</span> sigma_program <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance Combined = coproduct StdUni + StdGov : StandardSurvey</span></span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> <span class="fu">run_program</span>(coprod_program)</span>
 <span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="fu">show_standard</span>(env.instances[<span class="st">"Combined"</span>].algebra,</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>              label<span class="op">=</span><span class="st">"Combined survey data"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>              label<span class="op">=</span><span class="st">"Combined survey data"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Combined survey data (7 records):
   Blue Mussel       n=342   quadrat
@@ -711,7 +714,7 @@ Government survey → Standard (3 records):
 <p>In biodiversity databases, certain consistency rules must hold. For example: “every species recorded in a survey must have at least one habitat association on file.” If a new species is observed but its habitat hasn’t been catalogued yet, the database is incomplete.</p>
 <p>CQL expresses such rules as <strong>embedded dependencies</strong> (EDs), and the <strong>chase</strong> algorithm repairs violations by generating the minimum additional data needed. In ecological terms, the chase identifies species missing habitat records and creates placeholder entries that taxonomists can then fill in.</p>
 <div id="24" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>chase_program <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>chase_program <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="st">  types String</span></span>
 <span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="st">  constants "unknown" "recorded" : String</span></span>
@@ -756,7 +759,7 @@ Government survey → Standard (3 records):
 <span id="cb20-43"><a href="#cb20-43" aria-hidden="true" tabindex="-1"></a>        <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>(<span class="fu">rpad</span>(<span class="fu">string</span>(CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>sp_name, sp)), <span class="fl">20</span>))<span class="st"> habitat: </span><span class="sc">$</span>(CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>hab_type, hr))<span class="st">"</span>)</span>
 <span id="cb20-44"><a href="#cb20-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
 <span id="cb20-45"><a href="#cb20-45" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>()</span>
-<span id="cb20-46"><a href="#cb20-46" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-46"><a href="#cb20-46" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Before chase: 4 species, 2 habitat records
   Blue Mussel          habitat: rocky intertidal
@@ -776,7 +779,7 @@ After chase: 4 species, 4 habitat records
 <h2 class="anchored" data-anchor-id="transforms-tracking-species-persistence-across-years">10. Transforms: Tracking Species Persistence Across Years</h2>
 <p>A CQL <strong>transform</strong> is a structure-preserving map between two instances on the same schema. In ecological terms, it formalises the relationship between two annual species inventories: “all species recorded in Year 1 are still present in Year 2, with these additional species newly observed.”</p>
 <div id="26" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>transform_program <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>transform_program <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal { types String }</span></span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="st">schema Inventory = literal : Ty {</span></span>
@@ -822,7 +825,7 @@ After chase: 4 species, 4 habitat records
 <span id="cb22-44"><a href="#cb22-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>()</span>
 <span id="cb22-45"><a href="#cb22-45" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
 <span id="cb22-46"><a href="#cb22-46" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Transform maps: all 4 Year-2023 species persist into Year 2024"</span>)</span>
-<span id="cb22-47"><a href="#cb22-47" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"New in 2024: Grey Seal (tertiary consumer), Sea Urchin (primary consumer)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb22-47"><a href="#cb22-47" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"New in 2024: Grey Seal (tertiary consumer), Sea Urchin (primary consumer)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>2023 inventory: 4 species
   Blue Mussel       primary consumer
@@ -849,7 +852,7 @@ New in 2024: Grey Seal (tertiary consumer), Sea Urchin (primary consumer)</code>
 <p>CQL’s <strong>coeval</strong> is the right adjoint to query evaluation. Where <code>eval Q I</code> pushes data forward through a query (extracting a subset), <code>coeval Q J</code> pulls data backward — reconstructing what the source data might look like given the query’s output.</p>
 <p>In ecological terms: given a list of species observed at a site (the query result), the coeval reconstructs the source inventory — providing a formal provenance chain from summary back to source.</p>
 <div id="28" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>coeval_program <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>coeval_program <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal { types String }</span></span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="st">schema FullInventory = literal : Ty {</span></span>
@@ -896,15 +899,15 @@ New in 2024: Grey Seal (tertiary consumer), Sea Urchin (primary consumer)</code>
 <span id="cb24-45"><a href="#cb24-45" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(alg, <span class="op">:</span>Species)), by<span class="op">=</span>string)</span>
 <span id="cb24-46"><a href="#cb24-46" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">rpad</span>(<span class="fu">string</span>(CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>sp_name, x)), <span class="fl">18</span>),</span>
 <span id="cb24-47"><a href="#cb24-47" aria-hidden="true" tabindex="-1"></a>            <span class="st">"status="</span>, CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>status, x))</span>
-<span id="cb24-48"><a href="#cb24-48" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb24-48"><a href="#cb24-48" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Forward: extract vulnerable species ===
-  European Eel
   Atlantic Cod
+  European Eel
 
 === Backward (coeval): reconstruct from vulnerability list ===
-  European Eel      status=Vulnerable
-  Atlantic Cod      status=Vulnerable</code></pre>
+  Atlantic Cod      status=Vulnerable
+  European Eel      status=Vulnerable</code></pre>
 </div>
 </div>
 <p>The coeval reconstructs only the species visible through the query — Blue Mussel and Killer Whale are absent because they were filtered out. Each reconstructed species retains its “Vulnerable” status, confirming the provenance chain from conservation list back to the full inventory.</p>
@@ -919,7 +922,7 @@ New in 2024: Grey Seal (tertiary consumer), Sea Urchin (primary consumer)</code>
 </ul>
 <p>In ecological terms: if you harmonise a local species list to Darwin Core format (Sigma) and then extract it back (Delta), the unit tells you what survived the round trip.</p>
 <div id="30" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>adjunction_program <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>adjunction_program <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal { types String }</span></span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="st">schema LocalList = literal : Ty {</span></span>
@@ -963,7 +966,7 @@ New in 2024: Grey Seal (tertiary consumer), Sea Urchin (primary consumer)</code>
 <span id="cb26-42"><a href="#cb26-42" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Verifies no information is lost when importing from Darwin Core and re-exporting"</span>)</span>
 <span id="cb26-43"><a href="#cb26-43" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>()</span>
 <span id="cb26-44"><a href="#cb26-44" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Both adjunction transforms computed — the Δ ⊣ Σ adjunction holds."</span>)</span>
-<span id="cb26-45"><a href="#cb26-45" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"For this bijective mapping, both are isomorphisms: perfect round-trip fidelity."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb26-45"><a href="#cb26-45" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"For this bijective mapping, both are isomorphisms: perfect round-trip fidelity."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Unit (η): LocalList → Δ(Σ(LocalList))
   Verifies no information is lost when exporting to Darwin Core and reimporting
@@ -981,7 +984,7 @@ For this bijective mapping, both are isomorphisms: perfect round-trip fidelity.<
 <p>When two monitoring programmes use entirely different schemas — not just different column names but different entity structures — we need <strong>schema colimit</strong> to merge them.</p>
 <p>A schema colimit computes the categorical pushout of multiple schemas, identifying shared concepts. In ecological terms: the marine survey team tracks “Species in Habitats” while the conservation team tracks “Taxa with Threat Levels.” Both reference the same biological species, but model them differently. The schema colimit unifies these views.</p>
 <div id="32" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>colimit_program <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>colimit_program <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal { types String }</span></span>
 <span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="st">schema MarineSurvey = literal : Ty {</span></span>
@@ -1046,7 +1049,7 @@ For this bijective mapping, both are isomorphisms: perfect round-trip fidelity.<
 <span id="cb28-63"><a href="#cb28-63" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
 <span id="cb28-64"><a href="#cb28-64" aria-hidden="true" tabindex="-1"></a>        <span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">join</span>(parts, <span class="st">", "</span>))</span>
 <span id="cb28-65"><a href="#cb28-65" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
-<span id="cb28-66"><a href="#cb28-66" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb28-66"><a href="#cb28-66" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Unified biodiversity schema:
   Entities: ConservationDB_CRegion, ConservationDB_CTaxon, MarineSurvey_MHab, MarineSurvey_MSp
@@ -1267,13 +1270,14 @@ Entity MarineSurvey_MSp (2 records):
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

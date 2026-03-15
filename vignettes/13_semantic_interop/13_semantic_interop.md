@@ -1,5 +1,5 @@
 # Semantic Interoperability across Building Lifecycle
-CQL.jl
+Simon Frost
 
 ## Introduction
 
@@ -464,12 +464,12 @@ end
 ```
 
     Before chase — timeseriesId on Points:
-      eq2.hasPoint → eq2.hasPoint.timeseriesId
-      eq1.hasPoint → eq1.hasPoint.timeseriesId
+      pt1 → pt1.timeseriesId
+      pt2 → pt2.timeseriesId
 
     After chase — timeseriesId on Points:
-      eq2.hasPoint → TUC_R260
-      eq1.hasPoint → TUC_R240
+      pt1 → TUC_R240
+      pt2 → TUC_R260
 
 Before the chase, `timeseriesId` is a Skolem (unknown value). After the
 chase, the constraint forces it to equal the corresponding `deviceId`,

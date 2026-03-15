@@ -1,5 +1,5 @@
 # RDF Integration with CQL
-CQL.jl
+Simon Frost
 
 ## Introduction
 
@@ -88,8 +88,8 @@ end
 
     Source instance:
       Carl Cork — works in CS
-      Al Akin — works in Math
       Bob Bo — works in Math
+      Al Akin — works in Math
 
 The instance has 3 employees and 2 departments, with path equations
 enforcing that managers work in the same department as their reports.

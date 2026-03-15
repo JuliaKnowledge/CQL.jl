@@ -1,5 +1,5 @@
 # Epidemiological Data Integration with CQL
-CQL.jl
+Simon Frost
 
 - [Introduction](#introduction)
 - [1. Schema: The Outbreak Data
@@ -760,8 +760,8 @@ end
       trace → Margaret (severe) status=traced
 
     After chase: 4 cases, 3 contact traces
-      trace → Sarah (severe) status=chase_sk_1.trace_status
-      trace → Emily (severe) status=chase_sk_2.trace_status
+      trace → Emily (severe) status=chase_sk_1.trace_status
+      trace → Sarah (severe) status=chase_sk_2.trace_status
       trace → Margaret (severe) status=traced
 
 The chase created new contact trace records for Sarah and Emily — the
@@ -920,13 +920,13 @@ end
 ```
 
     === Forward: Extract severe cases ===
-      Margaret (onset: 2024-01-10)
       Emily (onset: 2024-01-14)
+      Margaret (onset: 2024-01-10)
       Sarah (onset: 2024-01-13)
 
     === Backward (coeval): Reconstruct source data ===
-      Emily severity=severe onset=2024-01-14
       Margaret severity=severe onset=2024-01-10
+      Emily severity=severe onset=2024-01-14
       Sarah severity=severe onset=2024-01-13
 
 The coeval reconstructs only the cases that were visible through the

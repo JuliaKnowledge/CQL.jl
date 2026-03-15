@@ -2,14 +2,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.9.28">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="CQL.jl">
+<meta name="author" content="Simon Frost">
 
 <title>Epidemiological Data Integration with CQL</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -59,20 +62,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="epidemiology_files/libs/clipboard/clipboard.min.js"></script>
-<script src="epidemiology_files/libs/quarto-html/quarto.js" type="module"></script>
-<script src="epidemiology_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="epidemiology_files/libs/quarto-html/popper.min.js"></script>
-<script src="epidemiology_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="epidemiology_files/libs/quarto-html/anchor.min.js"></script>
-<link href="epidemiology_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="epidemiology_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="epidemiology_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="epidemiology_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="epidemiology_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="17_epidemiology_files/libs/clipboard/clipboard.min.js"></script>
+<script src="17_epidemiology_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="17_epidemiology_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="17_epidemiology_files/libs/quarto-html/popper.min.js"></script>
+<script src="17_epidemiology_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="17_epidemiology_files/libs/quarto-html/anchor.min.js"></script>
+<link href="17_epidemiology_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="17_epidemiology_files/libs/quarto-html/quarto-syntax-highlighting-49e51e44f424ea8c7044b429bdbbbfe2.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="17_epidemiology_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="17_epidemiology_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="17_epidemiology_files/libs/bootstrap/bootstrap-138a6193a3bd40baf1e627da441a4734.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -85,7 +88,7 @@ const typesetMath = (el) => {
     var macros = [];
     for (var i = 0; i < mathElements.length; i++) {
       var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
         window.katex.render(texText.data, mathElements[i], {
           displayMode: mathElements[i].classList.contains('display'),
           throwOnError: false,
@@ -136,7 +139,7 @@ window.Quarto = {
   <li><a href="#schema-colimit-integrating-surveillance-systems" id="toc-schema-colimit-integrating-surveillance-systems" class="nav-link" data-scroll-target="#schema-colimit-integrating-surveillance-systems">12. Schema Colimit: Integrating Surveillance Systems</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
-<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="epidemiology.md"><i class="bi bi-file-code"></i>Github (GFM)</a></li></ul></div></nav>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="17_epidemiology.md"><i class="bi bi-file-code"></i>Github (GFM)</a></li></ul></div></nav>
 </div>
 <main class="content" id="quarto-document-content">
 
@@ -153,7 +156,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>CQL.jl </p>
+             <p>Simon Frost </p>
           </div>
   </div>
     
@@ -222,7 +225,7 @@ window.Quarto = {
 </tbody>
 </table>
 <div id="2" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="schema-the-outbreak-data-model" class="level2">
@@ -243,7 +246,7 @@ window.Quarto = {
                        Pathogen</code></pre>
 <p>Each foreign key (<code>patient</code>, <code>location</code>, <code>pathogen</code>) is a function — given a case, it returns exactly one patient, one location, and one pathogen. This is stricter than an RDF graph (where relationships can be many-to-many) but guarantees that every case is fully attributed.</p>
 <div id="4" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>typeside_and_schema <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>typeside_and_schema <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">  types</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="st">    String</span></span>
@@ -268,7 +271,7 @@ window.Quarto = {
 <span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="st">    loc_type   : Location -&gt; String</span></span>
 <span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="st">    path_name  : Pathogen -&gt; String</span></span>
 <span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="csv-import-loading-the-line-list" class="level2">
@@ -282,7 +285,7 @@ window.Quarto = {
 <li><code>Pathogen.csv</code> — 3 pathogens: Influenza A H3N2, SARS-CoV-2 JN.1, RSV-B</li>
 </ul>
 <div id="6" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>import_program <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>import_program <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance Outbreak = import_csv "epi_data" : Epi</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -308,7 +311,7 @@ window.Quarto = {
 <span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
 <span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
 <span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="fu">show_cases</span>(alg, label<span class="op">=</span><span class="st">"Full Outbreak"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="fu">show_cases</span>(alg, label<span class="op">=</span><span class="st">"Full Outbreak"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Full Outbreak (12 rows):
   Patient   Pathogen            Location              Severity  Onset
@@ -337,7 +340,7 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="q1-severe-cases-for-clinical-escalation">Q1: Severe cases — for clinical escalation</h3>
 <p>Which cases require immediate clinical attention? We select only cases where the severity attribute equals “severe”:</p>
 <div id="8" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>q_severe <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>q_severe <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="st">query SevereCases = literal : Epi -&gt; Epi {</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entity Patient  -&gt; {from p:Patient</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes name -&gt; p.name age_group -&gt; p.age_group</span></span>
@@ -352,14 +355,14 @@ window.Quarto = {
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="st">  entity Pathogen -&gt; {from g:Pathogen</span></span>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes path_name -&gt; g.path_name}</span></span>
 <span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="q2-hospital-cases-for-nosocomial-investigation" class="level3">
 <h3 class="anchored" data-anchor-id="q2-hospital-cases-for-nosocomial-investigation">Q2: Hospital cases — for nosocomial investigation</h3>
 <p>Which cases occurred in hospitals? This helps infection control teams identify potential hospital-acquired (nosocomial) transmission. The query joins <code>Case</code> with <code>Location</code> in its <code>from</code> clause and filters on the location type:</p>
 <div id="10" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>q_hospital <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>q_hospital <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="st">query HospitalCases = literal : Epi -&gt; Epi {</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entity Patient  -&gt; {from p:Patient</span></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes name -&gt; p.name age_group -&gt; p.age_group</span></span>
@@ -375,14 +378,14 @@ window.Quarto = {
 <span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="st">  entity Pathogen -&gt; {from g:Pathogen</span></span>
 <span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes path_name -&gt; g.path_name}</span></span>
 <span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="q3-influenza-cases-for-pathogen-specific-response" class="level3">
 <h3 class="anchored" data-anchor-id="q3-influenza-cases-for-pathogen-specific-response">Q3: Influenza cases — for pathogen-specific response</h3>
 <p>Each pathogen triggers a different response protocol. This query extracts only influenza cases, which might be sent to the flu response team for antiviral distribution:</p>
 <div id="12" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>q_flu <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>q_flu <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="st">query FluCases = literal : Epi -&gt; Epi {</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entity Patient  -&gt; {from p:Patient</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes name -&gt; p.name age_group -&gt; p.age_group</span></span>
@@ -398,14 +401,14 @@ window.Quarto = {
 <span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="st">  entity Pathogen -&gt; {from g:Pathogen where g.path_name = "Influenza A H3N2"</span></span>
 <span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes path_name -&gt; g.path_name}</span></span>
 <span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="q4-care-home-cases-for-vulnerable-population-monitoring" class="level3">
 <h3 class="anchored" data-anchor-id="q4-care-home-cases-for-vulnerable-population-monitoring">Q4: Care home cases — for vulnerable population monitoring</h3>
 <p>Care home residents are among the most vulnerable during respiratory outbreaks. This filter extracts cases occurring in care homes:</p>
 <div id="14" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>q_carehome <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>q_carehome <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="st">query CareHomeCases = literal : Epi -&gt; Epi {</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entity Patient  -&gt; {from p:Patient</span></span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes name -&gt; p.name age_group -&gt; p.age_group</span></span>
@@ -421,11 +424,11 @@ window.Quarto = {
 <span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="st">  entity Pathogen -&gt; {from g:Pathogen</span></span>
 <span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes path_name -&gt; g.path_name}</span></span>
 <span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s apply each filter independently:</p>
 <div id="16" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>eval_queries <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>eval_queries <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance severe_cases   = eval SevereCases   Outbreak</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="st">instance hospital_cases = eval HospitalCases Outbreak</span></span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="st">instance flu_cases      = eval FluCases      Outbreak</span></span>
@@ -440,7 +443,7 @@ window.Quarto = {
 <span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>()</span>
 <span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="fu">show_cases</span>(env.instances[<span class="st">"flu_cases"</span>].algebra,       label<span class="op">=</span><span class="st">"Influenza Cases"</span>)</span>
 <span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>()</span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="fu">show_cases</span>(env.instances[<span class="st">"carehome_cases"</span>].algebra,  label<span class="op">=</span><span class="st">"Care Home Cases"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="fu">show_cases</span>(env.instances[<span class="st">"carehome_cases"</span>].algebra,  label<span class="op">=</span><span class="st">"Care Home Cases"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Severe Cases (6 rows):
   Patient   Pathogen            Location              Severity  Onset
@@ -489,7 +492,7 @@ Care Home Cases (4 rows):
 <h3 class="anchored" data-anchor-id="severe-hospital-cases-nosocomial-escalation">Severe hospital cases (nosocomial escalation)</h3>
 <p>Which severe cases occurred in hospitals? These are the cases most likely to represent nosocomial transmission and require immediate infection control intervention:</p>
 <div id="18" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>compose_program <span class="op">=</span> import_program <span class="op">*</span> q_severe <span class="op">*</span> q_hospital <span class="op">*</span> q_flu <span class="op">*</span> q_carehome <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>compose_program <span class="op">=</span> import_program <span class="op">*</span> q_severe <span class="op">*</span> q_hospital <span class="op">*</span> q_flu <span class="op">*</span> q_carehome <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="st">query SevereHospital = [SevereCases ; HospitalCases]</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="st">instance composed_sh  = eval SevereHospital Outbreak</span></span>
@@ -505,7 +508,7 @@ Care Home Cases (4 rows):
 <span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>()</span>
 <span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Stepwise: eval HospitalCases (eval SevereCases Outbreak) ==="</span>)</span>
 <span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="fu">show_cases</span>(env.instances[<span class="st">"step2_sh"</span>].algebra,</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>           label<span class="op">=</span><span class="st">"Severe Hospital Cases (two-step)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>           label<span class="op">=</span><span class="st">"Severe Hospital Cases (two-step)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Composed: [SevereCases ; HospitalCases] ===
 Severe Hospital Cases (one-step) (2 rows):
@@ -528,7 +531,7 @@ Severe Hospital Cases (two-step) (2 rows):
 <h3 class="anchored" data-anchor-id="severe-flu-in-care-homes-antiviral-prioritisation">Severe flu in care homes (antiviral prioritisation)</h3>
 <p>Who needs urgent antivirals? Compose the flu filter, severity filter, and care home filter into a three-step pipeline. Since CQL’s <code>[Q;Q]</code> syntax composes two queries at a time, we build the pipeline incrementally:</p>
 <div id="20" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>pipeline_program <span class="op">=</span> compose_program <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>pipeline_program <span class="op">=</span> compose_program <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="st">query FluSevere         = [FluCases ; SevereCases]</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="st">query FluSevereCareHome = [FluSevere ; CareHomeCases]</span></span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -546,7 +549,7 @@ Severe Hospital Cases (two-step) (2 rows):
 <span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>()</span>
 <span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Stepwise verification ==="</span>)</span>
 <span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="fu">show_cases</span>(env.instances[<span class="st">"pipeline_s3"</span>].algebra,</span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>           label<span class="op">=</span><span class="st">"Severe Flu in Care Homes (stepwise)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>           label<span class="op">=</span><span class="st">"Severe Flu in Care Homes (stepwise)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Three-way pipeline: [[Flu ; Severe] ; CareHome] ===
 Severe Flu in Care Homes (composed) (3 rows):
@@ -574,7 +577,7 @@ Severe Flu in Care Homes (stepwise) (3 rows):
 <p>A CQL <strong>mapping</strong> defines a structure-preserving morphism between two schemas. A <strong>Delta migration</strong> (<code>delta F I</code>) pulls data back along this mapping: it takes an instance <code>I</code> on the target schema and produces an instance on the source schema by following the mapping’s attribute definitions in reverse.</p>
 <p>In epidemiological terms: Delta is like defining a “report template” (the flat schema) and then automatically populating it from the detailed database. The mathematical guarantee is that every record in the output corresponds to exactly one record in the input, with no duplicates and no data loss.</p>
 <div id="22" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>delta_program <span class="op">=</span> import_program <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>delta_program <span class="op">=</span> import_program <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema Surveillance = literal : Ty {</span></span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entities</span></span>
 <span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="st">    Report</span></span>
@@ -617,7 +620,7 @@ Severe Flu in Care Homes (stepwise) (3 rows):
 <span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="fu">string</span>(CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>report_setting, x)), <span class="fl">12</span>),</span>
 <span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="fu">string</span>(CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>report_severity, x)), <span class="fl">10</span>),</span>
 <span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>        CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>report_onset, x))</span>
-<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Public Health Line List (12 rows):
   Name      Pathogen            Location              Setting     Severity  Onset
@@ -643,7 +646,7 @@ Severe Flu in Care Homes (stepwise) (3 rows):
 <p>Different regions often use different data schemas. Region A’s hospital system records <code>patient_name</code>, <code>pathogen</code>, and <code>severity</code>, while Region B’s system uses <code>person</code>, <code>diagnosis</code>, and <code>outcome</code>. Before data can be combined, both must be aligned to a common standard.</p>
 <p><strong>Sigma migration</strong> (<code>sigma F I</code>) pushes an instance forward along a mapping. It renames and restructures data from a source schema to a target schema. In epidemiological terms, this is the “schema alignment” step of data integration — transforming each hospital’s local data model into the national reporting standard.</p>
 <div id="24" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>sigma_program <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>sigma_program <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal { types String }</span></span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="st">schema RegionA = literal : Ty {</span></span>
@@ -708,7 +711,7 @@ Severe Flu in Care Homes (stepwise) (3 rows):
 <span id="cb18-63"><a href="#cb18-63" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-64"><a href="#cb18-64" aria-hidden="true" tabindex="-1"></a><span class="fu">show_national</span>(env.instances[<span class="st">"NatA"</span>].algebra, label<span class="op">=</span><span class="st">"Region A → National"</span>)</span>
 <span id="cb18-65"><a href="#cb18-65" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>()</span>
-<span id="cb18-66"><a href="#cb18-66" aria-hidden="true" tabindex="-1"></a><span class="fu">show_national</span>(env.instances[<span class="st">"NatB"</span>].algebra, label<span class="op">=</span><span class="st">"Region B → National"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-66"><a href="#cb18-66" aria-hidden="true" tabindex="-1"></a><span class="fu">show_national</span>(env.instances[<span class="st">"NatB"</span>].algebra, label<span class="op">=</span><span class="st">"Region B → National"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Region A → National (3 reports):
   Margaret    Influenza     severe    2024-01-10
@@ -727,13 +730,13 @@ Region B → National (2 reports):
 <p>Once regional data has been aligned to a common schema, the next step is <strong>merging</strong>. A CQL <strong>coproduct</strong> (<code>coproduct I₁ + I₂ : S</code>) creates the disjoint union of two instances on the same schema. In epidemiological terms, this is combining case data from two independent reporting systems into a single unified dataset.</p>
 <p>The coproduct preserves all records from both sources without deduplication — each hospital’s cases remain distinct. This is the correct default for surveillance: if two hospitals independently report a case, both reports should appear in the merged dataset until explicit record linkage is performed.</p>
 <div id="26" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>coprod_program <span class="op">=</span> sigma_program <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>coprod_program <span class="op">=</span> sigma_program <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance Combined = coproduct NatA + NatB : National</span></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> <span class="fu">run_program</span>(coprod_program)</span>
 <span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="fu">show_national</span>(env.instances[<span class="st">"Combined"</span>].algebra,</span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>              label<span class="op">=</span><span class="st">"Combined National Surveillance"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>              label<span class="op">=</span><span class="st">"Combined National Surveillance"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Combined National Surveillance (5 reports):
   Margaret    Influenza     severe    2024-01-10
@@ -750,7 +753,7 @@ Region B → National (2 reports):
 <p>In outbreak response, certain data quality rules must be enforced. For example: “every severe case must have a contact tracing record.” In CQL, these rules are expressed as <strong>embedded dependencies</strong> (EDs) — <code>forall ... exists ... where ...</code> constraints.</p>
 <p>The <strong>chase</strong> algorithm takes an instance that may violate constraints and repairs it by generating the minimum additional data needed to satisfy all rules. In epidemiological terms, the chase identifies cases missing required follow-up records and creates placeholder entries that the response team can then fill in.</p>
 <div id="28" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>chase_program <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>chase_program <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="st">  types String</span></span>
 <span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="st">  constants "severe" "mild" "moderate" "traced" "pending" : String</span></span>
@@ -801,14 +804,14 @@ Region B → National (2 reports):
 <span id="cb22-49"><a href="#cb22-49" aria-hidden="true" tabindex="-1"></a>                <span class="st">"status=</span><span class="sc">$</span>status<span class="st">"</span>)</span>
 <span id="cb22-50"><a href="#cb22-50" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
 <span id="cb22-51"><a href="#cb22-51" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>()</span>
-<span id="cb22-52"><a href="#cb22-52" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb22-52"><a href="#cb22-52" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Before chase: 4 cases, 1 contact traces
   trace → Margaret (severe) status=traced
 
 After chase: 4 cases, 3 contact traces
-  trace → Sarah (severe) status=chase_sk_1.trace_status
-  trace → Emily (severe) status=chase_sk_2.trace_status
+  trace → Emily (severe) status=chase_sk_1.trace_status
+  trace → Sarah (severe) status=chase_sk_2.trace_status
   trace → Margaret (severe) status=traced
 </code></pre>
 </div>
@@ -820,7 +823,7 @@ After chase: 4 cases, 3 contact traces
 <p>A CQL <strong>transform</strong> is a morphism between two instances on the same schema. In epidemiological terms, it’s a formal mapping that shows how one snapshot of the outbreak relates to another — for example, how Week 1 data embeds into Week 2 data.</p>
 <p>This is useful for situation reports: you can formally state “all Week 1 cases persist into Week 2, plus these new cases appeared.”</p>
 <div id="30" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>transform_program <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>transform_program <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="st">  types String</span></span>
 <span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="st">  constants "severe" "mild" "moderate" "Influenza" "COVID-19" "RSV" : String</span></span>
@@ -869,7 +872,7 @@ After chase: 4 cases, 3 contact traces
 <span id="cb24-47"><a href="#cb24-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>()</span>
 <span id="cb24-48"><a href="#cb24-48" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
 <span id="cb24-49"><a href="#cb24-49" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Transform maps: c1→d1 (Margaret), c2→d2 (James), c3→d3 (Harold)"</span>)</span>
-<span id="cb24-50"><a href="#cb24-50" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"New in Week 2: d4 (Sarah, COVID-19, severe), d5 (Emily, RSV, severe)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb24-50"><a href="#cb24-50" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"New in Week 2: d4 (Sarah, COVID-19, severe), d5 (Emily, RSV, severe)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Week 1: 3 cases
   Margaret    Influenza     severe
@@ -894,7 +897,7 @@ New in Week 2: d4 (Sarah, COVID-19, severe), d5 (Emily, RSV, severe)</code></pre
 <p>CQL’s <strong>coeval</strong> is the right adjoint to query evaluation. Where <code>eval Q I</code> pushes data <em>forward</em> through a query, <code>coeval Q J</code> pulls data <em>backward</em> — reconstructing what the source instance might look like given a target instance.</p>
 <p>In epidemiological terms: given a summary report (e.g., “these are the severe cases”), the coeval reconstructs the detailed data that would produce that summary. This is useful for data provenance — tracing a summary back to its source records.</p>
 <div id="32" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>coeval_program <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>coeval_program <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="st">  types String</span></span>
 <span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="st">  constants "severe" "mild" "moderate" : String</span></span>
@@ -945,16 +948,16 @@ New in Week 2: d4 (Sarah, COVID-19, severe), d5 (Emily, RSV, severe)</code></pre
 <span id="cb26-49"><a href="#cb26-49" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>name, x),</span>
 <span id="cb26-50"><a href="#cb26-50" aria-hidden="true" tabindex="-1"></a>            <span class="st">" severity="</span>, CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>severity, x),</span>
 <span id="cb26-51"><a href="#cb26-51" aria-hidden="true" tabindex="-1"></a>            <span class="st">" onset="</span>, CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>onset, x))</span>
-<span id="cb26-52"><a href="#cb26-52" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb26-52"><a href="#cb26-52" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Forward: Extract severe cases ===
-  Margaret (onset: 2024-01-10)
   Emily (onset: 2024-01-14)
+  Margaret (onset: 2024-01-10)
   Sarah (onset: 2024-01-13)
 
 === Backward (coeval): Reconstruct source data ===
-  Emily severity=severe onset=2024-01-14
   Margaret severity=severe onset=2024-01-10
+  Emily severity=severe onset=2024-01-14
   Sarah severity=severe onset=2024-01-13</code></pre>
 </div>
 </div>
@@ -970,7 +973,7 @@ New in Week 2: d4 (Sarah, COVID-19, severe), d5 (Emily, RSV, severe)</code></pre
 </ul>
 <p>In epidemiological terms: if you export hospital data to a national standard (Sigma) and then import it back (Delta), the unit tells you what was preserved. If you import national data (Delta) and re-export it (Sigma), the counit tells you what was preserved in that direction.</p>
 <div id="34" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>adjunction_program <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>adjunction_program <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="st">  types String</span></span>
 <span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="st">  constants "severe" "mild" : String</span></span>
@@ -1018,7 +1021,7 @@ New in Week 2: d4 (Sarah, COVID-19, severe), d5 (Emily, RSV, severe)</code></pre
 <span id="cb28-46"><a href="#cb28-46" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Maps the round-trip result back to the national data"</span>)</span>
 <span id="cb28-47"><a href="#cb28-47" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  If ε is an isomorphism, no information was lost in the import/reexport cycle"</span>)</span>
 <span id="cb28-48"><a href="#cb28-48" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>()</span>
-<span id="cb28-49"><a href="#cb28-49" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Both transforms computed successfully — the Δ ⊣ Σ adjunction holds."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb28-49"><a href="#cb28-49" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Both transforms computed successfully — the Δ ⊣ Σ adjunction holds."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Unit transform (η): LocalData → Δ(Σ(LocalData))
   Maps local hospital data into the round-trip result
@@ -1038,7 +1041,7 @@ Both transforms computed successfully — the Δ ⊣ Σ adjunction holds.</code>
 <p>When two surveillance systems use completely different schemas — not just different column names, but different entity structures — we need <strong>schema colimit</strong> to merge them.</p>
 <p>A CQL <strong>schema colimit</strong> computes the categorical colimit (pushout) of multiple schemas, optionally identifying entities and attributes across them. In epidemiological terms, this is “ontology alignment” — defining that Hospital A’s <code>FluCase</code> entity and Hospital B’s <code>CovidCase</code> entity should both map into a unified <code>Case</code> entity, while their different <code>Location</code> entities are actually the same concept.</p>
 <div id="36" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>colimit_program <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>colimit_program <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal { types String }</span></span>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="st">schema FluSurv = literal : Ty {</span></span>
@@ -1106,7 +1109,7 @@ Both transforms computed successfully — the Δ ⊣ Σ adjunction holds.</code>
 <span id="cb30-66"><a href="#cb30-66" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
 <span id="cb30-67"><a href="#cb30-67" aria-hidden="true" tabindex="-1"></a>        <span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">join</span>(parts, <span class="st">", "</span>))</span>
 <span id="cb30-68"><a href="#cb30-68" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
-<span id="cb30-69"><a href="#cb30-69" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb30-69"><a href="#cb30-69" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Unified schema entities: [:CovidSurv_CovidCase, :FluSurv_FluCase, :FluSurv_FluLoc]
 
@@ -1250,13 +1253,14 @@ Entity FluSurv_FluLoc (2 records):
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

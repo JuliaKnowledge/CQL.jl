@@ -1,5 +1,5 @@
 # CQL.jl CSV Import/Export
-CQL.jl
+Simon Frost
 
 ## Introduction
 
@@ -150,27 +150,27 @@ println(inst)
         Animal_2 : Animal
         Animal_4 : Animal
       equations
-        Animal_2.species = Dolphin
-        Animal_2.livesIn = Habitat_1
-        Habitat_1.name = Ocean
-        Animal_1.livesIn = Habitat_0
-        Animal_0.species = Deer
+        Animal_0.legs = 4
+        Habitat_0.climate = Temperate
+        Animal_3.livesIn = Habitat_2
         Animal_4.legs = 0
-        Animal_3.legs = 4
-        Animal_3.species = Camel
         Animal_4.livesIn = Habitat_1
         Animal_1.species = Owl
-        Habitat_2.climate = Arid
         Animal_4.species = Shark
-        Animal_1.legs = 2
+        Animal_0.species = Deer
+        Animal_2.species = Dolphin
         Animal_2.legs = 0
-        Animal_0.livesIn = Habitat_0
-        Habitat_0.climate = Temperate
-        Animal_0.legs = 4
+        Animal_1.legs = 2
         Habitat_0.name = Forest
-        Animal_3.livesIn = Habitat_2
+        Animal_3.species = Camel
+        Animal_3.legs = 4
+        Habitat_2.climate = Arid
         Habitat_1.climate = Tropical
+        Habitat_1.name = Ocean
         Habitat_2.name = Desert
+        Animal_0.livesIn = Habitat_0
+        Animal_1.livesIn = Habitat_0
+        Animal_2.livesIn = Habitat_1
     }
 
       algebra {
@@ -485,9 +485,9 @@ println(read(joinpath(sigma_dir, "Thing.csv"), String))
 
     === Exported Thing.csv ===
     "id","label"
-    "0","2"
-    "1","4"
-    "2","Dolphin"
+    "0","Temperate"
+    "1","Arid"
+    "2","0"
 
 The sigma migration merges all animals and habitats into a single
 `Thing` entity. Animals and habitats that are related (an animal lives

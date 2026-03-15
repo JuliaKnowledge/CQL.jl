@@ -2,14 +2,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.9.28">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="CQL.jl">
+<meta name="author" content="Simon Frost">
 
 <title>Causal Databases with CQL</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -59,17 +62,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="causal_databases_files/libs/clipboard/clipboard.min.js"></script>
-<script src="causal_databases_files/libs/quarto-html/quarto.js" type="module"></script>
-<script src="causal_databases_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="causal_databases_files/libs/quarto-html/popper.min.js"></script>
-<script src="causal_databases_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="causal_databases_files/libs/quarto-html/anchor.min.js"></script>
-<link href="causal_databases_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="causal_databases_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="causal_databases_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="causal_databases_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="causal_databases_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="18_causal_databases_files/libs/clipboard/clipboard.min.js"></script>
+<script src="18_causal_databases_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="18_causal_databases_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="18_causal_databases_files/libs/quarto-html/popper.min.js"></script>
+<script src="18_causal_databases_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="18_causal_databases_files/libs/quarto-html/anchor.min.js"></script>
+<link href="18_causal_databases_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="18_causal_databases_files/libs/quarto-html/quarto-syntax-highlighting-49e51e44f424ea8c7044b429bdbbbfe2.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="18_causal_databases_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="18_causal_databases_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="18_causal_databases_files/libs/bootstrap/bootstrap-138a6193a3bd40baf1e627da441a4734.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -103,7 +106,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#counterfactual-reasoning-via-delta-migration" id="toc-counterfactual-reasoning-via-delta-migration" class="nav-link" data-scroll-target="#counterfactual-reasoning-via-delta-migration">11. Counterfactual Reasoning via Delta Migration</a></li>
   <li><a href="#summary-cql-vs-sql-for-causal-databases" id="toc-summary-cql-vs-sql-for-causal-databases" class="nav-link" data-scroll-target="#summary-cql-vs-sql-for-causal-databases">Summary: CQL vs SQL for Causal Databases</a></li>
   </ul>
-<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="causal_databases.md"><i class="bi bi-file-code"></i>Github (GFM)</a></li><li><a href="causal_databases.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="18_causal_databases.md"><i class="bi bi-file-code"></i>Github (GFM)</a></li><li><a href="../../18_causal_databases.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
 </div>
 <main class="content" id="quarto-document-content">
 
@@ -120,7 +123,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>CQL.jl </p>
+             <p>Simon Frost </p>
           </div>
   </div>
     
@@ -196,7 +199,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 <p>This vignette demonstrates how <strong>CQL</strong> (Categorical Query Language) provides mathematically grounded operations for causal databases — using an epidemiological causal atlas as the running example.</p>
 <div id="2" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <hr>
 </section>
@@ -216,7 +219,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
                EdgeSupport</code></pre>
 <p>Each foreign key is a <em>total function</em>: every edge has exactly one source node and one destination node, and every support record refers to exactly one edge. This is stricter than a SQL foreign key (which permits NULLs) — CQL enforces referential completeness by construction.</p>
 <div id="4" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>typeside_and_schema <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>typeside_and_schema <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">  types</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="st">    String</span></span>
@@ -241,7 +244,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="st">    lcm_id      : EdgeSupport -&gt; String</span></span>
 <span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="st">    score_raw   : EdgeSupport -&gt; String</span></span>
 <span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><strong>Why this matters for causal reasoning:</strong> The foreign keys <code>src</code> and <code>dst</code> define the <em>arrow structure</em> of the causal graph. In category theory, this is the <strong>free category</strong> generated by the graph — and CQL knows how to compose, transform, and migrate data along this structure automatically.</p>
 </section>
@@ -316,7 +319,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 <div id="6" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>import_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>import_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance EpiAtlas = import_csv "causal_data" : CausalAtlas</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -334,7 +337,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="fu">string</span>(CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>label, n)), <span class="fl">35</span>),</span>
 <span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="fu">string</span>(CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>deg_out, n)), <span class="fl">6</span>),</span>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>deg_in, n))</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Causal Concepts (10 nodes):
   ID    Concept                            Out°  In°
@@ -352,7 +355,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div id="8" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>edges <span class="op">=</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(alg, <span class="op">:</span>Edge)), by<span class="op">=</span>string)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>edges <span class="op">=</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(alg, <span class="op">:</span>Edge)), by<span class="op">=</span>string)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Causal Edges (</span><span class="sc">$</span>(<span class="fu">length</span>(edges))<span class="st"> edges):"</span>)</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">rpad</span>(<span class="st">"Source"</span>, <span class="fl">30</span>), <span class="fu">rpad</span>(<span class="st">"→ Relation"</span>, <span class="fl">14</span>), <span class="fu">rpad</span>(<span class="st">"→ Target"</span>, <span class="fl">30</span>),</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="st">"Support"</span>, <span class="fl">9</span>), <span class="st">"Score"</span>)</span>
@@ -366,7 +369,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="fu">string</span>(CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>label, d)), <span class="fl">30</span>),</span>
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="fu">string</span>(CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>support_lcms, <span class="cn">e</span>)), <span class="fl">9</span>),</span>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        CQL.<span class="fu">eval_att</span>(alg, <span class="op">:</span>score_sum, <span class="cn">e</span>))</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Causal Edges (16 edges):
@@ -399,7 +402,7 @@ Causal Edges (16 edges):
 <h3 class="anchored" data-anchor-id="a.-causal-hub-effects-downstream-influence-of-a-key-driver">3a. Causal Hub Effects — Downstream Influence of a Key Driver</h3>
 <p>Which concepts does the dominant causal hub influence? In the Csql paper, “pathogen transmissibility” emerges as the hub with the largest outgoing score mass. We query for all its downstream effects using a path expression in the <code>where</code> clause:</p>
 <div id="10" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>q_hub <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>q_hub <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="st">query HubEffects = literal : CausalAtlas -&gt; CausalAtlas {</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entity Node -&gt; {from n:Node</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes label -&gt; n.label deg_out -&gt; n.deg_out deg_in -&gt; n.deg_in}</span></span>
@@ -413,10 +416,10 @@ Causal Edges (16 edges):
 <span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes doc_id -&gt; s.doc_id lcm_id -&gt; s.lcm_id score_raw -&gt; s.score_raw</span></span>
 <span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys edge -&gt; {e -&gt; s.edge}}</span></span>
 <span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="12" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>hub_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> q_hub <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>hub_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> q_hub <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance EpiAtlas = import_csv "causal_data" : CausalAtlas</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="st">instance HubAtlas = eval HubEffects EpiAtlas</span></span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
@@ -438,7 +441,7 @@ Causal Edges (16 edges):
 <span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
 <span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>supports_h <span class="op">=</span> <span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(halg, <span class="op">:</span>EdgeSupport))</span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">  </span><span class="sc">$</span>(<span class="fu">length</span>(supports_h))<span class="st"> total provenance records supporting these edges"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">  </span><span class="sc">$</span>(<span class="fu">length</span>(supports_h))<span class="st"> total provenance records supporting these edges"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Hub Effects — pathogen_transmissibility (4 outgoing edges):
   Relation    Target                        Score   Provenance
@@ -457,7 +460,7 @@ Causal Edges (16 edges):
 <h3 class="anchored" data-anchor-id="b.-downstream-effects-of-a-concept">3b. Downstream Effects of a Concept</h3>
 <p><strong>“What does vaccination coverage reduce?”</strong> — a targeted causal query:</p>
 <div id="14" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>q_vacc_effects <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>q_vacc_effects <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="st">query VaccEffects = literal : CausalAtlas -&gt; CausalAtlas {</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entity Node -&gt; {from n:Node</span></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes label -&gt; n.label deg_out -&gt; n.deg_out deg_in -&gt; n.deg_in}</span></span>
@@ -471,10 +474,10 @@ Causal Edges (16 edges):
 <span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes doc_id -&gt; s.doc_id lcm_id -&gt; s.lcm_id score_raw -&gt; s.score_raw</span></span>
 <span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys edge -&gt; {e -&gt; s.edge}}</span></span>
 <span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="16" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>vacc_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> q_vacc_effects <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>vacc_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> q_vacc_effects <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance EpiAtlas = import_csv "causal_data" : CausalAtlas</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="st">instance VaccAtlas = eval VaccEffects EpiAtlas</span></span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
@@ -490,7 +493,7 @@ Causal Edges (16 edges):
 <span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>            <span class="st">" → "</span>, CQL.<span class="fu">eval_att</span>(valg, <span class="op">:</span>label, d),</span>
 <span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>            <span class="st">" (support="</span>, CQL.<span class="fu">eval_att</span>(valg, <span class="op">:</span>support_lcms, <span class="cn">e</span>),</span>
 <span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>            <span class="st">", score="</span>, CQL.<span class="fu">eval_att</span>(valg, <span class="op">:</span>score_sum, <span class="cn">e</span>), <span class="st">")"</span>)</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Effects of vaccination_coverage (3 edges):
   vaccination_coverage REDUCES → case_fatality_rate (support=6, score=0.7)
@@ -508,7 +511,7 @@ Causal Edges (16 edges):
 <h3 class="anchored" data-anchor-id="two-hop-causal-chains">Two-Hop Causal Chains</h3>
 <p>What causes the things that cause outbreak severity? This is a <em>composition</em> of two queries: “what feeds into X” then “what feeds into those”.</p>
 <div id="18" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Query 1: Select edges targeting outbreak_severity</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Query 1: Select edges targeting outbreak_severity</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>q_to_severity <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="st">query ToSeverity = literal : CausalAtlas -&gt; CausalAtlas {</span></span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="st">  entity Node -&gt; {from n:Node</span></span>
@@ -539,10 +542,10 @@ Causal Edges (16 edges):
 <span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes doc_id -&gt; s.doc_id lcm_id -&gt; s.lcm_id score_raw -&gt; s.score_raw</span></span>
 <span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys edge -&gt; {e -&gt; s.edge}}</span></span>
 <span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="20" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>chain_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> q_to_severity <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>chain_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> q_to_severity <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance EpiAtlas = import_csv "causal_data" : CausalAtlas</span></span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="st">instance DirectCauses = eval ToSeverity EpiAtlas</span></span>
 <span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
@@ -557,7 +560,7 @@ Causal Edges (16 edges):
 <span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, CQL.<span class="fu">eval_att</span>(calg, <span class="op">:</span>label, s), <span class="st">" "</span>,</span>
 <span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>            CQL.<span class="fu">eval_att</span>(calg, <span class="op">:</span>rel_type, <span class="cn">e</span>), <span class="st">" → outbreak_severity"</span>,</span>
 <span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>            <span class="st">" (score="</span>, CQL.<span class="fu">eval_att</span>(calg, <span class="op">:</span>score_sum, <span class="cn">e</span>), <span class="st">")"</span>)</span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Direct causes of outbreak_severity (3 edges):
   healthcare_capacity REDUCES → outbreak_severity (score=0.85)
@@ -573,7 +576,7 @@ Causal Edges (16 edges):
 <p>A common need is <strong>summarization</strong>: flatten a detailed causal atlas into a simpler format for reporting. In SQL, this requires writing custom <code>CREATE VIEW</code> statements. In CQL, summarization is a <strong>Delta migration</strong> (pullback) along a schema mapping.</p>
 <p>We define a simple “report” schema that flattens the source–target–relation structure into a single entity:</p>
 <div id="22" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>delta_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>delta_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema CausalReport = literal : Ty {</span></span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entities</span></span>
 <span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="st">    CausalClaim</span></span>
@@ -599,10 +602,10 @@ Causal Edges (16 edges):
 <span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a><span class="st">instance EpiAtlas = import_csv "causal_data" : CausalAtlas</span></span>
 <span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a><span class="st">instance Report = delta Summarize EpiAtlas</span></span>
-<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="24" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>denv <span class="op">=</span> <span class="fu">run_program</span>(delta_prog)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>denv <span class="op">=</span> <span class="fu">run_program</span>(delta_prog)</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>dalg <span class="op">=</span> denv.instances[<span class="st">"Report"</span>].algebra</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>claims <span class="op">=</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(dalg, <span class="op">:</span>CausalClaim)), by<span class="op">=</span>string)</span>
@@ -618,7 +621,7 @@ Causal Edges (16 edges):
 <span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="fu">string</span>(CQL.<span class="fu">eval_att</span>(dalg, <span class="op">:</span>direction, c)), <span class="fl">5</span>),</span>
 <span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="fu">string</span>(CQL.<span class="fu">eval_att</span>(dalg, <span class="op">:</span>evidence_count, c)), <span class="fl">4</span>),</span>
 <span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>        CQL.<span class="fu">eval_att</span>(dalg, <span class="op">:</span>evidence_score, c))</span>
-<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Causal Report (16 claims, flat format):
   Source                        Relation    Target                        Dir  N   Score
@@ -648,7 +651,7 @@ Causal Edges (16 edges):
 <p>The inverse of summarization is <strong>enrichment</strong>: pushing data from a simple schema to a richer one. This is a <strong>Sigma migration</strong> (pushforward).</p>
 <p>Suppose the epidemiological causal atlas uses informal concept labels, but we need to align them to a controlled vocabulary (e.g., a BioLink-style ontology) with additional metadata fields. Sigma migration pushes the data forward while automatically generating Skolem terms for unknown values:</p>
 <div id="26" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>sigma_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>sigma_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema OntoCausal = literal : Ty {</span></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entities</span></span>
 <span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="st">    Concept Relation Evidence</span></span>
@@ -689,10 +692,10 @@ Causal Edges (16 edges):
 <span id="cb20-39"><a href="#cb20-39" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-40"><a href="#cb20-40" aria-hidden="true" tabindex="-1"></a><span class="st">instance EpiAtlas = import_csv "causal_data" : CausalAtlas</span></span>
 <span id="cb20-41"><a href="#cb20-41" aria-hidden="true" tabindex="-1"></a><span class="st">instance OntoAtlas = sigma ToOnto EpiAtlas</span></span>
-<span id="cb20-42"><a href="#cb20-42" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-42"><a href="#cb20-42" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="28" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>senv <span class="op">=</span> <span class="fu">run_program</span>(sigma_prog)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>senv <span class="op">=</span> <span class="fu">run_program</span>(sigma_prog)</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>salg <span class="op">=</span> senv.instances[<span class="st">"OntoAtlas"</span>].algebra</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>concepts <span class="op">=</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(salg, <span class="op">:</span>Concept)), by<span class="op">=</span>string)</span>
@@ -703,7 +706,7 @@ Causal Edges (16 edges):
 <span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>,</span>
 <span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="fu">string</span>(CQL.<span class="fu">eval_att</span>(salg, <span class="op">:</span>concept_label, c)), <span class="fl">35</span>),</span>
 <span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>        CQL.<span class="fu">eval_att</span>(salg, <span class="op">:</span>concept_domain, c))</span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Ontology-Aligned Concepts (10 concepts):
   Label                              Domain
@@ -732,7 +735,7 @@ Causal Edges (16 edges):
 </ol>
 <p>These share two concepts (<code>pathogen_transmissibility</code> and <code>host_susceptibility</code>), and the colimit must identify these as the same node while keeping all domain-specific concepts separate:</p>
 <div id="30" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>colimit_prog <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>colimit_prog <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="st">  types String</span></span>
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
@@ -782,7 +785,7 @@ Causal Edges (16 edges):
 <span id="cb23-48"><a href="#cb23-48" aria-hidden="true" tabindex="-1"></a>merged <span class="op">=</span> menv.colimits[<span class="st">"Merged"</span>]</span>
 <span id="cb23-49"><a href="#cb23-49" aria-hidden="true" tabindex="-1"></a>s <span class="op">=</span> merged.schema</span>
 <span id="cb23-50"><a href="#cb23-50" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Merged Schema (quotient of EpiAtlas + GenomicAtlas):"</span>)</span>
-<span id="cb23-51"><a href="#cb23-51" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(s)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb23-51"><a href="#cb23-51" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(s)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><strong>Why colimits beat SQL UNION:</strong></p>
 <p>In SQL, merging two causal databases requires: 1. Manual column alignment 2. Ad-hoc deduplication of shared concepts 3. No guarantee that foreign key references are preserved 4. No way to track which source each row came from</p>
@@ -792,7 +795,7 @@ Causal Edges (16 edges):
 <h2 class="anchored" data-anchor-id="coproduct-combining-data-from-independent-sources">8. Coproduct: Combining Data from Independent Sources</h2>
 <p>When two independent research groups produce causal atlases with the <em>same</em> schema, we can combine their data using a <strong>coproduct</strong> — the categorical analogue of SQL <code>UNION ALL</code>, but with guaranteed structural preservation:</p>
 <div id="32" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>coprod_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>coprod_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance Atlas_A = literal : CausalAtlas {</span></span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="st">  generators</span></span>
 <span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="st">    a1 a2 a3 : Node</span></span>
@@ -826,10 +829,10 @@ Causal Edges (16 edges):
 <span id="cb24-32"><a href="#cb24-32" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
 <span id="cb24-33"><a href="#cb24-33" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb24-34"><a href="#cb24-34" aria-hidden="true" tabindex="-1"></a><span class="st">instance Combined = coproduct Atlas_A + Atlas_B : CausalAtlas</span></span>
-<span id="cb24-35"><a href="#cb24-35" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb24-35"><a href="#cb24-35" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="34" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>cpenv <span class="op">=</span> <span class="fu">run_program</span>(coprod_prog)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>cpenv <span class="op">=</span> <span class="fu">run_program</span>(coprod_prog)</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>cpalg <span class="op">=</span> cpenv.instances[<span class="st">"Combined"</span>].algebra</span>
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Show combined nodes — note the prefixed names showing provenance</span></span>
@@ -848,7 +851,7 @@ Causal Edges (16 edges):
 <span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, CQL.<span class="fu">eval_att</span>(cpalg, <span class="op">:</span>label, s), <span class="st">" → "</span>,</span>
 <span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>            CQL.<span class="fu">eval_att</span>(cpalg, <span class="op">:</span>label, d),</span>
 <span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>            <span class="st">" ("</span>, CQL.<span class="fu">eval_att</span>(cpalg, <span class="op">:</span>rel_type, <span class="cn">e</span>), <span class="st">")"</span>)</span>
-<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Combined Atlas (6 nodes from 2 sources):
   i1_a1 → pathogen_transmissibility
@@ -872,7 +875,7 @@ Combined Edges (4 edges):
 <p>CQL can enforce <em>data integrity constraints</em> that go beyond SQL’s <code>CHECK</code> clauses. Using <strong>equality-generating dependencies</strong> (EGDs), we can express rules about causal structure and have CQL automatically enforce them.</p>
 <p>For example: “If two edges share the same source and destination and relation type, they should be the same edge” — a canonicalization constraint:</p>
 <div id="36" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>constraint_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>constraint_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="st">constraints NoDupEdges = literal : CausalAtlas {</span></span>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="st">  forall e1 e2 : Edge</span></span>
 <span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="st">  where e1.src = e2.src e1.dst = e2.dst e1.rel_type = e2.rel_type</span></span>
@@ -880,10 +883,10 @@ Combined Edges (4 edges):
 <span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
 <span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="st">instance EpiAtlas = import_csv "causal_data" : CausalAtlas</span></span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="38" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>constr_env <span class="op">=</span> <span class="fu">run_program</span>(constraint_prog)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>constr_env <span class="op">=</span> <span class="fu">run_program</span>(constraint_prog)</span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Check if our atlas satisfies the constraint</span></span>
 <span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span></span>
@@ -894,7 +897,7 @@ Combined Edges (4 edges):
 <span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  Each (src, dst, rel_type) triple is unique — no duplicates"</span>)</span>
 <span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a><span class="cf">catch</span> <span class="cn">e</span></span>
 <span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"Constraint check: "</span>, <span class="cn">e</span>)</span>
-<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Checking constraint NoDupEdges against EpiAtlas...
   Constraint check: atlas has 16 unique edges
@@ -907,7 +910,7 @@ Combined Edges (4 edges):
 <h2 class="anchored" data-anchor-id="transforms-tracking-atlas-evolution">10. Transforms: Tracking Atlas Evolution</h2>
 <p>When a causal atlas is updated with new evidence, the relationship between the old and new version is a <strong>transform</strong> — a structure-preserving morphism between instances. Unlike SQL’s <code>UPDATE</code> statements (which destroy history), CQL transforms record <em>exactly how each old generator maps to the new algebra</em>.</p>
 <div id="40" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>transform_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>transform_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance Atlas_V1 = literal : CausalAtlas {</span></span>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="st">  generators</span></span>
 <span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="st">    n1 n2 n3 : Node</span></span>
@@ -942,10 +945,10 @@ Combined Edges (4 edges):
 <span id="cb30-33"><a href="#cb30-33" aria-hidden="true" tabindex="-1"></a><span class="st">    n1 -&gt; n1  n2 -&gt; n2  n3 -&gt; n3</span></span>
 <span id="cb30-34"><a href="#cb30-34" aria-hidden="true" tabindex="-1"></a><span class="st">    e1 -&gt; e1</span></span>
 <span id="cb30-35"><a href="#cb30-35" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb30-36"><a href="#cb30-36" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb30-36"><a href="#cb30-36" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="42" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>tenv <span class="op">=</span> <span class="fu">run_program</span>(transform_prog)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>tenv <span class="op">=</span> <span class="fu">run_program</span>(transform_prog)</span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> tenv.transforms[<span class="st">"Update"</span>]</span>
 <span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Atlas V1 → V2 transform:"</span>)</span>
@@ -953,7 +956,7 @@ Combined Edges (4 edges):
 <span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  V2 has </span><span class="sc">$</span>(<span class="fu">length</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(tenv.instances[<span class="st">"Atlas_V2"</span>].algebra, <span class="op">:</span>Edge))))<span class="st"> edges"</span>)</span>
 <span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  New in V2: vaccination REDUCES severity (6 LCMs, score 0.70)"</span>)</span>
 <span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Updated: vaccination REDUCES susceptibility support increased 5→8, score 0.62→0.95"</span>)</span>
-<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Transform preserves all V1 generators in V2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Transform preserves all V1 generators in V2"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Atlas V1 → V2 transform:
   V1 has 1 edges
@@ -970,7 +973,7 @@ Combined Edges (4 edges):
 <p>The Csql paper implements counterfactual reasoning (“do-cut”) via SQL view rewriting. In CQL, we can implement this as a <strong>Delta migration</strong> along a mapping that projects the causal atlas into a simplified schema. The Delta pullback naturally drops the hub’s influence by restructuring the data.</p>
 <p>Here we demonstrate a simpler but still powerful counterfactual: use Delta to extract just the causal claims, then compare the full atlas vs the non-hub edges:</p>
 <div id="44" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>docut_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>docut_prog <span class="op">=</span> typeside_and_schema <span class="op">*</span> <span class="st">"""</span></span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema CausalReport = literal : Ty {</span></span>
 <span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="st">  entities CausalClaim</span></span>
 <span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="st">  attributes</span></span>
@@ -991,10 +994,10 @@ Combined Edges (4 edges):
 <span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb33-20"><a href="#cb33-20" aria-hidden="true" tabindex="-1"></a><span class="st">instance EpiAtlas = import_csv "causal_data" : CausalAtlas</span></span>
 <span id="cb33-21"><a href="#cb33-21" aria-hidden="true" tabindex="-1"></a><span class="st">instance AllClaims = delta Flatten EpiAtlas</span></span>
-<span id="cb33-22"><a href="#cb33-22" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb33-22"><a href="#cb33-22" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="46" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>dcenv <span class="op">=</span> <span class="fu">run_program</span>(docut_prog)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>dcenv <span class="op">=</span> <span class="fu">run_program</span>(docut_prog)</span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>dcalg <span class="op">=</span> dcenv.instances[<span class="st">"AllClaims"</span>].algebra</span>
 <span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>claims <span class="op">=</span> <span class="fu">sort</span>(<span class="fu">collect</span>(CQL.<span class="fu">carrier</span>(dcalg, <span class="op">:</span>CausalClaim)), by<span class="op">=</span>string)</span>
@@ -1029,7 +1032,7 @@ Combined Edges (4 edges):
 <span id="cb34-33"><a href="#cb34-33" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="fu">string</span>(CQL.<span class="fu">eval_att</span>(dcalg, <span class="op">:</span>relation, c)), <span class="fl">12</span>),</span>
 <span id="cb34-34"><a href="#cb34-34" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rpad</span>(<span class="fu">string</span>(CQL.<span class="fu">eval_att</span>(dcalg, <span class="op">:</span>target_concept, c)), <span class="fl">28</span>),</span>
 <span id="cb34-35"><a href="#cb34-35" aria-hidden="true" tabindex="-1"></a>        CQL.<span class="fu">eval_att</span>(dcalg, <span class="op">:</span>evidence_score, c))</span>
-<span id="cb34-36"><a href="#cb34-36" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb34-36"><a href="#cb34-36" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Counterfactual Analysis: do-cut(pathogen_transmissibility)
 ============================================================
@@ -1212,13 +1215,14 @@ Surviving edges under do-cut: 12
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

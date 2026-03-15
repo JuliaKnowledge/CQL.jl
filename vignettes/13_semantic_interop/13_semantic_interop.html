@@ -2,14 +2,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.9.28">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="CQL.jl">
+<meta name="author" content="Simon Frost">
 
 <title>Semantic Interoperability across Building Lifecycle</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -59,20 +62,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="semantic_interop_files/libs/clipboard/clipboard.min.js"></script>
-<script src="semantic_interop_files/libs/quarto-html/quarto.js" type="module"></script>
-<script src="semantic_interop_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="semantic_interop_files/libs/quarto-html/popper.min.js"></script>
-<script src="semantic_interop_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="semantic_interop_files/libs/quarto-html/anchor.min.js"></script>
-<link href="semantic_interop_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="semantic_interop_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="semantic_interop_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="semantic_interop_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="semantic_interop_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="13_semantic_interop_files/libs/clipboard/clipboard.min.js"></script>
+<script src="13_semantic_interop_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="13_semantic_interop_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="13_semantic_interop_files/libs/quarto-html/popper.min.js"></script>
+<script src="13_semantic_interop_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="13_semantic_interop_files/libs/quarto-html/anchor.min.js"></script>
+<link href="13_semantic_interop_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="13_semantic_interop_files/libs/quarto-html/quarto-syntax-highlighting-49e51e44f424ea8c7044b429bdbbbfe2.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="13_semantic_interop_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="13_semantic_interop_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="13_semantic_interop_files/libs/bootstrap/bootstrap-138a6193a3bd40baf1e627da441a4734.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -85,7 +88,7 @@ const typesetMath = (el) => {
     var macros = [];
     for (var i = 0; i < mathElements.length; i++) {
       var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
         window.katex.render(texText.data, mathElements[i], {
           displayMode: mathElements[i].classList.contains('display'),
           throwOnError: false,
@@ -153,7 +156,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>CQL.jl </p>
+             <p>Simon Frost </p>
           </div>
   </div>
     
@@ -181,7 +184,7 @@ window.Quarto = {
 <li><strong>Cross-ontology query</strong> — join data that spans schema boundaries</li>
 </ol>
 <div id="2" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="the-schemas" class="level2">
@@ -192,7 +195,7 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="ifc-design">IFC (Design)</h3>
 <p>The IFC schema models the building as designed: spaces contain distribution elements (HVAC equipment), sensors are attached to elements, and each sensor has a property set carrying its BMS device identifier.</p>
 <div id="4" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>typeside_str <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>typeside_str <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types Str</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
@@ -221,14 +224,14 @@ window.Quarto = {
 <span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="st">        deviceId : IfcPropertySet -&gt; Str</span></span>
 <span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
 <span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="brick-operations" class="level3">
 <h3 class="anchored" data-anchor-id="brick-operations">BRICK (Operations)</h3>
 <p>The BRICK schema models operational building systems: equipment has a location and measurement points, each point carrying a timeseries identifier for the BMS.</p>
 <div id="6" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>brick_schema_str <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>brick_schema_str <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema BRICK = literal : Ty {</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="st">        Location Equipment Point</span></span>
@@ -241,14 +244,14 @@ window.Quarto = {
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="st">        timeseriesId : Point -&gt; Str</span></span>
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="rec-property-management" class="level3">
 <h3 class="anchored" data-anchor-id="rec-property-management">REC (Property Management)</h3>
 <p>The REC schema tracks real estate data: rooms, tenants (persons), and leases linking them.</p>
 <div id="8" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>rec_schema_str <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>rec_schema_str <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema REC = literal : Ty {</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">        Room Person Lease</span></span>
@@ -262,7 +265,7 @@ window.Quarto = {
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="st">        monthlyRent : Lease -&gt; Str</span></span>
 <span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
 <span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 </section>
@@ -278,7 +281,7 @@ window.Quarto = {
 </ul>
 <p>We also assert that the spatial relationship is preserved: <code>elementInSpace</code> (IFC) and <code>hasLocation</code> (BRICK) denote the same foreign key path.</p>
 <div id="10" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>colimit_str <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>colimit_str <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema_colimit C = quotient IFC + BRICK : Ty {</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="st">    entity_equations</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="st">        IFC.IfcSpace = BRICK.Location</span></span>
@@ -291,7 +294,7 @@ window.Quarto = {
 <span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="st">mapping IfcM = getMapping C IFC</span></span>
 <span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="st">mapping BrickM = getMapping C BRICK</span></span>
 <span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The colimit automatically generates:</p>
 <ul>
@@ -303,7 +306,7 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="step-2-sigma-coproduct">Step 2: Sigma + Coproduct</h3>
 <p>We create IFC and BRICK datasets for five rooms in a university building, push each into the combined schema via <span class="math inline">\(\Sigma\)</span> (sigma) migration, then take their coproduct (disjoint union).</p>
 <div id="12" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>ifc_instance_str <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>ifc_instance_str <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance IfcData = literal : IFC {</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="st">    generators</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">        sp1 sp2 sp3 sp4 sp5 : IfcSpace</span></span>
@@ -355,7 +358,7 @@ window.Quarto = {
 <span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> en <span class="kw">in</span> <span class="fu">sort</span>(<span class="fu">collect</span>(env1.Combined.ens))</span>
 <span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> <span class="fu">length</span>(<span class="fu">carrier</span>(env1.Merged.algebra, en))</span>
 <span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>en<span class="st">: </span><span class="sc">$</span>n<span class="st"> elements"</span>)</span>
-<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Combined schema entities (after coproduct):
   BRICK_Point: 10 elements
@@ -371,7 +374,7 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="step-3-delta-projection-to-brick">Step 3: Delta Projection to BRICK</h3>
 <p>We can extract a BRICK-schema view by pulling back along the BRICK mapping with <span class="math inline">\(\Delta\)</span> (delta) migration:</p>
 <div id="14" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>delta_str <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>delta_str <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="st">instance BrickView = delta BrickM Merged</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -386,7 +389,7 @@ window.Quarto = {
 <span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> en <span class="kw">in</span> [<span class="op">:</span>Location, <span class="op">:</span>Equipment, <span class="op">:</span>Point]</span>
 <span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> <span class="fu">length</span>(<span class="fu">carrier</span>(alg_b, en))</span>
 <span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>en<span class="st">: </span><span class="sc">$</span>n<span class="st"> elements"</span>)</span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>BRICK view (delta projection from merged):
   Location: 10 elements
@@ -405,7 +408,7 @@ window.Quarto = {
 </blockquote>
 <p>This forces the BRICK <code>timeseriesId</code> to equal the IFC <code>deviceId</code> for every sensor–equipment–point chain.</p>
 <div id="16" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>env2 <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>env2 <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types Str</span></span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
@@ -476,7 +479,7 @@ window.Quarto = {
 <span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a><span class="fu">sort!</span>(rows, by <span class="op">=</span> r <span class="op">-&gt;</span> r[<span class="fl">1</span>])</span>
 <span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (sname, sarea, tsid) <span class="kw">in</span> rows</span>
 <span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="fu">rpad</span>(sname, <span class="fl">14</span>), <span class="fu">rpad</span>(sarea, <span class="fl">14</span>), tsid)</span>
-<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Table 1: IFC–BRICK Integration Result (cf. paper Table 1)
 ==================================================
@@ -495,7 +498,7 @@ R460          area_17_12    TUC_R460</code></pre>
 <h2 class="anchored" data-anchor-id="example-3-constraints-and-the-chase-algorithm">Example 3: Constraints and the Chase Algorithm</h2>
 <p>Instead of encoding the device-ID rule as a schema-level observation equation, we can express it as a <strong>constraint</strong> (equality-generating dependency) and apply the <strong>Chase</strong> algorithm. This is more flexible: constraints can be applied to any instance after the fact, rather than baked into the schema definition.</p>
 <div id="18" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>env3 <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>env3 <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types Str</span></span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
@@ -556,15 +559,15 @@ R460          area_17_12    TUC_R460</code></pre>
 <span id="cb12-59"><a href="#cb12-59" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> pt <span class="kw">in</span> <span class="fu">carrier</span>(alg_after, <span class="op">:</span>Point)</span>
 <span id="cb12-60"><a href="#cb12-60" aria-hidden="true" tabindex="-1"></a>    tsid <span class="op">=</span> <span class="fu">eval_att</span>(alg_after, <span class="op">:</span>timeseriesId, pt)</span>
 <span id="cb12-61"><a href="#cb12-61" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, <span class="fu">repr_x</span>(alg_after, pt), <span class="st">" → "</span>, tsid)</span>
-<span id="cb12-62"><a href="#cb12-62" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-62"><a href="#cb12-62" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Before chase — timeseriesId on Points:
-  eq2.hasPoint → eq2.hasPoint.timeseriesId
-  eq1.hasPoint → eq1.hasPoint.timeseriesId
+  pt1 → pt1.timeseriesId
+  pt2 → pt2.timeseriesId
 
 After chase — timeseriesId on Points:
-  eq2.hasPoint → TUC_R260
-  eq1.hasPoint → TUC_R240</code></pre>
+  pt1 → TUC_R240
+  pt2 → TUC_R260</code></pre>
 </div>
 </div>
 <p>Before the chase, <code>timeseriesId</code> is a Skolem (unknown value). After the chase, the constraint forces it to equal the corresponding <code>deviceId</code>, and the concrete BMS identifiers appear.</p>
@@ -585,7 +588,7 @@ After chase — timeseriesId on Points:
 </ol>
 <p>The schema includes <code>Zone</code> and <code>SetPoint</code> entities (from BRICK), connected by <code>inZone : Location -&gt; Zone</code> and <code>zoneSetPoint : Zone -&gt; SetPoint</code>, plus a <code>Meter</code> entity for per-room energy consumption.</p>
 <div id="20" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>three_way_str <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>three_way_str <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types Str</span></span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
@@ -667,14 +670,14 @@ After chase — timeseriesId on Points:
 <span id="cb14-80"><a href="#cb14-80" aria-hidden="true" tabindex="-1"></a><span class="st">        zoneSetPoint -&gt; {z_r240 sp_r240, z_r260 sp_r260, z_r200 sp_r200, z_r440 sp_r440, z_r460 sp_r460}</span></span>
 <span id="cb14-81"><a href="#cb14-81" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
 <span id="cb14-82"><a href="#cb14-82" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb14-83"><a href="#cb14-83" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-83"><a href="#cb14-83" aria-hidden="true" tabindex="-1"></a><span class="cn">nothing</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="cross-ontology-query-tenant-billing" class="level3">
 <h3 class="anchored" data-anchor-id="cross-ontology-query-tenant-billing">Cross-Ontology Query: Tenant Billing</h3>
 <p>The power of categorical integration is that we can write queries that <em>span schema boundaries</em>. This tenant billing query joins REC lease data with BRICK energy meters and IFC device identifiers — a query that would be impossible without the unified schema, since BRICK and REC were never explicitly mapped to each other.</p>
 <div id="22" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>query_str <span class="op">=</span> <span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>query_str <span class="op">=</span> <span class="st">"""</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="st">schema BillingResult = literal : Ty {</span></span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="st">    entities Row</span></span>
 <span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
@@ -739,7 +742,7 @@ After chase — timeseriesId on Points:
 <span id="cb15-63"><a href="#cb15-63" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (t, r, a, rent, eq, en, d, sp) <span class="kw">in</span> rows</span>
 <span id="cb15-64"><a href="#cb15-64" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="fu">rpad</span>(t, <span class="fl">12</span>), <span class="fu">rpad</span>(r, <span class="fl">8</span>), <span class="fu">rpad</span>(a, <span class="fl">12</span>), <span class="fu">rpad</span>(rent, <span class="fl">10</span>),</span>
 <span id="cb15-65"><a href="#cb15-65" aria-hidden="true" tabindex="-1"></a>            <span class="fu">rpad</span>(eq, <span class="fl">12</span>), <span class="fu">rpad</span>(en, <span class="fl">10</span>), <span class="fu">rpad</span>(d, <span class="fl">12</span>), sp)</span>
-<span id="cb15-66"><a href="#cb15-66" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-66"><a href="#cb15-66" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Table 2: Tenant Billing Report (cf. paper Table 2)
 ==============================================================================================================
@@ -941,13 +944,14 @@ PersonE     R460    area_17_12  rent_350  AC_R460     kwh_125   TUC_R460    temp
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

@@ -1,5 +1,5 @@
 # Foreign Key Queries in CQL
-CQL.jl
+Simon Frost
 
 ## Introduction
 
@@ -141,18 +141,18 @@ end
     === Professors ===
     Name         | Department
     -------------+-----------
-    Chlipala     | CompSci
+    Morrisett    | CompSci
     Wisnesky     | Math
     Spivak       | Math
-    Morrisett    | CompSci
+    Chlipala     | CompSci
 
     === Students ===
     Name         | Major
     -------------+-----------
+    Spivak       | CompSci
     Chlipala     | CompSci
     Morrisett    | English
     Wisnesky     | Math
-    Spivak       | CompSci
 
 The data breaks down by department:
 
@@ -490,12 +490,12 @@ println("\nTotal matches: ", length(carrier(alg, :Match)))
     === Advisor Matches ===
     Professor    | Student      | Department
     -------------+--------------+-----------
-    Morrisett    | Spivak       | CompSci
-    Chlipala     | Spivak       | CompSci
     Spivak       | Wisnesky     | Math
-    Chlipala     | Chlipala     | CompSci
     Wisnesky     | Wisnesky     | Math
+    Chlipala     | Chlipala     | CompSci
+    Morrisett    | Spivak       | CompSci
     Morrisett    | Chlipala     | CompSci
+    Chlipala     | Spivak       | CompSci
 
     Total matches: 6
 
@@ -538,12 +538,12 @@ println("\nAll matches satisfy path equation: ", all_ok)
 
     Verifying path equation: studentOf.majoringIn = professorOf.worksIn
 
-      Morrisett <-> Spivak: prof dept = CompSci, stud dept = CompSci ✓
-      Chlipala <-> Spivak: prof dept = CompSci, stud dept = CompSci ✓
       Spivak <-> Wisnesky: prof dept = Math, stud dept = Math ✓
-      Chlipala <-> Chlipala: prof dept = CompSci, stud dept = CompSci ✓
       Wisnesky <-> Wisnesky: prof dept = Math, stud dept = Math ✓
+      Chlipala <-> Chlipala: prof dept = CompSci, stud dept = CompSci ✓
+      Morrisett <-> Spivak: prof dept = CompSci, stud dept = CompSci ✓
       Morrisett <-> Chlipala: prof dept = CompSci, stud dept = CompSci ✓
+      Chlipala <-> Spivak: prof dept = CompSci, stud dept = CompSci ✓
 
     All matches satisfy path equation: true
 

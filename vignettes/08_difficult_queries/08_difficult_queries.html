@@ -2,14 +2,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.9.28">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="CQL.jl">
+<meta name="author" content="Simon Frost">
 
 <title>CQL vs SQL: Difficult Queries</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -59,17 +62,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="difficult_queries_files/libs/clipboard/clipboard.min.js"></script>
-<script src="difficult_queries_files/libs/quarto-html/quarto.js" type="module"></script>
-<script src="difficult_queries_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="difficult_queries_files/libs/quarto-html/popper.min.js"></script>
-<script src="difficult_queries_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="difficult_queries_files/libs/quarto-html/anchor.min.js"></script>
-<link href="difficult_queries_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="difficult_queries_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="difficult_queries_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="difficult_queries_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="difficult_queries_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="08_difficult_queries_files/libs/clipboard/clipboard.min.js"></script>
+<script src="08_difficult_queries_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="08_difficult_queries_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="08_difficult_queries_files/libs/quarto-html/popper.min.js"></script>
+<script src="08_difficult_queries_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="08_difficult_queries_files/libs/quarto-html/anchor.min.js"></script>
+<link href="08_difficult_queries_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="08_difficult_queries_files/libs/quarto-html/quarto-syntax-highlighting-49e51e44f424ea8c7044b429bdbbbfe2.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="08_difficult_queries_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="08_difficult_queries_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="08_difficult_queries_files/libs/bootstrap/bootstrap-138a6193a3bd40baf1e627da441a4734.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -124,7 +127,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>CQL.jl </p>
+             <p>Simon Frost </p>
           </div>
   </div>
     
@@ -156,7 +159,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The challenge: we need a <em>closed</em> sub-database. If we include an employee, we must also include their manager, the department they work in, and that department’s secretary — and all of <em>those</em> must also satisfy the constraints, recursively. The programmer must invent what is essentially an <strong>inductive hypothesis</strong> sufficient to guarantee closure under the business rules.</p>
 <p>In SQL, this is extremely difficult. A SQL programmer would need to construct a fixpoint computation that simultaneously maintains all closure properties. In practice on this problem, a novice CQL user can try one different query per minute and arrive at a solution in an hour with 100% confidence — a development process similar to interactive theorem proving in Coq.</p>
 <div id="2" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 </section>
@@ -166,7 +169,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="the-source-schema-s">The Source Schema (S)</h3>
 <p>The source schema <code>S</code> captures the structure of the employee-department database without any constraints. This is the schema of the “raw” data.</p>
 <div id="4" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
@@ -191,7 +194,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>sch_S <span class="op">=</span> env.S</span>
 <span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, sch_S.ens)</span>
 <span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(sch_S.fks)))</span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Path equations: "</span>, <span class="fu">length</span>(sch_S.path_eqs))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Path equations: "</span>, <span class="fu">length</span>(sch_S.path_eqs))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Entities: Set([:Department, :Employee])
 Foreign keys: [:worksIn, :manager, :secretary]
@@ -204,7 +207,7 @@ Path equations: 0</code></pre>
 <h3 class="anchored" data-anchor-id="the-target-schema-t">The Target Schema (T)</h3>
 <p>The target schema <code>T</code> extends <code>S</code> with two <strong>path equations</strong> that encode the business rules we want to enforce:</p>
 <div id="6" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
@@ -236,7 +239,7 @@ Path equations: 0</code></pre>
 <span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>sch_T <span class="op">=</span> env.T</span>
 <span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, sch_T.ens)</span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Path equations: "</span>, <span class="fu">length</span>(sch_T.path_eqs))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Path equations: "</span>, <span class="fu">length</span>(sch_T.path_eqs))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Entities: Set([:Department, :Employee])
 Path equations: 2</code></pre>
@@ -254,7 +257,7 @@ Path equations: 2</code></pre>
 <h2 class="anchored" data-anchor-id="sample-data">Sample Data</h2>
 <p>We populate the source schema with a small employee-department database:</p>
 <div id="8" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
@@ -297,7 +300,7 @@ Path equations: 2</code></pre>
 <span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>inst_I <span class="op">=</span> env.I</span>
-<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>alg_I <span class="op">=</span> inst_I.algebra</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>alg_I <span class="op">=</span> inst_I.algebra</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="1">
 <pre><code>Algebra{CQLTerm, CQL.TalgGen}(schema {
   entities
@@ -313,26 +316,12 @@ Path equations: 2</code></pre>
   path_equations
   observation_equations
 }
-, Dict{Symbol, Set{CQLTerm}}(:Department =&gt; Set([e102.worksIn, e103.worksIn]), :Employee =&gt; Set([e102, e103, e103.worksIn.secretary])), Dict{Symbol, CQLTerm}(:e103 =&gt; e103, :e101 =&gt; e103.worksIn.secretary, :e102 =&gt; e102, :d2 =&gt; e102.worksIn, :d10 =&gt; e103.worksIn), Dict{Symbol, Dict{CQLTerm, CQLTerm}}(:worksIn =&gt; Dict(e102 =&gt; e102.worksIn, e103 =&gt; e103.worksIn, e103.worksIn.secretary =&gt; e103.worksIn), :manager =&gt; Dict(e102 =&gt; e102, e103 =&gt; e103, e103.worksIn.secretary =&gt; e103), :secretary =&gt; Dict(e102.worksIn =&gt; e102, e103.worksIn =&gt; e103.worksIn.secretary)), Dict{CQLTerm, CQLTerm}(e102.worksIn =&gt; e102.worksIn, e102 =&gt; e102, e103 =&gt; e103, e103.worksIn.secretary =&gt; e103.worksIn.secretary, e103.worksIn =&gt; e103.worksIn), Dict{Symbol, Set{CQL.TalgGen}}(:String =&gt; Set([e103.worksIn.secretary.first, e103.first, e102.worksIn.name, e102.first, e103.worksIn.name])), CQL.var"#simplify_algebra##4#simplify_algebra##5"{Algebra{CQLTerm, CQL.TalgGen}, Vector{Tuple{CQL.Head, CQLTerm}}}(Algebra{CQLTerm, CQL.TalgGen}(schema {
-  entities
-    Department
-    Employee
-  foreign_keys
-    worksIn : Employee -&gt; Department
-    manager : Employee -&gt; Employee
-    secretary : Department -&gt; Employee
-  attributes
-    first : Employee -&gt; String
-    name : Department -&gt; String
-  path_equations
-  observation_equations
-}
-, Dict{Symbol, Set{CQLTerm}}(:Department =&gt; Set([e102.worksIn, e103.worksIn]), :Employee =&gt; Set([e102, e103, e103.worksIn.secretary])), Dict{Symbol, CQLTerm}(:e103 =&gt; e103, :e101 =&gt; e103.worksIn.secretary, :e102 =&gt; e102, :d2 =&gt; e102.worksIn, :d10 =&gt; e103.worksIn), Dict{Symbol, Dict{CQLTerm, CQLTerm}}(:worksIn =&gt; Dict(e102 =&gt; e102.worksIn, e103 =&gt; e103.worksIn, e103.worksIn.secretary =&gt; e103.worksIn), :manager =&gt; Dict(e102 =&gt; e102, e103 =&gt; e103, e103.worksIn.secretary =&gt; e103), :secretary =&gt; Dict(e102.worksIn =&gt; e102, e103.worksIn =&gt; e103.worksIn.secretary)), Dict{CQLTerm, CQLTerm}(e102.worksIn =&gt; e102.worksIn, e102 =&gt; e102, e103 =&gt; e103, e103.worksIn.secretary =&gt; e103.worksIn.secretary, e103.worksIn =&gt; e103.worksIn), Dict{Symbol, Set{CQL.TalgGen}}(:String =&gt; Set([e103.worksIn.secretary.first, e103.first, e102.worksIn.name, e102.first, e103.worksIn.name])), CQL.var"#initial_instance##0#initial_instance##1"(), Dict{CQL.TalgGen, CQLTerm}(e103.worksIn.secretary.first =&gt; e103.worksIn.secretary.first, e103.first =&gt; e103.first, e102.worksIn.name =&gt; e102.worksIn.name, e102.first =&gt; e102.first, e103.worksIn.name =&gt; e103.worksIn.name), Set(Equation[e103.worksIn.secretary.first = Alan, e102.worksIn.name = Pure Math, e103.worksIn.name = Applied Math, e103.first = Audrey, e102.first = Camille])), Tuple{CQL.Head, CQLTerm}[(CQL.Head(CQL.H_SK, Symbol("e103.worksIn.name")), Applied Math), (CQL.Head(CQL.H_SK, Symbol("e102.worksIn.name")), Pure Math), (CQL.Head(CQL.H_SK, Symbol("e103.first")), Audrey), (CQL.Head(CQL.H_SK, Symbol("e103.worksIn.secretary.first")), Alan), (CQL.Head(CQL.H_SK, Symbol("e102.first")), Camille)]), Dict{CQL.TalgGen, CQLTerm}(e103.worksIn.secretary.first =&gt; e103.worksIn.secretary.first, e103.first =&gt; e103.first, e102.worksIn.name =&gt; e102.worksIn.name, e102.first =&gt; e102.first, e103.worksIn.name =&gt; e103.worksIn.name), Set{Equation}())</code></pre>
+, Dict{Symbol, Set{CQLTerm}}(:Department =&gt; Set([d2, d10]), :Employee =&gt; Set([d10.secretary, e101.manager, d2.secretary])), Dict{Symbol, CQLTerm}(:e103 =&gt; e101.manager, :e101 =&gt; d10.secretary, :e102 =&gt; d2.secretary, :d2 =&gt; d2, :d10 =&gt; d10), Dict{Symbol, Dict{CQLTerm, CQLTerm}}(:worksIn =&gt; Dict(d10.secretary =&gt; d10, e101.manager =&gt; d10, d2.secretary =&gt; d2), :manager =&gt; Dict(d10.secretary =&gt; e101.manager, e101.manager =&gt; e101.manager, d2.secretary =&gt; d2.secretary), :secretary =&gt; Dict(d2 =&gt; d2.secretary, d10 =&gt; d10.secretary)), Dict{CQLTerm, CQLTerm}(d10.secretary =&gt; d10.secretary, e101.manager =&gt; e101.manager, d2 =&gt; d2, d10 =&gt; d10, d2.secretary =&gt; d2.secretary), Dict{Symbol, Set{CQL.TalgGen}}(:String =&gt; Set([Applied Math, Alan, Pure Math, Audrey, Camille])), CQL.var"#simplify_algebra##4#simplify_algebra##5"{Dict{Any, CQLTerm}, CQL.var"#128#129"{Dict{Symbol, Tuple{Vector{Symbol}, Symbol}}}, Vector{Tuple{CQLTerm, CQLTerm}}, Vector{Tuple{CQL.Head, CQLTerm}}}(Dict{Any, CQLTerm}(), CQL.var"#128#129"{Dict{Symbol, Tuple{Vector{Symbol}, Symbol}}}(Dict(:Camille =&gt; ([], :String), :Audrey =&gt; ([], :String), :Alan =&gt; ([], :String), Symbol("Applied Math") =&gt; ([], :String), Symbol("Pure Math") =&gt; ([], :String))), Tuple{CQLTerm, CQLTerm}[], Tuple{CQL.Head, CQLTerm}[(CQL.Head(CQL.H_SK, Symbol("e101.manager.first")), Audrey), (CQL.Head(CQL.H_SK, Symbol("d2.name")), Pure Math), (CQL.Head(CQL.H_SK, Symbol("d2.secretary.first")), Camille), (CQL.Head(CQL.H_SK, Symbol("d10.name")), Applied Math), (CQL.Head(CQL.H_SK, Symbol("d10.secretary.first")), Alan)]), Dict{CQL.TalgGen, CQLTerm}(Applied Math =&gt; Applied Math, d2.name =&gt; d2.name, d10.secretary.first =&gt; d10.secretary.first, d10.name =&gt; d10.name, Alan =&gt; Alan, Pure Math =&gt; Pure Math, e101.manager.first =&gt; e101.manager.first, Audrey =&gt; Audrey, Camille =&gt; Camille, d2.secretary.first =&gt; d2.secretary.first…), Set{Equation}())</code></pre>
 </div>
 </div>
 <p>Let’s examine this data:</p>
 <div id="10" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Employee Table ==="</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Employee Table ==="</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Name       | Manager  | Works In"</span>)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"-----------+----------+-------------"</span>)</span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg_I, <span class="op">:</span>Employee)</span>
@@ -352,14 +341,14 @@ Path equations: 2</code></pre>
 <span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    sec <span class="op">=</span> <span class="fu">eval_fk</span>(alg_I, <span class="op">:</span>secretary, x)</span>
 <span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    sec_nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_I, <span class="op">:</span>first, sec)</span>
 <span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="fu">rpad</span>(<span class="fu">string</span>(nm), <span class="fl">14</span>), <span class="st">"| "</span>, sec_nm)</span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Employee Table ===
 Name       | Manager  | Works In
 -----------+----------+-------------
-Camille    | Camille  | Pure Math
-Audrey     | Audrey   | Applied Math
 Alan       | Audrey   | Applied Math
+Audrey     | Audrey   | Applied Math
+Camille    | Camille  | Pure Math
 
 === Department Table ===
 Name         | Secretary
@@ -370,7 +359,7 @@ Applied Math  | Alan</code></pre>
 </div>
 <p>Let’s check which business rules are already satisfied:</p>
 <div id="12" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Checking Business Rules ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Checking Business Rules ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Rule 1: manager.worksIn = worksIn (manager works in same dept)"</span>)</span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg_I, <span class="op">:</span>Employee)</span>
@@ -391,14 +380,14 @@ Applied Math  | Alan</code></pre>
 <span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    ok <span class="op">=</span> sec_dept <span class="op">==</span> x</span>
 <span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, nm, <span class="st">": "</span>, ok ? <span class="st">"OK"</span> <span class="op">:</span> <span class="st">"VIOLATED"</span>,</span>
 <span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>            ok ? <span class="st">""</span> <span class="op">:</span> <span class="st">" (secretary works in </span><span class="sc">$</span>(<span class="fu">eval_att</span>(alg_I, <span class="op">:</span>name, sec_dept))<span class="st">)"</span>)</span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Checking Business Rules ===
 
 Rule 1: manager.worksIn = worksIn (manager works in same dept)
-  Camille: OK
-  Audrey: OK
   Alan: OK
+  Audrey: OK
+  Camille: OK
 
 Rule 2: secretary.worksIn = department (secretary works in their dept)
   Pure Math: OK
@@ -410,8 +399,8 @@ Rule 2: secretary.worksIn = department (secretary works in their dept)
 <section id="why-this-is-hard" class="level2">
 <h2 class="anchored" data-anchor-id="why-this-is-hard">Why This Is Hard</h2>
 <p>The difficulty is the <strong>closure requirement</strong>. A SQL programmer can easily filter employees whose managers work in the same department:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> Employee e</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> e.worksIn <span class="op">=</span> (<span class="kw">SELECT</span> worksIn <span class="kw">FROM</span> Employee <span class="kw">WHERE</span> <span class="kw">id</span> <span class="op">=</span> e.manager)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> Employee e</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> e.worksIn <span class="op">=</span> (<span class="kw">SELECT</span> worksIn <span class="kw">FROM</span> Employee <span class="kw">WHERE</span> <span class="kw">id</span> <span class="op">=</span> e.manager)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>But this is not enough! After filtering, we must check:</p>
 <ol type="1">
 <li>Is the <strong>manager</strong> of each remaining employee also in the result?</li>
@@ -426,7 +415,7 @@ Rule 2: secretary.worksIn = department (secretary works in their dept)
 <h2 class="anchored" data-anchor-id="the-cql-solution">The CQL Solution</h2>
 <p>The query <code>good1</code> selects the sub-database satisfying both business rules. It is a single CQL query from schema <code>S</code> to schema <code>T</code>:</p>
 <div id="14" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String</span></span>
@@ -497,7 +486,7 @@ Rule 2: secretary.worksIn = department (secretary works in their dept)
 <span id="cb13-69"><a href="#cb13-69" aria-hidden="true" tabindex="-1"></a><span class="st">instance J = eval good1 I</span></span>
 <span id="cb13-70"><a href="#cb13-70" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb13-71"><a href="#cb13-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-72"><a href="#cb13-72" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(env.good1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-72"><a href="#cb13-72" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(env.good1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>query {
   entity Department -&gt; {
@@ -511,8 +500,8 @@ Rule 2: secretary.worksIn = department (secretary works in their dept)
     from
       e : Employee
     where
-      e.manager = e
       e.worksIn.secretary = e
+      e.manager = e
   }
   foreign_key worksIn -&gt; {
     d -&gt; e.worksIn
@@ -549,7 +538,7 @@ Rule 2: secretary.worksIn = department (secretary works in their dept)
 <section id="evaluating-the-query" class="level2">
 <h2 class="anchored" data-anchor-id="evaluating-the-query">Evaluating the Query</h2>
 <div id="16" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>inst_J <span class="op">=</span> env.J</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>inst_J <span class="op">=</span> env.J</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>alg_J <span class="op">=</span> inst_J.algebra</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Before query (instance I):"</span>)</span>
@@ -558,7 +547,7 @@ Rule 2: secretary.worksIn = department (secretary works in their dept)
 <span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">After query (instance J):"</span>)</span>
 <span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Employees: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg_J, <span class="op">:</span>Employee)))</span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Departments: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg_J, <span class="op">:</span>Department)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"  Departments: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg_J, <span class="op">:</span>Department)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Before query (instance I):
   Employees: 3
@@ -571,7 +560,7 @@ After query (instance J):
 </div>
 <p>The query reduced 3 employees to 1, and 2 departments to 1. Let’s see who survived:</p>
 <div id="18" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Surviving Employees ==="</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Surviving Employees ==="</span>)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg_J, <span class="op">:</span>Employee)</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_J, <span class="op">:</span>first, x)</span>
 <span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    mgr <span class="op">=</span> <span class="fu">eval_fk</span>(alg_J, <span class="op">:</span>manager, x)</span>
@@ -587,7 +576,7 @@ After query (instance J):
 <span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    sec <span class="op">=</span> <span class="fu">eval_fk</span>(alg_J, <span class="op">:</span>secretary, x)</span>
 <span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    sec_nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_J, <span class="op">:</span>first, sec)</span>
 <span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, nm, <span class="st">": secretary="</span>, sec_nm)</span>
-<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Surviving Employees ===
   Camille: manager=Camille, worksIn=Pure Math
@@ -598,7 +587,7 @@ After query (instance J):
 </div>
 <p>Only <strong>Camille</strong> and <strong>Pure Math</strong> survive. Let’s verify why, by tracing through each person in the original data:</p>
 <div id="20" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Why Each Person Was Included or Excluded ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Why Each Person Was Included or Excluded ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg_I, <span class="op">:</span>Employee)</span>
 <span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    nm <span class="op">=</span> <span class="fu">eval_att</span>(alg_I, <span class="op">:</span>first, x)</span>
@@ -620,24 +609,24 @@ After query (instance J):
 <span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>        <span class="fu">println</span>(<span class="st">"  =&gt; EXCLUDED ("</span>, <span class="fu">join</span>(reasons, <span class="st">", "</span>), <span class="st">")"</span>)</span>
 <span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
 <span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>()</span>
-<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Why Each Person Was Included or Excluded ===
 
-Camille:
-  Self-managed (e.manager = e)? true
+Alan:
+  Self-managed (e.manager = e)? false
   Secretary of own dept (e.worksIn.secretary = e)? true
-  =&gt; INCLUDED in result
+  =&gt; EXCLUDED (not self-managed)
 
 Audrey:
   Self-managed (e.manager = e)? true
   Secretary of own dept (e.worksIn.secretary = e)? false
   =&gt; EXCLUDED (not secretary of own department)
 
-Alan:
-  Self-managed (e.manager = e)? false
+Camille:
+  Self-managed (e.manager = e)? true
   Secretary of own dept (e.worksIn.secretary = e)? true
-  =&gt; EXCLUDED (not self-managed)
+  =&gt; INCLUDED in result
 </code></pre>
 </div>
 </div>
@@ -646,7 +635,7 @@ Alan:
 <h2 class="anchored" data-anchor-id="verifying-the-result">Verifying the Result</h2>
 <p>Let’s confirm that instance <code>J</code> satisfies both path equations of schema <code>T</code>:</p>
 <div id="22" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Verifying Path Equations in J ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Verifying Path Equations in J ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Rule 1: manager.worksIn = worksIn"</span>)</span>
 <span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>all_ok <span class="op">=</span> <span class="cn">true</span></span>
@@ -670,7 +659,7 @@ Alan:
 <span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  "</span>, nm, <span class="st">": "</span>, ok ? <span class="st">"OK"</span> <span class="op">:</span> <span class="st">"FAILED"</span>)</span>
 <span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
 <span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">All path equations satisfied: "</span>, all_ok)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">All path equations satisfied: "</span>, all_ok)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Verifying Path Equations in J ===
 
@@ -825,13 +814,14 @@ All path equations satisfied: true</code></pre>
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

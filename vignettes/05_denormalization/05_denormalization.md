@@ -1,5 +1,5 @@
 # Denormalization in CQL
-CQL.jl
+Simon Frost
 
 ## Introduction
 
@@ -128,15 +128,15 @@ end
     === Male Table ===
     Name       | Mother
     -----------+----------
-    George     | Elaine
     Albert     | Elaine
     Charles    | Francine
+    George     | Elaine
 
     === Female Table ===
     Name
     -----------
-    Francine
     Elaine
+    Francine
 
 Notice that to display each male’s mother’s name, we had to follow the
 foreign key (`eval_fk`) and then read the attribute (`eval_att`). This
