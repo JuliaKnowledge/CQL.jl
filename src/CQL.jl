@@ -167,9 +167,11 @@ export @cql_str, @cql
 
 # DSL macros
 export @typeside, @schema, @instance, @mapping, @query
+export @transform, @schema_colimit, @constraints
 
-# Unicode operators
-export Δ, Σ
+# Unicode operators and functional API
+export Δ, Σ, ⊔
+export coeval, coproduct, distinct, coequalize, to_query
 
 # ============================================================================
 # Precompilation workloads

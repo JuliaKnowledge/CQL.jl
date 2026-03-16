@@ -27,6 +27,21 @@ function _make_env_with_schemas(src_name::String, src::CQLSchema, dst_name::Stri
     env
 end
 
+"""Create an Env with two instances (and their schema/typeside) pre-loaded."""
+function _make_env_with_instances(src_name::String, src::CQLInstance, dst_name::String, dst::CQLInstance)
+    env = Env(default_options())
+    env.typesides["_TS"] = src.schema.typeside
+    env.schemas["_S"] = src.schema
+    env.instances[src_name] = src
+    env.instances[dst_name] = dst
+    env
+end
+
+"""Add a schema to an existing Env."""
+function _add_schema!(env::Env, name::String, sch::CQLSchema)
+    env.schemas[name] = sch
+end
+
 """Build a CQL mapping from name→name pairs, classifying by source schema."""
 function _build_mapping_from_pairs(src::CQLSchema, dst::CQLSchema,
                                     pairs::Vector{Tuple{String,String}},

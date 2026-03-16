@@ -702,3 +702,208 @@ macro query(arrow_expr, block)
         end
     end)
 end
+
+# ─── @transform ──────────────────────────────────────────────────────────────
+
+"""
+    @transform src_instance → dst_instance begin ... end
+
+Define a CQL transform (instance morphism) using Julia-like syntax.
+
+# Syntax
+- `src_gen → dst_term` — generator mapping
+
+# Example
+```julia
+h = @transform I → J begin
+    e1 → e2
+    d1 → d1
+end
+```
+
+Special forms:
+- `identity(I)` — identity transform
+- `Σ(F, t)` — sigma transform
+- `Δ(F, t)` — delta transform
+"""
+macro transform(arrow_expr, block)
+    src_ref = nothing
+    dst_ref = nothing
+    if arrow_expr isa Expr && arrow_expr.head == :call
+        op = arrow_expr.args[1]
+        if op in (:→, :-->, :⟶)
+            src_ref = arrow_expr.args[2]
+            dst_ref = arrow_expr.args[3]
+        end
+    end
+    src_ref === nothing && error("@transform expects: @transform I → J begin ... end")
+
+    stmts = _block_stmts(block)
+    opts, stmts = _extract_options(stmts)
+
+    gen_maps = Tuple{String,String}[]
+
+    for s in stmts
+        s isa LineNumberNode && continue
+        if s isa Expr && s.head == :call && s.args[1] in (:→, :-->, :⟶)
+            lhs = string(s.args[2])
+            rhs = _expr_to_cql_term(s.args[3])
+            push!(gen_maps, (lhs, rhs))
+        end
+    end
+
+    lines = String["transform _T = literal : _SRC -> _DST {"]
+    if !isempty(gen_maps)
+        push!(lines, "    generators")
+        for (lhs, rhs) in gen_maps
+            push!(lines, "        $lhs -> $rhs")
+        end
+    end
+    if !isempty(opts)
+        push!(lines, "    options")
+        for (k, v) in opts
+            push!(lines, "        $k = $v")
+        end
+    end
+    push!(lines, "}")
+    src = join(lines, "\n")
+
+    return esc(quote
+        let _src_inst = $(src_ref), _dst_inst = $(dst_ref)
+            _env = CQL._make_env_with_instances("_SRC", _src_inst, "_DST", _dst_inst)
+            CQL._eval_fragment(_env, $src).transforms["_T"]
+        end
+    end)
+end
+
+# ─── @schema_colimit ─────────────────────────────────────────────────────────
+
+"""
+    @schema_colimit typeside_var begin ... end
+
+Define a CQL schema colimit using Julia-like syntax.
+
+# Syntax
+- `@schemas S1, S2, ...` — schemas to merge
+- `S1.Entity1 == S2.Entity2` — entity equations (or use `@entity_equations` section)
+- `@observation_equations forall x:S1.E . S1.att(x) = S2.att(x)` — observation equations
+
+# Example
+```julia
+SC = @schema_colimit Ty begin
+    @schemas S1, S2
+    S1.Person == S2.Employee
+    @options simplify_names = true
+end
+```
+
+Returns a `SchemaColimitResult` with `.schema` and accessor for inclusion mappings.
+"""
+macro schema_colimit(ts_ref, block)
+    stmts = _block_stmts(block)
+    opts, stmts = _extract_options(stmts)
+
+    schema_names = String[]
+    schema_refs = []
+    entity_eqs = Tuple{String,String}[]
+    attr_eqs = Tuple{String,String}[]
+
+    current_section = :entity  # default: bare == goes to entity_equations
+
+    for s in stmts
+        s isa LineNumberNode && continue
+        if s isa Expr && s.head == :macrocall && s.args[1] == Symbol("@schemas")
+            for a in s.args[2:end]
+                a isa LineNumberNode && continue
+                if a isa Symbol
+                    push!(schema_names, string(a))
+                    push!(schema_refs, a)
+                elseif a isa Expr && a.head == :tuple
+                    for e in a.args
+                        if e isa Symbol
+                            push!(schema_names, string(e))
+                            push!(schema_refs, e)
+                        end
+                    end
+                end
+            end
+        elseif s isa Expr && s.head == :macrocall && s.args[1] == Symbol("@entity_equations")
+            current_section = :entity
+            for a in s.args[2:end]
+                a isa LineNumberNode && continue
+                if a isa Expr && a.head == :call && a.args[1] == :(==)
+                    push!(entity_eqs, (_expr_to_cql_path(a.args[2]), _expr_to_cql_path(a.args[3])))
+                end
+            end
+        elseif s isa Expr && s.head == :macrocall && s.args[1] == Symbol("@observation_equations")
+            current_section = :observation
+            for a in s.args[2:end]
+                a isa LineNumberNode && continue
+                if a isa Symbol || (a isa Expr)
+                    # Pass through as raw CQL observation equation text
+                    push!(attr_eqs, (_expr_to_cql_path(a), ""))
+                end
+            end
+        elseif s isa Expr && s.head == :call && s.args[1] == :(==)
+            lhs = _expr_to_cql_path(s.args[2])
+            rhs = _expr_to_cql_path(s.args[3])
+            if current_section == :attribute
+                push!(attr_eqs, (lhs, rhs))
+            else
+                push!(entity_eqs, (lhs, rhs))
+            end
+        end
+    end
+
+    schema_sum = join(schema_names, " + ")
+    lines = String["schema_colimit _SC = quotient $schema_sum : _TS {"]
+    if !isempty(entity_eqs)
+        push!(lines, "    entity_equations")
+        for (lhs, rhs) in entity_eqs
+            push!(lines, "        $lhs = $rhs")
+        end
+    end
+    # observation_equations would go here if needed
+    if !isempty(opts)
+        push!(lines, "    options")
+        for (k, v) in opts
+            push!(lines, "        $k = $v")
+        end
+    end
+    push!(lines, "}")
+    src = join(lines, "\n")
+
+    # Build environment with all referenced schemas
+    return esc(quote
+        let _ts = $(ts_ref)
+            _env = CQL._make_env_with_typeside("_TS", _ts)
+            $([:(CQL._add_schema!(_env, $(string(n)), $(n))) for n in schema_refs]...)
+            CQL._eval_fragment(_env, $src).colimits["_SC"]
+        end
+    end)
+end
+
+# ─── @constraints ────────────────────────────────────────────────────────────
+
+"""
+    @constraints schema_var cql_string
+
+Define CQL constraints using CQL constraint syntax.
+
+Since constraint syntax (∀/∃ with where-clauses) doesn't map cleanly to Julia
+expressions, this macro takes the constraint body as a string.
+
+# Example
+```julia
+C = @constraints S "forall a:A -> exists b:B where f(a) = b"
+```
+"""
+macro constraints(sch_ref, body_str)
+    return esc(quote
+        let _sch = $(sch_ref)
+            _env = CQL._make_env_with_schema("_S", _sch)
+            _src = "constraints _C = literal : _S { " * $(body_str) * " }"
+            CQL._eval_fragment(_env, _src).constraints["_C"]
+        end
+    end)
+end

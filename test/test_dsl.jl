@@ -203,6 +203,84 @@ using Test
         @test F.ens == ref.F.ens
     end
 
+    # ─── Coproduct (⊔) ──────────────────────────────────────────────────────
+    @testset "⊔ coproduct" begin
+        I = ref.I
+        N = I ⊔ I
+        for en in ref.S.ens
+            @test length(N.algebra.en[en]) == 2 * length(I.algebra.en[en])
+        end
+        N3 = coproduct(I, I, I)
+        for en in ref.S.ens
+            @test length(N3.algebra.en[en]) == 3 * length(I.algebra.en[en])
+        end
+    end
+
+    # ─── distinct ────────────────────────────────────────────────────────────
+    @testset "distinct" begin
+        # Use a simple schema without path equations for distinct test
+        simple_env = cql"""
+        typeside Ty = literal { types String constants A B : String }
+        schema S = literal : Ty { entities E attributes name : E -> String }
+        instance I = literal : S { generators e1 e2 : E equations name(e1) = A name(e2) = B }
+        """
+        I_simple = simple_env.I
+        D = distinct(I_simple)
+        @test length(D.algebra.en[:E]) == length(I_simple.algebra.en[:E])
+    end
+
+    # ─── coeval ──────────────────────────────────────────────────────────────
+    @testset "coeval" begin
+        I = ref.I
+        Q_id = identity_query(ref.S)
+        I_coeval = coeval(Q_id, I)
+        for en in ref.S.ens
+            @test length(I_coeval.algebra.en[en]) == length(I.algebra.en[en])
+        end
+    end
+
+    # ─── to_query ────────────────────────────────────────────────────────────
+    @testset "to_query" begin
+        F = identity_mapping(ref.S)
+        Q = to_query(F)
+        @test Q isa CQLQuery
+        J = Q(ref.I)
+        for en in ref.S.ens
+            @test length(J.algebra.en[en]) == length(ref.I.algebra.en[en])
+        end
+    end
+
+    # ─── @constraints ────────────────────────────────────────────────────────
+    @testset "@constraints" begin
+        C = @constraints ref.S "forall e:Employee -> exists d:Department where worksIn(e) = d"
+        @test C isa CQLConstraints
+        @test length(C.egds) == 1
+    end
+
+    # ─── @schema_colimit ─────────────────────────────────────────────────────
+    @testset "@schema_colimit" begin
+        Ty = @typeside begin
+            String::Ty
+        end
+        S1 = @schema Ty begin
+            @entities A
+            a1 : A ⇒ String
+        end
+        S2 = @schema Ty begin
+            @entities B
+            b1 : B ⇒ String
+        end
+
+        SC = @schema_colimit Ty begin
+            @schemas S1, S2
+            S1.A == S2.B
+            @options simplify_names = true
+        end
+        @test SC isa SchemaColimitResult
+        @test :A in SC.schema.ens
+        @test length(SC.schema.ens) == 1  # A and B merged
+    end
+
     # ─── Empty / minimal constructs ──────────────────────────────────────────
     @testset "Minimal constructs" begin
         Ty = @typeside begin
