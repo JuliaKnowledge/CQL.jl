@@ -27,6 +27,73 @@ function _make_env_with_schemas(src_name::String, src::CQLSchema, dst_name::Stri
     env
 end
 
+"""Build a CQL mapping from name→name pairs, classifying by source schema."""
+function _build_mapping_from_pairs(src::CQLSchema, dst::CQLSchema,
+                                    pairs::Vector{Tuple{String,String}},
+                                    opts::Vector{Tuple{String,String}}=Tuple{String,String}[])
+    src_ens = Set(string(e) for e in src.ens)
+    # Collect qualified and display FK/att names
+    src_fk_names = Set{String}()
+    for k in keys(src.fks)
+        push!(src_fk_names, string(k))
+    end
+    for (name, qnames) in src.fk_by_name
+        push!(src_fk_names, string(name))
+    end
+    src_att_names = Set{String}()
+    for k in keys(src.atts)
+        push!(src_att_names, string(k))
+    end
+    for (name, qnames) in src.att_by_name
+        push!(src_att_names, string(name))
+    end
+
+    en_maps = Tuple{String,String}[]
+    fk_maps = Tuple{String,String}[]
+    att_maps = Tuple{String,String}[]
+
+    for (lhs, rhs) in pairs
+        if lhs in src_ens
+            push!(en_maps, (lhs, rhs))
+        elseif lhs in src_fk_names
+            push!(fk_maps, (lhs, rhs))
+        elseif lhs in src_att_names
+            push!(att_maps, (lhs, rhs))
+        else
+            # Default: try as entity, then fk, then att
+            push!(en_maps, (lhs, rhs))
+        end
+    end
+
+    # Generate proper CQL mapping source
+    lines = String["mapping _M = literal : _SRC -> _DST {"]
+    for (lhs, rhs) in en_maps
+        push!(lines, "    entity $lhs -> $rhs")
+    end
+    if !isempty(fk_maps)
+        push!(lines, "    foreign_keys")
+        for (lhs, rhs) in fk_maps
+            push!(lines, "        $lhs -> $rhs")
+        end
+    end
+    if !isempty(att_maps)
+        push!(lines, "    attributes")
+        for (lhs, rhs) in att_maps
+            push!(lines, "        $lhs -> $rhs")
+        end
+    end
+    if !isempty(opts)
+        push!(lines, "    options")
+        for (k, v) in opts
+            push!(lines, "        $k = $v")
+        end
+    end
+    push!(lines, "}")
+
+    env = _make_env_with_schemas("_SRC", src, "_DST", dst)
+    _eval_fragment(env, join(lines, "\n")).mappings["_M"]
+end
+
 """
 Evaluate a CQL source fragment in the context of an existing Env.
 The fragment can reference objects already in the Env by name.

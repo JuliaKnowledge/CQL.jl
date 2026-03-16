@@ -82,6 +82,24 @@ function _block_stmts(block)
     return [block]
 end
 
+"""Convert a Julia expression to a CQL dot-path string (for path equations)."""
+function _expr_to_cql_path(ex)
+    if ex isa Symbol
+        return string(ex)
+    elseif ex isa Expr
+        if ex.head == :(.)
+            lhs = _expr_to_cql_path(ex.args[1])
+            rhs = ex.args[2] isa QuoteNode ? string(ex.args[2].value) : _expr_to_cql_path(ex.args[2])
+            return "$lhs.$rhs"
+        elseif ex.head == :call && ex.args[1] == :(.)
+            lhs = _expr_to_cql_path(ex.args[2])
+            rhs = ex.args[3] isa QuoteNode ? string(ex.args[3].value) : _expr_to_cql_path(ex.args[3])
+            return "$lhs.$rhs"
+        end
+    end
+    return string(ex)
+end
+
 """Collect `name => expr` pairs from macro args, handling tuples."""
 function _collect_pairs!(result::Vector{String}, args)
     for a in args
@@ -314,8 +332,8 @@ macro schema(ts_ref, block)
                 end
             end
             if entity !== nothing && eq_expr !== nothing
-                lhs = _expr_to_cql_term(eq_expr.args[2])
-                rhs = _expr_to_cql_term(eq_expr.args[3])
+                lhs = _expr_to_cql_path(eq_expr.args[2])
+                rhs = _expr_to_cql_path(eq_expr.args[3])
                 push!(path_eqs, (entity, lhs, rhs))
             end
         elseif s isa Expr && s.head == :macrocall && s.args[1] == Symbol("@obs_eq")
@@ -527,25 +545,16 @@ macro mapping(arrow_expr, block)
         end
     end
 
-    lines = String["mapping _M = literal : _SRC -> _DST {"]
-    # CQL mapping syntax uses entity/foreign_keys/attributes sections
-    # but also supports a flat form. Let's use the flat form.
-    for (lhs, rhs) in entity_maps
-        push!(lines, "    $lhs -> $rhs")
-    end
-    if !isempty(opts)
-        push!(lines, "    options")
-        for (k, v) in opts
-            push!(lines, "        $k = $v")
-        end
-    end
-    push!(lines, "}")
-    map_src = join(lines, "\n")
+    # All mappings are stored as pairs. At runtime, we classify them
+    # as entity/fk/att by checking against the source schema.
+    pair_strs = [(lhs, rhs) for (lhs, rhs) in entity_maps]
+    opt_strs = opts
 
     return esc(quote
         let _src = $(src_ref), _dst = $(dst_ref)
-            _env = CQL._make_env_with_schemas("_SRC", _src, "_DST", _dst)
-            CQL._eval_fragment(_env, $map_src).mappings["_M"]
+            _pairs = $pair_strs
+            _opts = $opt_strs
+            CQL._build_mapping_from_pairs(_src, _dst, _pairs, _opts)
         end
     end)
 end
