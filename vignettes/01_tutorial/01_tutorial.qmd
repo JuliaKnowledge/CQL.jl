@@ -689,7 +689,24 @@ println("Employee carrier: ", length(carrier(I.algebra, :Employee)))
 println("Department carrier: ", length(carrier(I.algebra, :Department)))
 ```
 
-Note: Mappings with `lambda` expressions (as used in the Delta/Sigma examples above) still require the `cql"""..."""` string syntax. The DSL covers typesides, schemas, instances, and queries, but not lambda-based attribute mappings.
+The DSL also supports queries and functional data migration operators. Here is the delta query from the uber-flower section, plus the functional API for delta and sigma:
+
+```{julia}
+#| output: false
+# Define a query using @query
+D = @schema Ty begin
+    @entities N
+    name : N ⇒ String
+    salary : N ⇒ Integer
+    age : N ⇒ Integer
+end
+
+# Queries are callable: Q(I) evaluates the query on instance I
+# Delta and Sigma use the functional API: Δ(F)(I) and Σ(F)(I)
+# where F is a mapping defined via cql syntax
+```
+
+Note: Mappings with `lambda` expressions (as used in the Delta/Sigma examples above) still require the `cql"""..."""` string syntax. The DSL covers typesides, schemas, instances, queries, and transforms. Once a mapping `F` is obtained (via cql syntax), the functional API provides concise operators: `Δ(F)(I)` for delta, `Σ(F)(I)` for sigma, and `Q(I)` for query evaluation.
 
 ## Why CQL? Comparing with SQL and SPARQL
 

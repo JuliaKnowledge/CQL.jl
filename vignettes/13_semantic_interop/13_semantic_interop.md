@@ -729,7 +729,8 @@ integration code.
 
 The examples above use `run_program` with CQL source strings. CQL.jl
 also provides Julia-native macros. The individual schemas (IFC, BRICK,
-REC) can be defined using the DSL:
+REC) can be defined using the DSL, and the `@schema_colimit` macro can
+merge them:
 
 ``` julia
 using CQL
@@ -768,10 +769,44 @@ println("BRICK entities: ", BRICK.ens)
     IFC entities: Set([:IfcElement, :IfcSensor, :IfcSpace, :IfcPropertySet])
     BRICK entities: Set([:Point, :Location, :Equipment])
 
-Note: The `schema_colimit`, `getSchema`, `getMapping`, `coproduct`,
-`constraints`, and `chase` operations used for merging IFC and BRICK
-schemas still require the `cql"""..."""` or `run_program` syntax. The
-DSL covers individual schema and instance definitions.
+The `@schema_colimit` macro merges schemas by identifying shared
+entities:
+
+``` julia
+# @schema_colimit merges schemas with entity equations
+# C = @schema_colimit Ty begin
+#     @schemas IFC, BRICK
+#     IFC.IfcSpace == BRICK.Location
+#     IFC.IfcElement == BRICK.Equipment
+# end
+# Note: @schema_colimit supports entity equations but not attribute equations.
+# Attribute observation equations still require cql syntax.
+```
+
+The `@constraints` macro expresses equality-generating dependencies for
+the chase:
+
+``` julia
+# Constraints use a string argument for the constraint body:
+# DeviceIdRule = @constraints Combined """
+#     forall s:Sensor
+#     -> where timeseriesId(hasPoint(sensorAttachedTo(s))) = deviceId(hasPropertySet(s))
+# """
+```
+
+Once schemas are merged and mappings obtained, the functional API
+provides concise migration operators:
+
+``` julia
+# Σ(IfcM)(IfcData)          — push IFC data into combined schema
+# Σ(BrickM)(BrickData)      — push BRICK data into combined schema
+# coproduct(I_ifc, I_brick) — merge migrated instances
+# distinct(Merged)           — merge provably equal elements
+```
+
+Note: The `getSchema`, `getMapping`, observation equations in colimits,
+and `chase` operations still require the `cql"""..."""` or `run_program`
+syntax. Lambda expressions in mappings also require cql syntax.
 
 ### References
 

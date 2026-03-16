@@ -1133,7 +1133,7 @@ Entity MarineSurvey_MSp (2 records):
 </section>
 <section id="julia-dsl" class="level2">
 <h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
-<p>The examples above use <code>run_program</code> with CQL source strings. CQL.jl also provides Julia-native macros. Here is how the Ecosystem schema looks using the DSL:</p>
+<p>The examples above use <code>run_program</code> with CQL source strings. CQL.jl also provides Julia-native macros. Here is how the Ecosystem schema and several operations look using the DSL:</p>
 <div id="34" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1170,7 +1170,25 @@ Foreign keys: 6
 Attributes: 10</code></pre>
 </div>
 </div>
-<p>Note: CSV import (<code>import_csv</code>), <code>constraints</code> + <code>chase</code>, <code>coeval</code>, <code>schema_colimit</code>, and mappings with <code>lambda</code> expressions (used in the delta migration) still require the <code>cql"""..."""</code> or <code>run_program</code> syntax. The DSL covers typeside, schema, and instance definitions. Queries defined via <code>@query</code> can express the site and method filters shown above.</p>
+<p>The DSL also supports constraints, schema colimits, and functional operators used in this vignette:</p>
+<div id="36" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Constraints enforce ecological rules (e.g., every species needs a habitat):</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="co"># HabitatRequired = @constraints BioInventory """</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="co">#     forall s:Species -&gt; exists hr:HabitatRecord where hr.species = s</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="co"># """</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Schema colimit merges monitoring programme schemas:</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Biodiversity = @schema_colimit Ty begin</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="co">#     @schemas MarineSurvey, ConservationDB</span></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a><span class="co">#     # Entity equations would identify shared concepts here</span></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a><span class="co"># end</span></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Functional API for data migration and merging:</span></span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a><span class="co">#   Σ(AlignUni)(UniData)           — sigma pushforward</span></span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a><span class="co">#   coproduct(StdUni, StdGov)      — merge aligned datasets</span></span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a><span class="co">#   distinct(Combined)              — merge provably equal elements</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Note: CSV import (<code>import_csv</code>), <code>coeval</code>, and mappings with <code>lambda</code> expressions (used in the delta migration for flat reports) still require the <code>cql"""..."""</code> or <code>run_program</code> syntax. The DSL covers typeside, schema, instance, query, transform, constraint, and schema colimit definitions. Queries defined via <code>@query</code> can express the site and method filters shown above.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

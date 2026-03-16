@@ -695,7 +695,7 @@ All matches satisfy path equation: true</code></pre>
 </section>
 <section id="julia-dsl" class="level2">
 <h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
-<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros. Here is how the University schema and findMatches query look using the DSL:</p>
+<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros. Here is how the University schema, AdvisorMatches schema, and findMatches query look using the DSL:</p>
 <div id="16" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -726,14 +726,37 @@ All matches satisfy path equation: true</code></pre>
 <span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@path_eq</span> Match  studentOf.majoringIn <span class="op">==</span> professorOf.worksIn</span>
 <span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
 <span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"University entities: "</span>, University.ens)</span>
-<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"AdvisorMatches path equations: "</span>, <span class="fu">length</span>(AdvisorMatches.path_eqs))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a><span class="co"># The @query macro supports multi-variable from and where clauses</span></span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>findMatches <span class="op">=</span> <span class="pp">@query</span> University <span class="op">→</span> AdvisorMatches <span class="cf">begin</span></span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entity</span> Department <span class="cf">begin</span></span>
+<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@from</span> d <span class="op">=&gt;</span> Department</span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a>        deptName <span class="op">=&gt;</span> d.deptName</span>
+<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entity</span> Professor <span class="cf">begin</span></span>
+<span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@from</span> p <span class="op">=&gt;</span> Professor</span>
+<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a>        profName <span class="op">=&gt;</span> p.profName</span>
+<span id="cb18-39"><a href="#cb18-39" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@fkeys</span> worksIn <span class="op">=&gt;</span> (d <span class="op">=&gt;</span> p.worksIn)</span>
+<span id="cb18-40"><a href="#cb18-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb18-41"><a href="#cb18-41" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entity</span> Student <span class="cf">begin</span></span>
+<span id="cb18-42"><a href="#cb18-42" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@from</span> s <span class="op">=&gt;</span> Student</span>
+<span id="cb18-43"><a href="#cb18-43" aria-hidden="true" tabindex="-1"></a>        studName <span class="op">=&gt;</span> s.studName</span>
+<span id="cb18-44"><a href="#cb18-44" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@fkeys</span> majoringIn <span class="op">=&gt;</span> (d <span class="op">=&gt;</span> s.majoringIn)</span>
+<span id="cb18-45"><a href="#cb18-45" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb18-46"><a href="#cb18-46" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entity</span> Match <span class="cf">begin</span></span>
+<span id="cb18-47"><a href="#cb18-47" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@from</span> p <span class="op">=&gt;</span> Professor, s <span class="op">=&gt;</span> Student</span>
+<span id="cb18-48"><a href="#cb18-48" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@where</span> p.worksIn <span class="op">==</span> s.majoringIn</span>
+<span id="cb18-49"><a href="#cb18-49" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@fkeys</span> professorOf <span class="op">=&gt;</span> (p <span class="op">=&gt;</span> p), studentOf <span class="op">=&gt;</span> (s <span class="op">=&gt;</span> s)</span>
+<span id="cb18-50"><a href="#cb18-50" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb18-51"><a href="#cb18-51" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb18-52"><a href="#cb18-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-53"><a href="#cb18-53" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"University entities: "</span>, University.ens)</span>
+<span id="cb18-54"><a href="#cb18-54" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"AdvisorMatches path equations: "</span>, <span class="fu">length</span>(AdvisorMatches.path_eqs))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>University entities: Set([:Professor, :Department, :Student])
 AdvisorMatches path equations: 1</code></pre>
 </div>
 </div>
-<p>Note: The <code>@query</code> macro can be used to define the findMatches query as well; the multi-variable from-where pattern works the same way.</p>
+<p>The <code>Match</code> entity block binds two source variables (<code>p</code> and <code>s</code>) with a <code>@where</code> clause that filters by shared department — the CQL equivalent of a SQL join. The <code>@fkeys</code> block maps each target foreign key to the corresponding source term.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

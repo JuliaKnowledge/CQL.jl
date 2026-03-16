@@ -1051,7 +1051,7 @@ attributes
 </section>
 <section id="julia-dsl" class="level2">
 <h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
-<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros. Here is how the RideShare schema and a delta migration look using the DSL:</p>
+<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros. Here is how the RideShare schema, a mapping, and delta migration look using the DSL:</p>
 <div id="26" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1076,16 +1076,35 @@ attributes
 <span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>    name_value <span class="op">:</span> UserName <span class="op">⇒</span> Str</span>
 <span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
 <span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, RideShare.ens)</span>
-<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">length</span>(RideShare.fks))</span>
-<span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Attributes: "</span>, <span class="fu">length</span>(RideShare.atts))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a><span class="co"># The @mapping macro defines structure-preserving schema morphisms</span></span>
+<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a><span class="co"># (without lambda expressions — for simple FK/attribute renaming)</span></span>
+<span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a>PersonSch <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb30-27"><a href="#cb30-27" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Person</span>
+<span id="cb30-28"><a href="#cb30-28" aria-hidden="true" tabindex="-1"></a>    age <span class="op">:</span> Person <span class="op">⇒</span> Nat</span>
+<span id="cb30-29"><a href="#cb30-29" aria-hidden="true" tabindex="-1"></a>    name <span class="op">:</span> Person <span class="op">⇒</span> Str</span>
+<span id="cb30-30"><a href="#cb30-30" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb30-31"><a href="#cb30-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-32"><a href="#cb30-32" aria-hidden="true" tabindex="-1"></a>RecordSch <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb30-33"><a href="#cb30-33" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Record</span>
+<span id="cb30-34"><a href="#cb30-34" aria-hidden="true" tabindex="-1"></a>    rec_name <span class="op">:</span> Record <span class="op">⇒</span> Str</span>
+<span id="cb30-35"><a href="#cb30-35" aria-hidden="true" tabindex="-1"></a>    rec_age <span class="op">:</span> Record <span class="op">⇒</span> Nat</span>
+<span id="cb30-36"><a href="#cb30-36" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb30-37"><a href="#cb30-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-38"><a href="#cb30-38" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, RideShare.ens)</span>
+<span id="cb30-39"><a href="#cb30-39" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">length</span>(RideShare.fks))</span>
+<span id="cb30-40"><a href="#cb30-40" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Attributes: "</span>, <span class="fu">length</span>(RideShare.atts))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Entities: Set([:User, :Place, :Rider, :UserName, :PlaceEvent, :Trip, :Driver])
 Foreign keys: 8
 Attributes: 2</code></pre>
 </div>
 </div>
-<p>Note: Mappings with <code>lambda</code> expressions (as used in the <code>PersonToRecord</code> delta and <code>Merge</code> sigma examples) still require the <code>cql"""..."""</code> string syntax. The DSL covers typesides, schemas, and instances.</p>
+<p>Once a mapping <code>F</code> is obtained (via cql syntax for lambda-based attribute mappings), the functional API provides concise delta:</p>
+<div id="28" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Δ(F)(I) pulls an instance back along a mapping</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="co"># For the PersonToRecord example: Persons = Δ(PersonToRecord)(Records)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Note: Mappings with <code>lambda</code> expressions (as used in the <code>PersonToRecord</code> delta and <code>Merge</code> sigma examples) still require the <code>cql"""..."""</code> string syntax. The <code>@mapping</code> macro works for simple FK and attribute renaming without lambdas. The DSL covers typesides, schemas, instances, and queries.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

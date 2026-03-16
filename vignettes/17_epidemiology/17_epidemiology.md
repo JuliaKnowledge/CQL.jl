@@ -1131,8 +1131,8 @@ schema.
 ## Julia DSL
 
 The examples above use `run_program` with CQL source strings. CQL.jl
-also provides Julia-native macros. Here is how the Epi schema looks
-using the DSL:
+also provides Julia-native macros. Here is how the Epi schema and
+several operations look using the DSL:
 
 ``` julia
 using CQL
@@ -1167,10 +1167,36 @@ println("Attributes: ", length(Epi.atts))
     Foreign keys: 3
     Attributes: 10
 
-Note: CSV import (`import_csv`), `constraints` + `chase`, `coeval`,
-`schema_colimit`, and mappings with `lambda` expressions (used in the
-delta migration for flat reports) still require the `cql"""..."""` or
-`run_program` syntax. The DSL covers typeside, schema, and instance
+The DSL supports schema colimits, constraints, transforms, and
+functional migration operators used in this vignette:
+
+``` julia
+# Schema colimit merges surveillance system schemas:
+# Unified = @schema_colimit Ty begin
+#     @schemas FluSurv, CovidSurv
+#     FluSurv.FluLoc == CovidSurv.CovidLoc
+# end
+
+# Constraints enforce data quality rules (e.g., severe cases need traces):
+# TracingPolicy = @constraints TracedEpi """
+#     forall c:Case where c.case_severity = "severe"
+#     -> exists t:ContactTrace where t.traced_case = c
+# """
+
+# Transforms track outbreak progression between weekly snapshots:
+# WeeklyProgression = @transform Week1 → Week2 begin
+#     c1 => d1; c2 => d2; c3 => d3
+# end
+
+# Functional API for sigma migration and coproduct:
+#   Σ(AlignA)(DataA)             — push regional data to national schema
+#   coproduct(NatA, NatB)        — merge multi-source data
+```
+
+Note: CSV import (`import_csv`), `coeval`, and mappings with `lambda`
+expressions (used in the delta migration for flat reports) still require
+the `cql"""..."""` or `run_program` syntax. The DSL covers typeside,
+schema, instance, query, transform, constraint, and schema colimit
 definitions. Queries for filtering cases (severe, hospital, flu, care
 home) can be expressed using the `@query` macro.
 

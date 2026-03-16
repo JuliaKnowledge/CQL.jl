@@ -890,8 +890,8 @@ transformations.
 ## Julia DSL
 
 The examples above use the `cql"""..."""` string macro. CQL.jl also
-provides Julia-native macros. Here is how the RideShare schema and a
-delta migration look using the DSL:
+provides Julia-native macros. Here is how the RideShare schema, a
+mapping, and delta migration look using the DSL:
 
 ``` julia
 using CQL
@@ -917,6 +917,20 @@ RideShare = @schema Ty begin
     name_value : UserName ⇒ Str
 end
 
+# The @mapping macro defines structure-preserving schema morphisms
+# (without lambda expressions — for simple FK/attribute renaming)
+PersonSch = @schema Ty begin
+    @entities Person
+    age : Person ⇒ Nat
+    name : Person ⇒ Str
+end
+
+RecordSch = @schema Ty begin
+    @entities Record
+    rec_name : Record ⇒ Str
+    rec_age : Record ⇒ Nat
+end
+
 println("Entities: ", RideShare.ens)
 println("Foreign keys: ", length(RideShare.fks))
 println("Attributes: ", length(RideShare.atts))
@@ -926,10 +940,19 @@ println("Attributes: ", length(RideShare.atts))
     Foreign keys: 8
     Attributes: 2
 
+Once a mapping `F` is obtained (via cql syntax for lambda-based
+attribute mappings), the functional API provides concise delta:
+
+``` julia
+# Δ(F)(I) pulls an instance back along a mapping
+# For the PersonToRecord example: Persons = Δ(PersonToRecord)(Records)
+```
+
 Note: Mappings with `lambda` expressions (as used in the
 `PersonToRecord` delta and `Merge` sigma examples) still require the
-`cql"""..."""` string syntax. The DSL covers typesides, schemas, and
-instances.
+`cql"""..."""` string syntax. The `@mapping` macro works for simple FK
+and attribute renaming without lambdas. The DSL covers typesides,
+schemas, instances, and queries.
 
 ## Summary
 

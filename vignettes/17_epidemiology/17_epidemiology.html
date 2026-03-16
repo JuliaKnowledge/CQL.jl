@@ -1129,7 +1129,7 @@ Entity FluSurv_FluLoc (2 records):
 </section>
 <section id="julia-dsl" class="level2">
 <h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
-<p>The examples above use <code>run_program</code> with CQL source strings. CQL.jl also provides Julia-native macros. Here is how the Epi schema looks using the DSL:</p>
+<p>The examples above use <code>run_program</code> with CQL source strings. CQL.jl also provides Julia-native macros. Here is how the Epi schema and several operations look using the DSL:</p>
 <div id="38" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1163,7 +1163,30 @@ Foreign keys: 3
 Attributes: 10</code></pre>
 </div>
 </div>
-<p>Note: CSV import (<code>import_csv</code>), <code>constraints</code> + <code>chase</code>, <code>coeval</code>, <code>schema_colimit</code>, and mappings with <code>lambda</code> expressions (used in the delta migration for flat reports) still require the <code>cql"""..."""</code> or <code>run_program</code> syntax. The DSL covers typeside, schema, and instance definitions. Queries for filtering cases (severe, hospital, flu, care home) can be expressed using the <code>@query</code> macro.</p>
+<p>The DSL supports schema colimits, constraints, transforms, and functional migration operators used in this vignette:</p>
+<div id="40" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Schema colimit merges surveillance system schemas:</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Unified = @schema_colimit Ty begin</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="co">#     @schemas FluSurv, CovidSurv</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="co">#     FluSurv.FluLoc == CovidSurv.CovidLoc</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="co"># end</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Constraints enforce data quality rules (e.g., severe cases need traces):</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a><span class="co"># TracingPolicy = @constraints TracedEpi """</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a><span class="co">#     forall c:Case where c.case_severity = "severe"</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a><span class="co">#     -&gt; exists t:ContactTrace where t.traced_case = c</span></span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a><span class="co"># """</span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Transforms track outbreak progression between weekly snapshots:</span></span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a><span class="co"># WeeklyProgression = @transform Week1 → Week2 begin</span></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a><span class="co">#     c1 =&gt; d1; c2 =&gt; d2; c3 =&gt; d3</span></span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a><span class="co"># end</span></span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Functional API for sigma migration and coproduct:</span></span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a><span class="co">#   Σ(AlignA)(DataA)             — push regional data to national schema</span></span>
+<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a><span class="co">#   coproduct(NatA, NatB)        — merge multi-source data</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Note: CSV import (<code>import_csv</code>), <code>coeval</code>, and mappings with <code>lambda</code> expressions (used in the delta migration for flat reports) still require the <code>cql"""..."""</code> or <code>run_program</code> syntax. The DSL covers typeside, schema, instance, query, transform, constraint, and schema colimit definitions. Queries for filtering cases (severe, hospital, flu, care home) can be expressed using the <code>@query</code> macro.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

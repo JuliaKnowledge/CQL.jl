@@ -1039,7 +1039,7 @@ Attributes (equated pairs share one entity):
 </section>
 <section id="julia-dsl" class="level2">
 <h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
-<p>The examples above use <code>run_program</code> with CQL source strings. CQL.jl also provides Julia-native macros. Here is how the PropertyGraph and TripleStore schemas look using the DSL:</p>
+<p>The examples above use <code>run_program</code> with CQL source strings. CQL.jl also provides Julia-native macros. Here is how the PropertyGraph and TripleStore schemas look using the DSL, along with a schema colimit to merge them:</p>
 <div id="38" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1076,7 +1076,18 @@ Attributes (equated pairs share one entity):
 TripleStore entities: DataTriple, ObjTriple, Resource</code></pre>
 </div>
 </div>
-<p>Note: The <code>schema_colimit</code> (unified view), mappings with <code>lambda</code> expressions (<code>ToTriples</code>, <code>ToReified</code>), and sigma/delta migrations still require the <code>cql"""..."""</code> or <code>run_program</code> syntax. The DSL covers individual schema and instance definitions.</p>
+<p>The <code>@schema_colimit</code> macro can merge the two paradigms by identifying corresponding entities:</p>
+<div id="40" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Unified = @schema_colimit Ty begin</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="co">#     @schemas PropertyGraph, TripleStore</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="co">#     PropertyGraph.PGNode == TripleStore.Resource</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="co">#     PropertyGraph.PGEdge == TripleStore.ObjTriple</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     PropertyGraph.PGProp == TripleStore.DataTriple</span></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a><span class="co"># end</span></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: @schema_colimit supports entity equations.</span></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Observation equations (e.g., node_id == uri) still require cql syntax.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Note: Mappings with <code>lambda</code> expressions (<code>ToTriples</code>, <code>ToReified</code>) and observation equations in colimits still require the <code>cql"""..."""</code> or <code>run_program</code> syntax. The DSL covers schema and instance definitions, plus entity-level schema colimits.</p>
 </section>
 
 </main>

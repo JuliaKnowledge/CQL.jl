@@ -648,8 +648,8 @@ enough to prove the theorem (that the output satisfies `T`).
 ## Julia DSL
 
 The examples above use the `cql"""..."""` string macro. CQL.jl also
-provides Julia-native macros. Here is how the source and target schemas
-look using the DSL:
+provides Julia-native macros. Here is how the source and target schemas,
+plus the query, look using the DSL:
 
 ``` julia
 using CQL
@@ -680,6 +680,24 @@ T = @schema Ty begin
     @path_eq Department  secretary.worksIn == Department
 end
 
+# The @query macro expresses the where-clauses that form the inductive hypothesis
+good1 = @query S → T begin
+    @entity Employee begin
+        @from e => Employee
+        @where e.manager == e
+        @where e.worksIn.secretary == e
+        first => e.first
+        @fkeys manager => (e => e.manager), worksIn => (d => e.worksIn)
+    end
+    @entity Department begin
+        @from d => Department
+        @where d.secretary.worksIn == d
+        @where d.secretary.manager == d.secretary
+        name => d.name
+        @fkeys secretary => (e => d.secretary)
+    end
+end
+
 println("Schema S path equations: ", length(S.path_eqs))
 println("Schema T path equations: ", length(T.path_eqs))
 ```
@@ -687,9 +705,11 @@ println("Schema T path equations: ", length(T.path_eqs))
     Schema S path equations: 0
     Schema T path equations: 2
 
-The query `good1` with its where-clauses can also be expressed using the
-`@query` macro. The `@path_eq` declarations enforce the business rules
-at the schema level.
+The `@path_eq` declarations enforce the business rules at the schema
+level. The `@query` macro with its `@where` clauses forms the inductive
+hypothesis that guarantees closure: selected employees must be
+self-managing secretaries of their own department, and selected
+departments must have self-managing secretaries.
 
 ## Summary
 

@@ -445,8 +445,8 @@ structure — just a shorter path.
 ## Julia DSL
 
 The examples above use the `cql"""..."""` string macro. CQL.jl also
-provides Julia-native macros. Here is how the Schools schema looks using
-the DSL:
+provides Julia-native macros. Here is how the Schools schema and the
+joinless query look using the DSL:
 
 ``` julia
 using CQL
@@ -468,6 +468,22 @@ Schools = @schema Ty begin
     deptName : Dept ⇒ String
 end
 
+PersonFlat = @schema Ty begin
+    @entities Person
+    lastName : Person ⇒ String
+    schoolName : Person ⇒ String
+end
+
+# The @query macro supports dot-path FK chain navigation in @where and @return
+BiggestDeptIsMath = @query Schools → PersonFlat begin
+    @entity Person begin
+        @from p => Person
+        @where p.instituteOf.biggestDept.deptName == Mathematics
+        lastName => p.lastName
+        schoolName => p.instituteOf.schoolName
+    end
+end
+
 println("Entities: ", Schools.ens)
 println("Foreign keys: ", collect(keys(Schools.fks)))
 ```
@@ -475,10 +491,10 @@ println("Foreign keys: ", collect(keys(Schools.fks)))
     Entities: Set([:Dept, :School, :Person])
     Foreign keys: [:biggestDept, :instituteOf, :deptOf]
 
-The query `BiggestDeptIsMath` with its FK chain navigation
-(`p.instituteOf.biggestDept.deptName = Mathematics`) can also be defined
-using the `@query` macro, where the dot notation in `@where` clauses
-maps directly to CQL’s FK dereferencing.
+The `@where` clause uses dot-path notation
+(`p.instituteOf.biggestDept.deptName`) to follow the FK chain directly,
+and the attribute return `p.instituteOf.schoolName` follows one FK then
+reads an attribute — no joins needed.
 
 ## Summary
 

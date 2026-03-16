@@ -558,7 +558,7 @@ Morrisett    | Harvard</code></pre>
 </section>
 <section id="julia-dsl" class="level2">
 <h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
-<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros. Here is how the Schools schema looks using the DSL:</p>
+<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros. Here is how the Schools schema and the joinless query look using the DSL:</p>
 <div id="14" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -579,14 +579,30 @@ Morrisett    | Harvard</code></pre>
 <span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    deptName <span class="op">:</span> Dept <span class="op">⇒</span> <span class="dt">String</span></span>
 <span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
 <span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, Schools.ens)</span>
-<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(Schools.fks)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>PersonFlat <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Person</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>    lastName <span class="op">:</span> Person <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>    schoolName <span class="op">:</span> Person <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a><span class="co"># The @query macro supports dot-path FK chain navigation in @where and @return</span></span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>BiggestDeptIsMath <span class="op">=</span> <span class="pp">@query</span> Schools <span class="op">→</span> PersonFlat <span class="cf">begin</span></span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entity</span> Person <span class="cf">begin</span></span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@from</span> p <span class="op">=&gt;</span> Person</span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@where</span> p.instituteOf.biggestDept.deptName <span class="op">==</span> Mathematics</span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>        lastName <span class="op">=&gt;</span> p.lastName</span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>        schoolName <span class="op">=&gt;</span> p.instituteOf.schoolName</span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, Schools.ens)</span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(Schools.fks)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Entities: Set([:Dept, :School, :Person])
 Foreign keys: [:biggestDept, :instituteOf, :deptOf]</code></pre>
 </div>
 </div>
-<p>The query <code>BiggestDeptIsMath</code> with its FK chain navigation (<code>p.instituteOf.biggestDept.deptName = Mathematics</code>) can also be defined using the <code>@query</code> macro, where the dot notation in <code>@where</code> clauses maps directly to CQL’s FK dereferencing.</p>
+<p>The <code>@where</code> clause uses dot-path notation (<code>p.instituteOf.biggestDept.deptName</code>) to follow the FK chain directly, and the attribute return <code>p.instituteOf.schoolName</code> follows one FK then reads an attribute — no joins needed.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

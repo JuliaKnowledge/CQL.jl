@@ -594,8 +594,8 @@ satisfies the path equation, because the where-clause
 ## Julia DSL
 
 The examples above use the `cql"""..."""` string macro. CQL.jl also
-provides Julia-native macros. Here is how the University schema and
-findMatches query look using the DSL:
+provides Julia-native macros. Here is how the University schema,
+AdvisorMatches schema, and findMatches query look using the DSL:
 
 ``` julia
 using CQL
@@ -627,6 +627,29 @@ AdvisorMatches = @schema Ty begin
     @path_eq Match  studentOf.majoringIn == professorOf.worksIn
 end
 
+# The @query macro supports multi-variable from and where clauses
+findMatches = @query University → AdvisorMatches begin
+    @entity Department begin
+        @from d => Department
+        deptName => d.deptName
+    end
+    @entity Professor begin
+        @from p => Professor
+        profName => p.profName
+        @fkeys worksIn => (d => p.worksIn)
+    end
+    @entity Student begin
+        @from s => Student
+        studName => s.studName
+        @fkeys majoringIn => (d => s.majoringIn)
+    end
+    @entity Match begin
+        @from p => Professor, s => Student
+        @where p.worksIn == s.majoringIn
+        @fkeys professorOf => (p => p), studentOf => (s => s)
+    end
+end
+
 println("University entities: ", University.ens)
 println("AdvisorMatches path equations: ", length(AdvisorMatches.path_eqs))
 ```
@@ -634,8 +657,10 @@ println("AdvisorMatches path equations: ", length(AdvisorMatches.path_eqs))
     University entities: Set([:Professor, :Department, :Student])
     AdvisorMatches path equations: 1
 
-Note: The `@query` macro can be used to define the findMatches query as
-well; the multi-variable from-where pattern works the same way.
+The `Match` entity block binds two source variables (`p` and `s`) with a
+`@where` clause that filters by shared department — the CQL equivalent
+of a SQL join. The `@fkeys` block maps each target foreign key to the
+corresponding source term.
 
 ## Summary
 

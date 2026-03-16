@@ -885,7 +885,7 @@ PersonE     R460    area_17_12  rent_350  AC_R460     kwh_125   TUC_R460    temp
 </section>
 <section id="julia-dsl" class="level2">
 <h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
-<p>The examples above use <code>run_program</code> with CQL source strings. CQL.jl also provides Julia-native macros. The individual schemas (IFC, BRICK, REC) can be defined using the DSL:</p>
+<p>The examples above use <code>run_program</code> with CQL source strings. CQL.jl also provides Julia-native macros. The individual schemas (IFC, BRICK, REC) can be defined using the DSL, and the <code>@schema_colimit</code> macro can merge them:</p>
 <div id="24" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -923,7 +923,33 @@ PersonE     R460    area_17_12  rent_350  AC_R460     kwh_125   TUC_R460    temp
 BRICK entities: Set([:Point, :Location, :Equipment])</code></pre>
 </div>
 </div>
-<p>Note: The <code>schema_colimit</code>, <code>getSchema</code>, <code>getMapping</code>, <code>coproduct</code>, <code>constraints</code>, and <code>chase</code> operations used for merging IFC and BRICK schemas still require the <code>cql"""..."""</code> or <code>run_program</code> syntax. The DSL covers individual schema and instance definitions.</p>
+<p>The <code>@schema_colimit</code> macro merges schemas by identifying shared entities:</p>
+<div id="26" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># @schema_colimit merges schemas with entity equations</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co"># C = @schema_colimit Ty begin</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co">#     @schemas IFC, BRICK</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co">#     IFC.IfcSpace == BRICK.Location</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     IFC.IfcElement == BRICK.Equipment</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="co"># end</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: @schema_colimit supports entity equations but not attribute equations.</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Attribute observation equations still require cql syntax.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The <code>@constraints</code> macro expresses equality-generating dependencies for the chase:</p>
+<div id="28" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Constraints use a string argument for the constraint body:</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co"># DeviceIdRule = @constraints Combined """</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co">#     forall s:Sensor</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co">#     -&gt; where timeseriesId(hasPoint(sensorAttachedTo(s))) = deviceId(hasPropertySet(s))</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="co"># """</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Once schemas are merged and mappings obtained, the functional API provides concise migration operators:</p>
+<div id="30" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Σ(IfcM)(IfcData)          — push IFC data into combined schema</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Σ(BrickM)(BrickData)      — push BRICK data into combined schema</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co"># coproduct(I_ifc, I_brick) — merge migrated instances</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co"># distinct(Merged)           — merge provably equal elements</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Note: The <code>getSchema</code>, <code>getMapping</code>, observation equations in colimits, and <code>chase</code> operations still require the <code>cql"""..."""</code> or <code>run_program</code> syntax. Lambda expressions in mappings also require cql syntax.</p>
 <section id="references" class="level3">
 <h3 class="anchored" data-anchor-id="references">References</h3>
 <ul>

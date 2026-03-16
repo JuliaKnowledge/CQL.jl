@@ -648,7 +648,15 @@ Person: 5 records
 Likes: 4</code></pre>
 </div>
 </div>
-<p>Note: The sigma migration and mapping with <code>lambda</code> expressions (used for the <code>FindConnections</code> and <code>Merge</code> mappings above) still require the <code>cql"""..."""</code> string syntax. The DSL covers typesides, schemas, and instances.</p>
+<p>Once a mapping <code>F</code> is obtained via cql syntax, the functional API provides concise sigma and distinct operations:</p>
+<div id="22" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Σ(F)(I) pushes an instance forward along a mapping</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co"># distinct(I) merges provably equal elements in an instance</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="co"># These work with any mapping/instance, e.g.:</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   connections = Σ(FindConnections)(SimpsonsLikes)</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="co">#   deduped = distinct(connections)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Note: Mappings with <code>lambda</code> expressions (used for the <code>FindConnections</code> and <code>Merge</code> mappings above) still require the <code>cql"""..."""</code> string syntax. The DSL covers typesides, schemas, and instances. The functional API (<code>Σ(F)(I)</code>, <code>distinct(I)</code>) works with any mapping or instance object.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

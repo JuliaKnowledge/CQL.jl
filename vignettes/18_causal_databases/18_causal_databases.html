@@ -1153,7 +1153,7 @@ Surviving edges under do-cut: 12
 </section>
 <section id="julia-dsl" class="level2">
 <h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
-<p>The examples above use <code>run_program</code> with CQL source strings. CQL.jl also provides Julia-native macros. Here is how the CausalAtlas schema looks using the DSL:</p>
+<p>The examples above use <code>run_program</code> with CQL source strings. CQL.jl also provides Julia-native macros. Here is how the CausalAtlas schema and several operations look using the DSL:</p>
 <div id="48" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1187,7 +1187,22 @@ Foreign keys: 3
 Attributes: 10</code></pre>
 </div>
 </div>
-<p>Note: CSV import (<code>import_csv</code>), <code>constraints</code> + <code>chase</code>, <code>schema_colimit</code>, and mappings with attribute remapping (used in sigma migrations for ontology alignment) still require the <code>cql"""..."""</code> or <code>run_program</code> syntax. The DSL covers typeside, schema, and instance definitions. Queries for causal hub effects and backbone extraction can be expressed using the <code>@query</code> macro.</p>
+<p>The DSL supports schema colimits, constraints, and functional operators used in this vignette:</p>
+<div id="50" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Schema colimit merges causal atlases from different domains:</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Merged = @schema_colimit Ty begin</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="co">#     @schemas EpiAtlas, GenomicAtlas</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="co">#     EpiAtlas.Node == GenomicAtlas.Node</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     EpiAtlas.Edge == GenomicAtlas.Edge</span></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a><span class="co"># end</span></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Coproduct combines data from independent atlas sources:</span></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a><span class="co">#   combined = coproduct(Atlas_A, Atlas_B)</span></span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Sigma pushes data forward along ontology alignment mappings:</span></span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a><span class="co">#   Σ(ToOnto)(EpiAtlas)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Note: CSV import (<code>import_csv</code>), mappings with attribute remapping (used in sigma migrations for ontology alignment), and observation equations in schema colimits still require the <code>cql"""..."""</code> or <code>run_program</code> syntax. The DSL covers typeside, schema, instance, query, transform, constraint, and schema colimit (entity equations only) definitions. Queries for causal hub effects and backbone extraction can be expressed using the <code>@query</code> macro.</p>
 <p><strong>The key insight is that CQL doesn’t replace SQL — it operates at a higher level of abstraction.</strong> SQL is the workhorse for flat queries over existing tables. CQL provides the <em>structural guarantees</em> that SQL cannot: provably correct schema merges, composable multi-step queries, automatically generated Skolem placeholders for missing data, and formal version tracking between atlas snapshots.</p>
 <p>For causal databases specifically, CQL’s categorical foundation aligns naturally with the structure of causal reasoning:</p>
 <ul>

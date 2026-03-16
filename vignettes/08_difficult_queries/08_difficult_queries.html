@@ -718,7 +718,7 @@ All path equations satisfied: true</code></pre>
 </section>
 <section id="julia-dsl" class="level2">
 <h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
-<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros. Here is how the source and target schemas look using the DSL:</p>
+<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros. Here is how the source and target schemas, plus the query, look using the DSL:</p>
 <div id="24" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -748,14 +748,32 @@ All path equations satisfied: true</code></pre>
 <span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@path_eq</span> Department  secretary.worksIn <span class="op">==</span> Department</span>
 <span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
 <span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Schema S path equations: "</span>, <span class="fu">length</span>(S.path_eqs))</span>
-<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Schema T path equations: "</span>, <span class="fu">length</span>(T.path_eqs))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a><span class="co"># The @query macro expresses the where-clauses that form the inductive hypothesis</span></span>
+<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a>good1 <span class="op">=</span> <span class="pp">@query</span> S <span class="op">→</span> T <span class="cf">begin</span></span>
+<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entity</span> Employee <span class="cf">begin</span></span>
+<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@from</span> <span class="cn">e</span> <span class="op">=&gt;</span> Employee</span>
+<span id="cb23-33"><a href="#cb23-33" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@where</span> <span class="cn">e</span>.manager <span class="op">==</span> <span class="cn">e</span></span>
+<span id="cb23-34"><a href="#cb23-34" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@where</span> <span class="cn">e</span>.worksIn.secretary <span class="op">==</span> <span class="cn">e</span></span>
+<span id="cb23-35"><a href="#cb23-35" aria-hidden="true" tabindex="-1"></a>        first <span class="op">=&gt;</span> <span class="cn">e</span>.first</span>
+<span id="cb23-36"><a href="#cb23-36" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@fkeys</span> manager <span class="op">=&gt;</span> (<span class="cn">e</span> <span class="op">=&gt;</span> <span class="cn">e</span>.manager), worksIn <span class="op">=&gt;</span> (d <span class="op">=&gt;</span> <span class="cn">e</span>.worksIn)</span>
+<span id="cb23-37"><a href="#cb23-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb23-38"><a href="#cb23-38" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entity</span> Department <span class="cf">begin</span></span>
+<span id="cb23-39"><a href="#cb23-39" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@from</span> d <span class="op">=&gt;</span> Department</span>
+<span id="cb23-40"><a href="#cb23-40" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@where</span> d.secretary.worksIn <span class="op">==</span> d</span>
+<span id="cb23-41"><a href="#cb23-41" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@where</span> d.secretary.manager <span class="op">==</span> d.secretary</span>
+<span id="cb23-42"><a href="#cb23-42" aria-hidden="true" tabindex="-1"></a>        name <span class="op">=&gt;</span> d.name</span>
+<span id="cb23-43"><a href="#cb23-43" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@fkeys</span> secretary <span class="op">=&gt;</span> (<span class="cn">e</span> <span class="op">=&gt;</span> d.secretary)</span>
+<span id="cb23-44"><a href="#cb23-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb23-45"><a href="#cb23-45" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb23-46"><a href="#cb23-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-47"><a href="#cb23-47" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Schema S path equations: "</span>, <span class="fu">length</span>(S.path_eqs))</span>
+<span id="cb23-48"><a href="#cb23-48" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Schema T path equations: "</span>, <span class="fu">length</span>(T.path_eqs))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Schema S path equations: 0
 Schema T path equations: 2</code></pre>
 </div>
 </div>
-<p>The query <code>good1</code> with its where-clauses can also be expressed using the <code>@query</code> macro. The <code>@path_eq</code> declarations enforce the business rules at the schema level.</p>
+<p>The <code>@path_eq</code> declarations enforce the business rules at the schema level. The <code>@query</code> macro with its <code>@where</code> clauses forms the inductive hypothesis that guarantees closure: selected employees must be self-managing secretaries of their own department, and selected departments must have self-managing secretaries.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

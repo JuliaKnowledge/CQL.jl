@@ -578,10 +578,22 @@ println("Likes: ", length(carrier(SimpsonsLikes.algebra, :Like)))
     Persons: 6
     Likes: 4
 
-Note: The sigma migration and mapping with `lambda` expressions (used
-for the `FindConnections` and `Merge` mappings above) still require the
-`cql"""..."""` string syntax. The DSL covers typesides, schemas, and
-instances.
+Once a mapping `F` is obtained via cql syntax, the functional API
+provides concise sigma and distinct operations:
+
+``` julia
+# Σ(F)(I) pushes an instance forward along a mapping
+# distinct(I) merges provably equal elements in an instance
+# These work with any mapping/instance, e.g.:
+#   connections = Σ(FindConnections)(SimpsonsLikes)
+#   deduped = distinct(connections)
+```
+
+Note: Mappings with `lambda` expressions (used for the `FindConnections`
+and `Merge` mappings above) still require the `cql"""..."""` string
+syntax. The DSL covers typesides, schemas, and instances. The functional
+API (`Σ(F)(I)`, `distinct(I)`) works with any mapping or instance
+object.
 
 ## Summary
 

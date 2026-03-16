@@ -834,7 +834,7 @@ management needs.
 
 ## Julia DSL
 
-The examples above use `run_program` with CQL source strings. CQL.jl also provides Julia-native macros. Here is how the Ecosystem schema looks using the DSL:
+The examples above use `run_program` with CQL source strings. CQL.jl also provides Julia-native macros. Here is how the Ecosystem schema and several operations look using the DSL:
 
 ```{julia}
 using CQL
@@ -868,7 +868,28 @@ println("Foreign keys: ", length(Ecosystem.fks))
 println("Attributes: ", length(Ecosystem.atts))
 ```
 
-Note: CSV import (`import_csv`), `constraints` + `chase`, `coeval`, `schema_colimit`, and mappings with `lambda` expressions (used in the delta migration) still require the `cql"""..."""` or `run_program` syntax. The DSL covers typeside, schema, and instance definitions. Queries defined via `@query` can express the site and method filters shown above.
+The DSL also supports constraints, schema colimits, and functional operators used in this vignette:
+
+```{julia}
+#| output: false
+# Constraints enforce ecological rules (e.g., every species needs a habitat):
+# HabitatRequired = @constraints BioInventory """
+#     forall s:Species -> exists hr:HabitatRecord where hr.species = s
+# """
+
+# Schema colimit merges monitoring programme schemas:
+# Biodiversity = @schema_colimit Ty begin
+#     @schemas MarineSurvey, ConservationDB
+#     # Entity equations would identify shared concepts here
+# end
+
+# Functional API for data migration and merging:
+#   Σ(AlignUni)(UniData)           — sigma pushforward
+#   coproduct(StdUni, StdGov)      — merge aligned datasets
+#   distinct(Combined)              — merge provably equal elements
+```
+
+Note: CSV import (`import_csv`), `coeval`, and mappings with `lambda` expressions (used in the delta migration for flat reports) still require the `cql"""..."""` or `run_program` syntax. The DSL covers typeside, schema, instance, query, transform, constraint, and schema colimit definitions. Queries defined via `@query` can express the site and method filters shown above.
 
 ## Summary
 

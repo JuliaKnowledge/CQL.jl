@@ -964,7 +964,8 @@ in the process.
 
 The examples above use `run_program` with CQL source strings. CQL.jl
 also provides Julia-native macros. Here is how the PropertyGraph and
-TripleStore schemas look using the DSL:
+TripleStore schemas look using the DSL, along with a schema colimit to
+merge them:
 
 ``` julia
 using CQL
@@ -1002,7 +1003,21 @@ println("TripleStore entities: ", join(sort(collect(TripleStore.ens)), ", "))
     PropertyGraph entities: PGEdge, PGNode, PGProp
     TripleStore entities: DataTriple, ObjTriple, Resource
 
-Note: The `schema_colimit` (unified view), mappings with `lambda`
-expressions (`ToTriples`, `ToReified`), and sigma/delta migrations still
-require the `cql"""..."""` or `run_program` syntax. The DSL covers
-individual schema and instance definitions.
+The `@schema_colimit` macro can merge the two paradigms by identifying
+corresponding entities:
+
+``` julia
+# Unified = @schema_colimit Ty begin
+#     @schemas PropertyGraph, TripleStore
+#     PropertyGraph.PGNode == TripleStore.Resource
+#     PropertyGraph.PGEdge == TripleStore.ObjTriple
+#     PropertyGraph.PGProp == TripleStore.DataTriple
+# end
+# Note: @schema_colimit supports entity equations.
+# Observation equations (e.g., node_id == uri) still require cql syntax.
+```
+
+Note: Mappings with `lambda` expressions (`ToTriples`, `ToReified`) and
+observation equations in colimits still require the `cql"""..."""` or
+`run_program` syntax. The DSL covers schema and instance definitions,
+plus entity-level schema colimits.

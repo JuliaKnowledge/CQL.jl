@@ -847,7 +847,21 @@ Full round-trip: J -&gt; delta -&gt; sigma recovers 3 elements</code></pre>
 Department carrier: 2</code></pre>
 </div>
 </div>
-<p>Note: Mappings with <code>lambda</code> expressions (as used in the Delta/Sigma examples above) still require the <code>cql"""..."""</code> string syntax. The DSL covers typesides, schemas, instances, and queries, but not lambda-based attribute mappings.</p>
+<p>The DSL also supports queries and functional data migration operators. Here is the delta query from the uber-flower section, plus the functional API for delta and sigma:</p>
+<div id="22" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a query using @query</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>D <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> N</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    name <span class="op">:</span> N <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    salary <span class="op">:</span> N <span class="op">⇒</span> <span class="dt">Integer</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    age <span class="op">:</span> N <span class="op">⇒</span> <span class="dt">Integer</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Queries are callable: Q(I) evaluates the query on instance I</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Delta and Sigma use the functional API: Δ(F)(I) and Σ(F)(I)</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="co"># where F is a mapping defined via cql syntax</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Note: Mappings with <code>lambda</code> expressions (as used in the Delta/Sigma examples above) still require the <code>cql"""..."""</code> string syntax. The DSL covers typesides, schemas, instances, queries, and transforms. Once a mapping <code>F</code> is obtained (via cql syntax), the functional API provides concise operators: <code>Δ(F)(I)</code> for delta, <code>Σ(F)(I)</code> for sigma, and <code>Q(I)</code> for query evaluation.</p>
 </section>
 <section id="why-cql-comparing-with-sql-and-sparql" class="level2">
 <h2 class="anchored" data-anchor-id="why-cql-comparing-with-sql-and-sparql">Why CQL? Comparing with SQL and SPARQL</h2>

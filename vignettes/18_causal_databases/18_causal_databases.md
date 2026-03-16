@@ -1054,7 +1054,7 @@ is consistent.
 
 The examples above use `run_program` with CQL source strings. CQL.jl
 also provides Julia-native macros. Here is how the CausalAtlas schema
-looks using the DSL:
+and several operations look using the DSL:
 
 ``` julia
 using CQL
@@ -1089,12 +1089,31 @@ println("Attributes: ", length(CausalAtlas.atts))
     Foreign keys: 3
     Attributes: 10
 
-Note: CSV import (`import_csv`), `constraints` + `chase`,
-`schema_colimit`, and mappings with attribute remapping (used in sigma
-migrations for ontology alignment) still require the `cql"""..."""` or
-`run_program` syntax. The DSL covers typeside, schema, and instance
-definitions. Queries for causal hub effects and backbone extraction can
-be expressed using the `@query` macro.
+The DSL supports schema colimits, constraints, and functional operators
+used in this vignette:
+
+``` julia
+# Schema colimit merges causal atlases from different domains:
+# Merged = @schema_colimit Ty begin
+#     @schemas EpiAtlas, GenomicAtlas
+#     EpiAtlas.Node == GenomicAtlas.Node
+#     EpiAtlas.Edge == GenomicAtlas.Edge
+# end
+
+# Coproduct combines data from independent atlas sources:
+#   combined = coproduct(Atlas_A, Atlas_B)
+
+# Sigma pushes data forward along ontology alignment mappings:
+#   Σ(ToOnto)(EpiAtlas)
+```
+
+Note: CSV import (`import_csv`), mappings with attribute remapping (used
+in sigma migrations for ontology alignment), and observation equations
+in schema colimits still require the `cql"""..."""` or `run_program`
+syntax. The DSL covers typeside, schema, instance, query, transform,
+constraint, and schema colimit (entity equations only) definitions.
+Queries for causal hub effects and backbone extraction can be expressed
+using the `@query` macro.
 
 **The key insight is that CQL doesn’t replace SQL — it operates at a
 higher level of abstraction.** SQL is the workhorse for flat queries
