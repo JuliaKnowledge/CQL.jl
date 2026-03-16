@@ -901,6 +901,41 @@ single entity with a shared location name attribute, while keeping `FluCase` and
 epidemiological properties). The Sigma + Coproduct pipeline then pushed both datasets
 into this unified schema.
 
+## Julia DSL
+
+The examples above use `run_program` with CQL source strings. CQL.jl also provides Julia-native macros. Here is how the Epi schema looks using the DSL:
+
+```{julia}
+using CQL
+
+Ty = @typeside begin
+    String::Ty
+end
+
+Epi = @schema Ty begin
+    @entities Patient, Case, Location, Pathogen
+    patient : Case → Patient
+    location : Case → Location
+    pathogen : Case → Pathogen
+    name : Patient ⇒ String
+    age_group : Patient ⇒ String
+    vaccinated : Patient ⇒ String
+    risk : Patient ⇒ String
+    severity : Case ⇒ String
+    onset : Case ⇒ String
+    symptoms : Case ⇒ String
+    loc_name : Location ⇒ String
+    loc_type : Location ⇒ String
+    path_name : Pathogen ⇒ String
+end
+
+println("Epi entities: ", sort(collect(Epi.ens)))
+println("Foreign keys: ", length(Epi.fks))
+println("Attributes: ", length(Epi.atts))
+```
+
+Note: CSV import (`import_csv`), `constraints` + `chase`, `coeval`, `schema_colimit`, and mappings with `lambda` expressions (used in the delta migration for flat reports) still require the `cql"""..."""` or `run_program` syntax. The DSL covers typeside, schema, and instance definitions. Queries for filtering cases (severe, hospital, flu, care home) can be expressed using the `@query` macro.
+
 ## Summary
 
 This vignette demonstrated nine CQL operations applied to outbreak surveillance data:

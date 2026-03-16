@@ -436,6 +436,42 @@ println("  FKs must satisfy business rules")
 
 The unconstrained schema accepts *any* combination of manager, worksIn, and secretary assignments. The constrained schema only accepts data where managers share their employee's department and secretaries work in their department. This is the difference between a raw relational schema and one with enforced business logic.
 
+## Julia DSL
+
+The examples above use the `cql"""..."""` string macro. CQL.jl also provides Julia-native macros. Here is how the BossDB schema and instance look using the DSL:
+
+```{julia}
+using CQL
+
+Ty = @typeside begin
+    String::Ty
+    Al::String; Bob::String; Carl::String
+end
+
+BossDB = @schema Ty begin
+    @entities Person
+    boss : Person → Person
+    name : Person ⇒ String
+    @path_eq Person  boss.boss == boss
+end
+
+I = @instance BossDB begin
+    a::Person; b::Person; c::Person
+    name(a) == Al; name(b) == Bob; name(c) == Carl
+    boss(a) == b; boss(b) == b; boss(c) == c
+end
+
+alg = I.algebra
+for x in carrier(alg, :Person)
+    nm = eval_att(alg, :name, x)
+    b = eval_fk(alg, :boss, x)
+    bnm = eval_att(alg, :name, b)
+    println("  $nm: boss = $bnm")
+end
+```
+
+The `@path_eq` macro declares path equations using dot notation and `==`, directly matching the CQL `path_equations` syntax.
+
 ## Summary
 
 | Concept | Description |

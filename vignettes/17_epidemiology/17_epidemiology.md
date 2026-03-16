@@ -38,6 +38,7 @@ Simon Frost
   Properties](#11-unit-and-counit-round-trip-migration-properties)
 - [12. Schema Colimit: Integrating Surveillance
   Systems](#12-schema-colimit-integrating-surveillance-systems)
+- [Julia DSL](#julia-dsl)
 - [Summary](#summary)
 
 ## Introduction
@@ -1126,6 +1127,52 @@ while keeping `FluCase` and `CovidCase` as separate entity types (since
 flu and COVID cases have different epidemiological properties). The
 Sigma + Coproduct pipeline then pushed both datasets into this unified
 schema.
+
+## Julia DSL
+
+The examples above use `run_program` with CQL source strings. CQL.jl
+also provides Julia-native macros. Here is how the Epi schema looks
+using the DSL:
+
+``` julia
+using CQL
+
+Ty = @typeside begin
+    String::Ty
+end
+
+Epi = @schema Ty begin
+    @entities Patient, Case, Location, Pathogen
+    patient : Case → Patient
+    location : Case → Location
+    pathogen : Case → Pathogen
+    name : Patient ⇒ String
+    age_group : Patient ⇒ String
+    vaccinated : Patient ⇒ String
+    risk : Patient ⇒ String
+    severity : Case ⇒ String
+    onset : Case ⇒ String
+    symptoms : Case ⇒ String
+    loc_name : Location ⇒ String
+    loc_type : Location ⇒ String
+    path_name : Pathogen ⇒ String
+end
+
+println("Epi entities: ", sort(collect(Epi.ens)))
+println("Foreign keys: ", length(Epi.fks))
+println("Attributes: ", length(Epi.atts))
+```
+
+    Epi entities: [:Case, :Location, :Pathogen, :Patient]
+    Foreign keys: 3
+    Attributes: 10
+
+Note: CSV import (`import_csv`), `constraints` + `chase`, `coeval`,
+`schema_colimit`, and mappings with `lambda` expressions (used in the
+delta migration for flat reports) still require the `cql"""..."""` or
+`run_program` syntax. The DSL covers typeside, schema, and instance
+definitions. Queries for filtering cases (severe, hospital, flu, care
+home) can be expressed using the `@query` macro.
 
 ## Summary
 

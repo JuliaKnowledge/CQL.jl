@@ -108,6 +108,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#why-sql-struggles" id="toc-why-sql-struggles" class="nav-link" data-scroll-target="#why-sql-struggles">Why SQL Struggles</a></li>
   <li><a href="#the-interactive-development-process" id="toc-the-interactive-development-process" class="nav-link" data-scroll-target="#the-interactive-development-process">The Interactive Development Process</a></li>
   </ul></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 </nav>
@@ -714,6 +715,47 @@ All path equations satisfied: true</code></pre>
 </ol>
 <p>This is analogous to interactive theorem proving: the user proposes lemmas (where-clauses), and the system checks whether they are strong enough to prove the theorem (that the output satisfies <code>T</code>).</p>
 </section>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros. Here is how the source and target schemas look using the DSL:</p>
+<div id="24" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>Ty <span class="op">=</span> <span class="pp">@typeside</span> <span class="cf">begin</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">String</span><span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    Alan<span class="op">::</span><span class="dt">String</span>; Camille<span class="op">::</span><span class="dt">String</span>; Audrey<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Applied Math"</span><span class="op">::</span><span class="dt">String</span>; <span class="st">"Pure Math"</span><span class="op">::</span><span class="dt">String</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>S <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Employee, Department</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>    manager <span class="op">:</span> Employee <span class="op">→</span> Employee</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>    worksIn <span class="op">:</span> Employee <span class="op">→</span> Department</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>    secretary <span class="op">:</span> Department <span class="op">→</span> Employee</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    first <span class="op">:</span> Employee <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    name <span class="op">:</span> Department <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>T <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Employee, Department</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>    manager <span class="op">:</span> Employee <span class="op">→</span> Employee</span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>    worksIn <span class="op">:</span> Employee <span class="op">→</span> Department</span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>    secretary <span class="op">:</span> Department <span class="op">→</span> Employee</span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>    first <span class="op">:</span> Employee <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>    name <span class="op">:</span> Department <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@path_eq</span> Employee  manager.worksIn <span class="op">==</span> worksIn</span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@path_eq</span> Department  secretary.worksIn <span class="op">==</span> Department</span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Schema S path equations: "</span>, <span class="fu">length</span>(S.path_eqs))</span>
+<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Schema T path equations: "</span>, <span class="fu">length</span>(T.path_eqs))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Schema S path equations: 0
+Schema T path equations: 2</code></pre>
+</div>
+</div>
+<p>The query <code>good1</code> with its where-clauses can also be expressed using the <code>@query</code> macro. The <code>@path_eq</code> declarations enforce the business rules at the schema level.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

@@ -607,6 +607,46 @@ This vignette demonstrated the categorical approach to building data integration
 
 The key advantage is **compositional scaling**: adding a new schema (e.g., REC) requires only one mapping into the colimit, not separate mappings to every existing schema. The BRICK--REC relationship emerges automatically through the shared `Location` entity, enabling cross-ontology queries (like tenant billing) without explicit BRICK--REC integration code.
 
+## Julia DSL
+
+The examples above use `run_program` with CQL source strings. CQL.jl also provides Julia-native macros. The individual schemas (IFC, BRICK, REC) can be defined using the DSL:
+
+```{julia}
+using CQL
+
+Ty = @typeside begin
+    Str::Ty
+    R240::Str; R260::Str; R200::Str
+    AC_R240::Str; AC_R260::Str; AC_R200::Str
+    TUC_R240::Str; TUC_R260::Str; TUC_R200::Str
+end
+
+IFC = @schema Ty begin
+    @entities IfcSpace, IfcElement, IfcSensor, IfcPropertySet
+    elementInSpace : IfcElement → IfcSpace
+    sensorAttachedTo : IfcSensor → IfcElement
+    hasPropertySet : IfcSensor → IfcPropertySet
+    spaceName : IfcSpace ⇒ Str
+    spaceArea : IfcSpace ⇒ Str
+    elementName : IfcElement ⇒ Str
+    deviceId : IfcPropertySet ⇒ Str
+end
+
+BRICK = @schema Ty begin
+    @entities Location, Equipment, Point
+    hasLocation : Equipment → Location
+    hasPoint : Equipment → Point
+    locationName : Location ⇒ Str
+    equipmentName : Equipment ⇒ Str
+    timeseriesId : Point ⇒ Str
+end
+
+println("IFC entities: ", IFC.ens)
+println("BRICK entities: ", BRICK.ens)
+```
+
+Note: The `schema_colimit`, `getSchema`, `getMapping`, `coproduct`, `constraints`, and `chase` operations used for merging IFC and BRICK schemas still require the `cql"""..."""` or `run_program` syntax. The DSL covers individual schema and instance definitions.
+
 ### References
 
 - Nagy, G. et al. (2025). "A Categorical Approach to Semantic Interoperability across Building Lifecycle." *arXiv:2601.16663*. [https://arxiv.org/abs/2601.16663](https://arxiv.org/abs/2601.16663)

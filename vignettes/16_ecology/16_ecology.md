@@ -31,6 +31,7 @@ Simon Frost
 - [13. Schema Colimit: Integrating Monitoring
   Programmes](#13-schema-colimit-integrating-monitoring-programmes)
 - [Comparison with RDF/SPARQL](#comparison-with-rdfsparql)
+- [Julia DSL](#julia-dsl)
 - [Summary](#summary)
 
 ## Introduction
@@ -1054,6 +1055,55 @@ properties. RDF excels at **graph operations**: transitive food chain
 traversal, rule-based inference, and flexible many-to-many
 relationships. Together, they cover the full spectrum of ecological data
 management needs.
+
+## Julia DSL
+
+The examples above use `run_program` with CQL source strings. CQL.jl
+also provides Julia-native macros. Here is how the Ecosystem schema
+looks using the DSL:
+
+``` julia
+using CQL
+
+Ty = @typeside begin
+    String::Ty
+end
+
+Ecosystem = @schema Ty begin
+    @entities TrophicLevel, Habitat, Species, FeedingLink, SpeciesHabitat, Observation
+    trophic_level : Species → TrophicLevel
+    predator : FeedingLink → Species
+    prey : FeedingLink → Species
+    species : SpeciesHabitat → Species
+    habitat : SpeciesHabitat → Habitat
+    observed_species : Observation → Species
+    level_name : TrophicLevel ⇒ String
+    hab_name : Habitat ⇒ String
+    hab_description : Habitat ⇒ String
+    common_name : Species ⇒ String
+    conservation_status : Species ⇒ String
+    typical_size_cm : Species ⇒ String
+    site_name : Observation ⇒ String
+    count : Observation ⇒ String
+    method : Observation ⇒ String
+    obs_date : Observation ⇒ String
+end
+
+println("Ecosystem entities: ", sort(collect(Ecosystem.ens)))
+println("Foreign keys: ", length(Ecosystem.fks))
+println("Attributes: ", length(Ecosystem.atts))
+```
+
+    Ecosystem entities: [:FeedingLink, :Habitat, :Observation, :Species, :SpeciesHabitat, :TrophicLevel]
+    Foreign keys: 6
+    Attributes: 10
+
+Note: CSV import (`import_csv`), `constraints` + `chase`, `coeval`,
+`schema_colimit`, and mappings with `lambda` expressions (used in the
+delta migration) still require the `cql"""..."""` or `run_program`
+syntax. The DSL covers typeside, schema, and instance definitions.
+Queries defined via `@query` can express the site and method filters
+shown above.
 
 ## Summary
 

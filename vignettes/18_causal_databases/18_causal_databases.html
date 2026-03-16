@@ -105,6 +105,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#transforms-tracking-atlas-evolution" id="toc-transforms-tracking-atlas-evolution" class="nav-link" data-scroll-target="#transforms-tracking-atlas-evolution">10. Transforms: Tracking Atlas Evolution</a></li>
   <li><a href="#counterfactual-reasoning-via-delta-migration" id="toc-counterfactual-reasoning-via-delta-migration" class="nav-link" data-scroll-target="#counterfactual-reasoning-via-delta-migration">11. Counterfactual Reasoning via Delta Migration</a></li>
   <li><a href="#summary-cql-vs-sql-for-causal-databases" id="toc-summary-cql-vs-sql-for-causal-databases" class="nav-link" data-scroll-target="#summary-cql-vs-sql-for-causal-databases">Summary: CQL vs SQL for Causal Databases</a></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a></li>
   </ul>
 <div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="18_causal_databases.md"><i class="bi bi-file-code"></i>Github (GFM)</a></li><li><a href="../../18_causal_databases.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
 </div>
@@ -1149,6 +1150,44 @@ Surviving edges under do-cut: 12
 </tr>
 </tbody>
 </table>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use <code>run_program</code> with CQL source strings. CQL.jl also provides Julia-native macros. Here is how the CausalAtlas schema looks using the DSL:</p>
+<div id="48" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>Ty <span class="op">=</span> <span class="pp">@typeside</span> <span class="cf">begin</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">String</span><span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>CausalAtlas <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Node, Edge, EdgeSupport</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>    src <span class="op">:</span> Edge <span class="op">→</span> Node</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>    dst <span class="op">:</span> Edge <span class="op">→</span> Node</span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>    edge <span class="op">:</span> EdgeSupport <span class="op">→</span> Edge</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>    label <span class="op">:</span> Node <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>    deg_out <span class="op">:</span> Node <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>    deg_in <span class="op">:</span> Node <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>    rel_type <span class="op">:</span> Edge <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>    polarity <span class="op">:</span> Edge <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>    support_lcms <span class="op">:</span> Edge <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>    score_sum <span class="op">:</span> Edge <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>    doc_id <span class="op">:</span> EdgeSupport <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>    lcm_id <span class="op">:</span> EdgeSupport <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>    score_raw <span class="op">:</span> EdgeSupport <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"CausalAtlas entities: "</span>, <span class="fu">sort</span>(<span class="fu">collect</span>(CausalAtlas.ens)))</span>
+<span id="cb36-25"><a href="#cb36-25" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">length</span>(CausalAtlas.fks))</span>
+<span id="cb36-26"><a href="#cb36-26" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Attributes: "</span>, <span class="fu">length</span>(CausalAtlas.atts))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>CausalAtlas entities: [:Edge, :EdgeSupport, :Node]
+Foreign keys: 3
+Attributes: 10</code></pre>
+</div>
+</div>
+<p>Note: CSV import (<code>import_csv</code>), <code>constraints</code> + <code>chase</code>, <code>schema_colimit</code>, and mappings with attribute remapping (used in sigma migrations for ontology alignment) still require the <code>cql"""..."""</code> or <code>run_program</code> syntax. The DSL covers typeside, schema, and instance definitions. Queries for causal hub effects and backbone extraction can be expressed using the <code>@query</code> macro.</p>
 <p><strong>The key insight is that CQL doesn’t replace SQL — it operates at a higher level of abstraction.</strong> SQL is the workhorse for flat queries over existing tables. CQL provides the <em>structural guarantees</em> that SQL cannot: provably correct schema merges, composable multi-step queries, automatically generated Skolem placeholders for missing data, and formal version tracking between atlas snapshots.</p>
 <p>For causal databases specifically, CQL’s categorical foundation aligns naturally with the structure of causal reasoning:</p>
 <ul>

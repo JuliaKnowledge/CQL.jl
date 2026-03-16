@@ -99,6 +99,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </ul></li>
   <li><a href="#cql-vs-sql" id="toc-cql-vs-sql" class="nav-link" data-scroll-target="#cql-vs-sql">CQL vs SQL</a></li>
   <li><a href="#the-query-as-a-functor" id="toc-the-query-as-a-functor" class="nav-link" data-scroll-target="#the-query-as-a-functor">The Query as a Functor</a></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 </nav>
@@ -691,6 +692,48 @@ All matches satisfy path equation: true</code></pre>
 <p>The <code>Match</code> entity block is particularly interesting: it takes the <strong>product</strong> of professors and students (all pairs), then filters by the where-clause. This is exactly a <strong>fiber product</strong> (pullback) over the department — professors and students that map to the same department.</p>
 <pre><code>Match = Professor ×_Department Student</code></pre>
 <p>This categorical interpretation guarantees that the result automatically satisfies the path equation, because the where-clause <code>p.worksIn = s.majoringIn</code> directly enforces it.</p>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros. Here is how the University schema and findMatches query look using the DSL:</p>
+<div id="16" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>Ty <span class="op">=</span> <span class="pp">@typeside</span> <span class="cf">begin</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">String</span><span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Math</span><span class="op">::</span><span class="dt">String</span>; CompSci<span class="op">::</span><span class="dt">String</span>; English<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    Wisnesky<span class="op">::</span><span class="dt">String</span>; Spivak<span class="op">::</span><span class="dt">String</span>; Chlipala<span class="op">::</span><span class="dt">String</span>; Morrisett<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>University <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Professor, Student, Department</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    worksIn <span class="op">:</span> Professor <span class="op">→</span> Department</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    majoringIn <span class="op">:</span> Student <span class="op">→</span> Department</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    profName <span class="op">:</span> Professor <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    studName <span class="op">:</span> Student <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>    deptName <span class="op">:</span> Department <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>AdvisorMatches <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Professor, Student, Department, Match</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>    worksIn <span class="op">:</span> Professor <span class="op">→</span> Department</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>    majoringIn <span class="op">:</span> Student <span class="op">→</span> Department</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    professorOf <span class="op">:</span> Match <span class="op">→</span> Professor</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>    studentOf <span class="op">:</span> Match <span class="op">→</span> Student</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>    profName <span class="op">:</span> Professor <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>    studName <span class="op">:</span> Student <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>    deptName <span class="op">:</span> Department <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@path_eq</span> Match  studentOf.majoringIn <span class="op">==</span> professorOf.worksIn</span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"University entities: "</span>, University.ens)</span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"AdvisorMatches path equations: "</span>, <span class="fu">length</span>(AdvisorMatches.path_eqs))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>University entities: Set([:Professor, :Department, :Student])
+AdvisorMatches path equations: 1</code></pre>
+</div>
+</div>
+<p>Note: The <code>@query</code> macro can be used to define the findMatches query as well; the multi-variable from-where pattern works the same way.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

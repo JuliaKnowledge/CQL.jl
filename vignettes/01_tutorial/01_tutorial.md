@@ -735,6 +735,60 @@ The sigma query `sigmaFAsQuery` says: for each `n1` in `N1`, create an
 `N` element with: - `age` from `age(f(n1))` (follow FK `f` to get the
 age) - `name` from `name(n1)` - `salary` from `salary(n1)`
 
+## Julia DSL
+
+The examples above use the `cql"""..."""` string macro. CQL.jl also
+provides Julia-native macros that offer a more Julian syntax. Here is
+how the typeside, schema, instance, and query from this tutorial look
+using the DSL:
+
+``` julia
+using CQL
+
+Ty = @typeside begin
+    String::Ty
+    Integer::Ty
+    Al::String; Akin::String; Bob::String; Bo::String; Carl::String; Cork::String
+    Math::String; CS::String
+    zero::Integer
+    succ(::Integer)::Integer
+end
+
+S = @schema Ty begin
+    @entities Employee, Department
+    manager : Employee → Employee
+    worksIn : Employee → Department
+    secretary : Department → Employee
+    first : Employee ⇒ String
+    last : Employee ⇒ String
+    age : Employee ⇒ Integer
+    name : Department ⇒ String
+end
+
+I = @instance S begin
+    a::Employee; b::Employee; c::Employee
+    m::Department; s::Department
+    manager(a) == a; manager(b) == c; manager(c) == c
+    worksIn(a) == m; worksIn(b) == s; worksIn(c) == s
+    secretary(m) == a; secretary(s) == c
+    first(a) == Al; first(b) == Bob; first(c) == Carl
+    last(a) == Akin; last(b) == Bo; last(c) == Cork
+    age(a) == succ(zero); age(c) == succ(zero)
+    name(m) == Math; name(s) == CS
+end
+
+println("Employee carrier: ", length(carrier(I.algebra, :Employee)))
+println("Department carrier: ", length(carrier(I.algebra, :Department)))
+```
+
+    Employee carrier: 3
+    Department carrier: 2
+
+Note: Mappings with `lambda` expressions (as used in the Delta/Sigma
+examples above) still require the `cql"""..."""` string syntax. The DSL
+covers typesides, schemas, instances, and queries, but not lambda-based
+attribute mappings.
+
 ## Why CQL? Comparing with SQL and SPARQL
 
 CQL occupies a unique position in the data management landscape. It

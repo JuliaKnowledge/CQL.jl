@@ -479,6 +479,45 @@ A CQL user arrives at `good1` through an interactive process:
 
 This is analogous to interactive theorem proving: the user proposes lemmas (where-clauses), and the system checks whether they are strong enough to prove the theorem (that the output satisfies `T`).
 
+## Julia DSL
+
+The examples above use the `cql"""..."""` string macro. CQL.jl also provides Julia-native macros. Here is how the source and target schemas look using the DSL:
+
+```{julia}
+using CQL
+
+Ty = @typeside begin
+    String::Ty
+    Alan::String; Camille::String; Audrey::String
+    "Applied Math"::String; "Pure Math"::String
+end
+
+S = @schema Ty begin
+    @entities Employee, Department
+    manager : Employee → Employee
+    worksIn : Employee → Department
+    secretary : Department → Employee
+    first : Employee ⇒ String
+    name : Department ⇒ String
+end
+
+T = @schema Ty begin
+    @entities Employee, Department
+    manager : Employee → Employee
+    worksIn : Employee → Department
+    secretary : Department → Employee
+    first : Employee ⇒ String
+    name : Department ⇒ String
+    @path_eq Employee  manager.worksIn == worksIn
+    @path_eq Department  secretary.worksIn == Department
+end
+
+println("Schema S path equations: ", length(S.path_eqs))
+println("Schema T path equations: ", length(T.path_eqs))
+```
+
+The query `good1` with its where-clauses can also be expressed using the `@query` macro. The `@path_eq` declarations enforce the business rules at the schema level.
+
 ## Summary
 
 | Aspect | SQL | CQL |

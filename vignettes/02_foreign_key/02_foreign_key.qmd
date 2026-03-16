@@ -476,6 +476,46 @@ Match = Professor ×_Department Student
 
 This categorical interpretation guarantees that the result automatically satisfies the path equation, because the where-clause `p.worksIn = s.majoringIn` directly enforces it.
 
+## Julia DSL
+
+The examples above use the `cql"""..."""` string macro. CQL.jl also provides Julia-native macros. Here is how the University schema and findMatches query look using the DSL:
+
+```{julia}
+using CQL
+
+Ty = @typeside begin
+    String::Ty
+    Math::String; CompSci::String; English::String
+    Wisnesky::String; Spivak::String; Chlipala::String; Morrisett::String
+end
+
+University = @schema Ty begin
+    @entities Professor, Student, Department
+    worksIn : Professor → Department
+    majoringIn : Student → Department
+    profName : Professor ⇒ String
+    studName : Student ⇒ String
+    deptName : Department ⇒ String
+end
+
+AdvisorMatches = @schema Ty begin
+    @entities Professor, Student, Department, Match
+    worksIn : Professor → Department
+    majoringIn : Student → Department
+    professorOf : Match → Professor
+    studentOf : Match → Student
+    profName : Professor ⇒ String
+    studName : Student ⇒ String
+    deptName : Department ⇒ String
+    @path_eq Match  studentOf.majoringIn == professorOf.worksIn
+end
+
+println("University entities: ", University.ens)
+println("AdvisorMatches path equations: ", length(AdvisorMatches.path_eqs))
+```
+
+Note: The `@query` macro can be used to define the findMatches query as well; the multi-variable from-where pattern works the same way.
+
 ## Summary
 
 | Concept | Description |

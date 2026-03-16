@@ -544,6 +544,45 @@ automatically identified (they remain distinct unless explicitly
 equated), but the unified schema allows downstream operations to work on
 a single entity.
 
+## Julia DSL
+
+The examples above use the `cql"""..."""` string macro. CQL.jl also
+provides Julia-native macros. Here is how the Likes schema, instance,
+and sigma-based quotient look using the DSL:
+
+``` julia
+using CQL
+
+Ty = @typeside begin end  # empty typeside
+
+Likes = @schema Ty begin
+    @entities Like, Person
+    likee : Like → Person
+    liker : Like → Person
+end
+
+SimpsonsLikes = @instance Likes begin
+    Ned::Person; Maud::Person; Rodd::Person; Todd::Person
+    MrBurns::Person; Smithers::Person
+    l1::Like; l2::Like; l3::Like; l4::Like
+    liker(l1) == Ned;  likee(l1) == Maud
+    liker(l2) == Maud; likee(l2) == Rodd
+    liker(l3) == Rodd; likee(l3) == Todd
+    liker(l4) == Smithers; likee(l4) == MrBurns
+end
+
+println("Persons: ", length(carrier(SimpsonsLikes.algebra, :Person)))
+println("Likes: ", length(carrier(SimpsonsLikes.algebra, :Like)))
+```
+
+    Persons: 6
+    Likes: 4
+
+Note: The sigma migration and mapping with `lambda` expressions (used
+for the `FindConnections` and `Merge` mappings above) still require the
+`cql"""..."""` string syntax. The DSL covers typesides, schemas, and
+instances.
+
 ## Summary
 
 | Concept | Description |

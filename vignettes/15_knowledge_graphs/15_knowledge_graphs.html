@@ -97,6 +97,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#starting-from-rdf-delta-extraction" id="toc-starting-from-rdf-delta-extraction" class="nav-link" data-scroll-target="#starting-from-rdf-delta-extraction">Starting from RDF: Delta Extraction</a></li>
   <li><a href="#schema-colimit-a-unified-view" id="toc-schema-colimit-a-unified-view" class="nav-link" data-scroll-target="#schema-colimit-a-unified-view">Schema Colimit: A Unified View</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a></li>
   </ul>
 <div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="15_knowledge_graphs.md"><i class="bi bi-file-code"></i>Github (GFM)</a></li><li><a href="../../15_knowledge_graphs.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
 </div>
@@ -1035,6 +1036,47 @@ Attributes (equated pairs share one entity):
 </table>
 <p>The key insight is that RDF and LPG are not fundamentally different — they are <strong>isomorphic presentations</strong> of the same categorical structure, as long as node properties are modeled as first-class entities. The asymmetry only appears when LPG uses edge properties, which requires RDF reification to resolve.</p>
 <p>CQL makes this structural relationship precise and executable. Rather than writing ad-hoc scripts to convert between Neo4j and SPARQL endpoints, the conversion is derived automatically from a single schema morphism — with mathematical guarantees that no data is lost or invented in the process.</p>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use <code>run_program</code> with CQL source strings. CQL.jl also provides Julia-native macros. Here is how the PropertyGraph and TripleStore schemas look using the DSL:</p>
+<div id="38" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>Ty <span class="op">=</span> <span class="pp">@typeside</span> <span class="cf">begin</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">String</span><span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>PropertyGraph <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> PGNode, PGEdge, PGProp</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>    src <span class="op">:</span> PGEdge <span class="op">→</span> PGNode</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>    tgt <span class="op">:</span> PGEdge <span class="op">→</span> PGNode</span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>    prop_of <span class="op">:</span> PGProp <span class="op">→</span> PGNode</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>    node_id <span class="op">:</span> PGNode <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>    edge_label <span class="op">:</span> PGEdge <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>    prop_key <span class="op">:</span> PGProp <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>    prop_val <span class="op">:</span> PGProp <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>TripleStore <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Resource, ObjTriple, DataTriple</span>
+<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>    subj <span class="op">:</span> ObjTriple <span class="op">→</span> Resource</span>
+<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>    obj <span class="op">:</span> ObjTriple <span class="op">→</span> Resource</span>
+<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a>    dt_subj <span class="op">:</span> DataTriple <span class="op">→</span> Resource</span>
+<span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a>    uri <span class="op">:</span> Resource <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a>    predicate <span class="op">:</span> ObjTriple <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-25"><a href="#cb36-25" aria-hidden="true" tabindex="-1"></a>    dt_pred <span class="op">:</span> DataTriple <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-26"><a href="#cb36-26" aria-hidden="true" tabindex="-1"></a>    dt_val <span class="op">:</span> DataTriple <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb36-27"><a href="#cb36-27" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb36-28"><a href="#cb36-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-29"><a href="#cb36-29" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"PropertyGraph entities: "</span>, <span class="fu">join</span>(<span class="fu">sort</span>(<span class="fu">collect</span>(PropertyGraph.ens)), <span class="st">", "</span>))</span>
+<span id="cb36-30"><a href="#cb36-30" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"TripleStore entities: "</span>, <span class="fu">join</span>(<span class="fu">sort</span>(<span class="fu">collect</span>(TripleStore.ens)), <span class="st">", "</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>PropertyGraph entities: PGEdge, PGNode, PGProp
+TripleStore entities: DataTriple, ObjTriple, Resource</code></pre>
+</div>
+</div>
+<p>Note: The <code>schema_colimit</code> (unified view), mappings with <code>lambda</code> expressions (<code>ToTriples</code>, <code>ToReified</code>), and sigma/delta migrations still require the <code>cql"""..."""</code> or <code>run_program</code> syntax. The DSL covers individual schema and instance definitions.</p>
 </section>
 
 </main>

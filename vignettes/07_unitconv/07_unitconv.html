@@ -99,6 +99,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#the-mars-climate-orbiter" id="toc-the-mars-climate-orbiter" class="nav-link" data-scroll-target="#the-mars-climate-orbiter">The Mars Climate Orbiter</a></li>
   </ul></li>
   <li><a href="#cql-vs-sql" id="toc-cql-vs-sql" class="nav-link" data-scroll-target="#cql-vs-sql">CQL vs SQL</a></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 </nav>
@@ -500,6 +501,38 @@ Error: Error evaluating QUERY DisastrousConversion: Type mismatch in query attri
 </tr>
 </tbody>
 </table>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros. Here is how the typed-units typeside and schemas look using the DSL:</p>
+<div id="18" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>Ty <span class="op">=</span> <span class="pp">@typeside</span> <span class="cf">begin</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    Inches<span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    Cm<span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    v500<span class="op">::</span><span class="dt">Inches</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inToCm</span>(<span class="op">::</span><span class="dt">Inches</span>)<span class="op">::</span><span class="dt">Cm</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>AmericanAirplane <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Wing</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    wingLength <span class="op">:</span> Wing <span class="op">⇒</span> Inches</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>EuropeanAirplane <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Wing</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    wingLength <span class="op">:</span> Wing <span class="op">⇒</span> Cm</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"American wingLength type: "</span>, AmericanAirplane.atts[<span class="op">:</span>wingLength][<span class="fl">2</span>])</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"European wingLength type: "</span>, EuropeanAirplane.atts[<span class="op">:</span>wingLength][<span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>American wingLength type: Inches
+European wingLength type: Cm</code></pre>
+</div>
+</div>
+<p>The distinct types <code>Inches</code> and <code>Cm</code> are declared using <code>::Ty</code>, and the conversion function <code>inToCm</code> is declared with typed argument syntax. The query that applies <code>inToCm</code> to convert wing lengths can also be expressed using the <code>@query</code> macro.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

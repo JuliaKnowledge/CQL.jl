@@ -332,6 +332,36 @@ INSERT INTO EuropeanWing SELECT id, wingLength FROM AmericanWing;
 | **Conversion function** | Application-level logic | First-class schema element |
 | **Verification** | Manual code review | Automated type checking |
 
+## Julia DSL
+
+The examples above use the `cql"""..."""` string macro. CQL.jl also provides Julia-native macros. Here is how the typed-units typeside and schemas look using the DSL:
+
+```{julia}
+using CQL
+
+Ty = @typeside begin
+    Inches::Ty
+    Cm::Ty
+    v500::Inches
+    inToCm(::Inches)::Cm
+end
+
+AmericanAirplane = @schema Ty begin
+    @entities Wing
+    wingLength : Wing ⇒ Inches
+end
+
+EuropeanAirplane = @schema Ty begin
+    @entities Wing
+    wingLength : Wing ⇒ Cm
+end
+
+println("American wingLength type: ", AmericanAirplane.atts[:wingLength][2])
+println("European wingLength type: ", EuropeanAirplane.atts[:wingLength][2])
+```
+
+The distinct types `Inches` and `Cm` are declared using `::Ty`, and the conversion function `inToCm` is declared with typed argument syntax. The query that applies `inToCm` to convert wing lengths can also be expressed using the `@query` macro.
+
 ## Summary
 
 | Concept | Description |

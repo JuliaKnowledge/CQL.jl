@@ -18,6 +18,7 @@ Simon Frost
   Extraction](#starting-from-rdf-delta-extraction)
 - [Schema Colimit: A Unified View](#schema-colimit-a-unified-view)
 - [Summary](#summary)
+- [Julia DSL](#julia-dsl)
 
 ## Introduction
 
@@ -958,3 +959,50 @@ than writing ad-hoc scripts to convert between Neo4j and SPARQL
 endpoints, the conversion is derived automatically from a single schema
 morphism — with mathematical guarantees that no data is lost or invented
 in the process.
+
+## Julia DSL
+
+The examples above use `run_program` with CQL source strings. CQL.jl
+also provides Julia-native macros. Here is how the PropertyGraph and
+TripleStore schemas look using the DSL:
+
+``` julia
+using CQL
+
+Ty = @typeside begin
+    String::Ty
+end
+
+PropertyGraph = @schema Ty begin
+    @entities PGNode, PGEdge, PGProp
+    src : PGEdge → PGNode
+    tgt : PGEdge → PGNode
+    prop_of : PGProp → PGNode
+    node_id : PGNode ⇒ String
+    edge_label : PGEdge ⇒ String
+    prop_key : PGProp ⇒ String
+    prop_val : PGProp ⇒ String
+end
+
+TripleStore = @schema Ty begin
+    @entities Resource, ObjTriple, DataTriple
+    subj : ObjTriple → Resource
+    obj : ObjTriple → Resource
+    dt_subj : DataTriple → Resource
+    uri : Resource ⇒ String
+    predicate : ObjTriple ⇒ String
+    dt_pred : DataTriple ⇒ String
+    dt_val : DataTriple ⇒ String
+end
+
+println("PropertyGraph entities: ", join(sort(collect(PropertyGraph.ens)), ", "))
+println("TripleStore entities: ", join(sort(collect(TripleStore.ens)), ", "))
+```
+
+    PropertyGraph entities: PGEdge, PGNode, PGProp
+    TripleStore entities: DataTriple, ObjTriple, Resource
+
+Note: The `schema_colimit` (unified view), mappings with `lambda`
+expressions (`ToTriples`, `ToReified`), and sigma/delta migrations still
+require the `cql"""..."""` or `run_program` syntax. The DSL covers
+individual schema and instance definitions.

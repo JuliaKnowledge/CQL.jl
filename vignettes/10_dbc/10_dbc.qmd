@@ -526,6 +526,32 @@ DuckDB.disconnect(con)
 DuckDB.close(db)
 ```
 
+## Julia DSL
+
+The examples above use the `cql"""..."""` string macro for schema and query definitions. CQL.jl also provides Julia-native macros. Here is how the Employee-Department schema looks using the DSL:
+
+```{julia}
+using CQL
+
+Ty = @typeside begin
+    Str::Ty
+end
+
+S = @schema Ty begin
+    @entities Employee, Department
+    manager : Employee → Employee
+    worksIn : Employee → Department
+    secretary : Department → Employee
+    ename : Employee ⇒ Str
+    dname : Department ⇒ Str
+end
+
+println("Entities: ", S.ens)
+println("Foreign keys: ", collect(keys(S.fks)))
+```
+
+Note: DuckDB connectivity uses Julia functions (`import_duckdb`, `export_duckdb`) that work with schema objects directly, so the data I/O is already native Julia. The `@schema` macro defines the schema, and the programmatic import/export pattern shown above works the same way with DSL-defined schemas.
+
 ## Summary
 
 | Concept | Description |

@@ -628,6 +628,43 @@ end
 
 The 3 original authors (Mann, Kakfa, Kafka) have unknown `born` values (Skolem terms). The 3 cascade-generated authors have unknown names and unknown birth years. The `chapter_page_start` attributes are similarly Skolem terms for all 4 chapters.
 
+## Julia DSL
+
+The examples above use the `cql"""..."""` string macro. CQL.jl also provides Julia-native macros. Here is how the Source schema looks using the DSL:
+
+```{julia}
+using CQL
+
+Ty = @typeside begin
+    Str::Ty
+    Bool::Ty
+    Mann::Str; Kakfa::Str; Kafka::Str
+    Magic::Str; Meta::Str; Castle::Str
+    KSB::Str; BR::Str
+    strue::Bool; sfalse::Bool
+    contains(::Str, ::Str)::Bool
+    count_words(::Str)::Str
+end
+
+Source = @schema Ty begin
+    @entities Book, Chapter, Reader
+    chapter_book : Chapter → Book
+    reader_fav : Reader → Book
+    author_name : Book ⇒ Str
+    title : Book ⇒ Str
+    year : Book ⇒ Str
+    chapter_num : Chapter ⇒ Str
+    chapter_text : Chapter ⇒ Str
+    reader_name : Reader ⇒ Str
+    borrowed : Reader ⇒ Str
+end
+
+println("Source entities: ", Source.ens)
+println("Foreign keys: ", collect(keys(Source.fks)))
+```
+
+Note: The computed attributes in queries (e.g., `count_words(c.chapter_text)`) and the `contains`-based where-clause with typeside ground equations still require the `cql"""..."""` syntax for full program evaluation. The `@schema` and `@typeside` macros handle structural definitions.
+
 ## Summary
 
 This vignette demonstrated the key ideas from [Brown, Spivak & Wisnesky (2019)](https://arxiv.org/abs/1903.10579):

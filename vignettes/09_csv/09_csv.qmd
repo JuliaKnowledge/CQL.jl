@@ -358,3 +358,27 @@ CQL.jl provides two functions for CSV integration:
 - Foreign key values must reference valid IDs in the target entity
 - Exported files use **globally unique IDs** across all entities
 - Imported data works seamlessly with CQL queries, delta, and sigma operations
+
+## Julia DSL
+
+The examples above use the `cql"""..."""` string macro for schema and query definitions. CQL.jl also provides Julia-native macros. Here is how the AnimalDB schema and flattening query look using the DSL:
+
+```{julia}
+using CQL
+
+Ty_sql = cql"""typeside Ty = sql""".Ty  # sql typeside still uses cql syntax
+
+AnimalDB = @schema Ty_sql begin
+    @entities Animal, Habitat
+    livesIn : Animal → Habitat
+    species : Animal ⇒ String
+    legs : Animal ⇒ String
+    name : Habitat ⇒ String
+    climate : Habitat ⇒ String
+end
+
+println("AnimalDB entities: ", AnimalDB.ens)
+println("Foreign keys: ", collect(keys(AnimalDB.fks)))
+```
+
+Note: CSV import (`import_csv_instance`) and export (`export_csv_instance`) are Julia functions that work with schema objects directly, so they are already "native Julia." The `@schema` macro defines the schema structure, while the import/export functions handle the data I/O.

@@ -96,6 +96,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#verifying-the-observation-equation" id="toc-verifying-the-observation-equation" class="nav-link" data-scroll-target="#verifying-the-observation-equation">Verifying the Observation Equation</a></li>
   <li><a href="#what-happens-with-inconsistent-data" id="toc-what-happens-with-inconsistent-data" class="nav-link" data-scroll-target="#what-happens-with-inconsistent-data">What Happens with Inconsistent Data?</a></li>
   <li><a href="#normalized-vs.-denormalized-a-comparison" id="toc-normalized-vs.-denormalized-a-comparison" class="nav-link" data-scroll-target="#normalized-vs.-denormalized-a-comparison">Normalized vs.&nbsp;Denormalized: A Comparison</a></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 </nav>
@@ -500,6 +501,48 @@ Denormalized Schema:
   To get mother's name: read mother_name directly (no join)</code></pre>
 </div>
 </div>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros. Here is how the NormalizedSchema and instance look using the DSL:</p>
+<div id="18" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>Ty <span class="op">=</span> <span class="pp">@typeside</span> <span class="cf">begin</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">String</span><span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    Albert<span class="op">::</span><span class="dt">String</span>; George<span class="op">::</span><span class="dt">String</span>; Charles<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    Elaine<span class="op">::</span><span class="dt">String</span>; Francine<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>NormalizedSchema <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Male, Female</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    mother <span class="op">:</span> Male <span class="op">→</span> Female</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    female_name <span class="op">:</span> Female <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    male_name <span class="op">:</span> Male <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>NormalizedData <span class="op">=</span> <span class="pp">@instance</span> NormalizedSchema <span class="cf">begin</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    Al<span class="op">::</span><span class="dt">Male</span>; Bob<span class="op">::</span><span class="dt">Male</span>; Charlie<span class="op">::</span><span class="dt">Male</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>    Ellie<span class="op">::</span><span class="dt">Female</span>; Fran<span class="op">::</span><span class="dt">Female</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">male_name</span>(Al) <span class="op">==</span> Albert; <span class="fu">male_name</span>(Bob) <span class="op">==</span> George; <span class="fu">male_name</span>(Charlie) <span class="op">==</span> Charles</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mother</span>(Al) <span class="op">==</span> Ellie; <span class="fu">mother</span>(Bob) <span class="op">==</span> Ellie; <span class="fu">mother</span>(Charlie) <span class="op">==</span> Fran</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">female_name</span>(Ellie) <span class="op">==</span> Elaine; <span class="fu">female_name</span>(Fran) <span class="op">==</span> Francine</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>alg <span class="op">=</span> NormalizedData.algebra</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>Male)</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>    nm <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>male_name, x)</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>    mom <span class="op">=</span> <span class="fu">eval_fk</span>(alg, <span class="op">:</span>mother, x)</span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>    mom_nm <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>female_name, mom)</span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>nm<span class="st">: mother = </span><span class="sc">$</span>mom_nm<span class="st">"</span>)</span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  Albert: mother = Elaine
+  Charles: mother = Francine
+  George: mother = Elaine</code></pre>
+</div>
+</div>
+<p>Note: The denormalized schema with <code>observation_equations</code> and <code>imports</code> still requires the <code>cql"""..."""</code> syntax, as the DSL does not yet support observation equations or schema imports.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

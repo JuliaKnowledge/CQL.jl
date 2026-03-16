@@ -95,6 +95,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#query-results" id="toc-query-results" class="nav-link" data-scroll-target="#query-results">Query Results</a></li>
   <li><a href="#cql-vs-sql-side-by-side" id="toc-cql-vs-sql-side-by-side" class="nav-link" data-scroll-target="#cql-vs-sql-side-by-side">CQL vs SQL Side-by-Side</a></li>
   <li><a href="#a-second-query-department-membership" id="toc-a-second-query-department-membership" class="nav-link" data-scroll-target="#a-second-query-department-membership">A Second Query: Department Membership</a></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 </nav>
@@ -554,6 +555,38 @@ Morrisett    | Harvard</code></pre>
 </div>
 </div>
 <p>This query (<code>p.deptOf.deptName = CompSci</code>) is a single-hop FK traversal, equivalent to a SQL query with one JOIN. The CQL syntax is identical in structure — just a shorter path.</p>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros. Here is how the Schools schema looks using the DSL:</p>
+<div id="14" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>Ty <span class="op">=</span> <span class="pp">@typeside</span> <span class="cf">begin</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">String</span><span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    Wisnesky<span class="op">::</span><span class="dt">String</span>; Spivak<span class="op">::</span><span class="dt">String</span>; Chlipala<span class="op">::</span><span class="dt">String</span>; Morrisett<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    Malecha<span class="op">::</span><span class="dt">String</span>; Gross<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    Harvard<span class="op">::</span><span class="dt">String</span>; MIT<span class="op">::</span><span class="dt">String</span>; Mathematics<span class="op">::</span><span class="dt">String</span>; CompSci<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>Schools <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Person, School, Dept</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    instituteOf <span class="op">:</span> Person <span class="op">→</span> School</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    deptOf <span class="op">:</span> Person <span class="op">→</span> Dept</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    biggestDept <span class="op">:</span> School <span class="op">→</span> Dept</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    lastName <span class="op">:</span> Person <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    schoolName <span class="op">:</span> School <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    deptName <span class="op">:</span> Dept <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, Schools.ens)</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(Schools.fks)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Entities: Set([:Dept, :School, :Person])
+Foreign keys: [:biggestDept, :instituteOf, :deptOf]</code></pre>
+</div>
+</div>
+<p>The query <code>BiggestDeptIsMath</code> with its FK chain navigation (<code>p.instituteOf.biggestDept.deptName = Mathematics</code>) can also be defined using the <code>@query</code> macro, where the dot notation in <code>@where</code> clauses maps directly to CQL’s FK dereferencing.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

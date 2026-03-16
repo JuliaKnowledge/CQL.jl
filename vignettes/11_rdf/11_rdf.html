@@ -97,6 +97,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#round-trip-guarantees" id="toc-round-trip-guarantees" class="nav-link" data-scroll-target="#round-trip-guarantees">Round-Trip Guarantees</a></li>
   <li><a href="#when-to-use-which" id="toc-when-to-use-which" class="nav-link" data-scroll-target="#when-to-use-which">When to Use Which</a></li>
   </ul></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 </nav>
@@ -634,6 +635,40 @@ instance Merged = coproduct (sigma mappingA dataA) + (sigma mappingB dataB) : Co
 </table>
 <p>CQL and SPARQL are complementary: use CQL for the <em>structural</em> integration work (schema merging, data migration, constraint propagation), then export to RDF for <em>publication</em> and SPARQL querying.</p>
 </section>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use the <code>cql"""..."""</code> string macro and <code>run_program</code>. CQL.jl also provides Julia-native macros. Here is how the Employee-Department schema looks using the DSL:</p>
+<div id="14" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>Ty <span class="op">=</span> <span class="pp">@typeside</span> <span class="cf">begin</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">String</span><span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Integer</span><span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    Al<span class="op">::</span><span class="dt">String</span>; Akin<span class="op">::</span><span class="dt">String</span>; Bob<span class="op">::</span><span class="dt">String</span>; Bo<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    Carl<span class="op">::</span><span class="dt">String</span>; Cork<span class="op">::</span><span class="dt">String</span>; <span class="bu">Math</span><span class="op">::</span><span class="dt">String</span>; CS<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>S <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Employee, Department</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    manager <span class="op">:</span> Employee <span class="op">→</span> Employee</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    worksIn <span class="op">:</span> Employee <span class="op">→</span> Department</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    secretary <span class="op">:</span> Department <span class="op">→</span> Employee</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    first <span class="op">:</span> Employee <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>    last <span class="op">:</span> Employee <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>    name <span class="op">:</span> Department <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@path_eq</span> Employee  manager.worksIn <span class="op">==</span> worksIn</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@path_eq</span> Department  secretary.worksIn <span class="op">==</span> Department</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, S.ens)</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Path equations: "</span>, <span class="fu">length</span>(S.path_eqs))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Entities: Set([:Department, :Employee])
+Path equations: 2</code></pre>
+</div>
+</div>
+<p>Note: RDF import (<code>import_rdf_all</code>), export (<code>export_rdf_instance_xml</code>), and spanify operations use CQL-specific syntax with file paths and external type mappings, so they still require the <code>cql"""..."""</code> or <code>run_program</code> approach. The <code>@schema</code> macro can define the schema structure that RDF data is imported into.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

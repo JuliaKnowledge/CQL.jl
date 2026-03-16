@@ -137,6 +137,7 @@ window.Quarto = {
   <li><a href="#coeval-reverse-query-evaluation" id="toc-coeval-reverse-query-evaluation" class="nav-link" data-scroll-target="#coeval-reverse-query-evaluation">10. CoEval: Reverse Query Evaluation</a></li>
   <li><a href="#unit-and-counit-round-trip-migration-properties" id="toc-unit-and-counit-round-trip-migration-properties" class="nav-link" data-scroll-target="#unit-and-counit-round-trip-migration-properties">11. Unit and Counit: Round-Trip Migration Properties</a></li>
   <li><a href="#schema-colimit-integrating-surveillance-systems" id="toc-schema-colimit-integrating-surveillance-systems" class="nav-link" data-scroll-target="#schema-colimit-integrating-surveillance-systems">12. Schema Colimit: Integrating Surveillance Systems</a></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 <div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="17_epidemiology.md"><i class="bi bi-file-code"></i>Github (GFM)</a></li></ul></div></nav>
@@ -1125,6 +1126,44 @@ Entity FluSurv_FluLoc (2 records):
 </div>
 </div>
 <p>The schema colimit merged the two <code>Location</code> entities (<code>FluLoc</code> and <code>CovidLoc</code>) into a single entity with a shared location name attribute, while keeping <code>FluCase</code> and <code>CovidCase</code> as separate entity types (since flu and COVID cases have different epidemiological properties). The Sigma + Coproduct pipeline then pushed both datasets into this unified schema.</p>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use <code>run_program</code> with CQL source strings. CQL.jl also provides Julia-native macros. Here is how the Epi schema looks using the DSL:</p>
+<div id="38" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>Ty <span class="op">=</span> <span class="pp">@typeside</span> <span class="cf">begin</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">String</span><span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>Epi <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Patient, Case, Location, Pathogen</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>    patient <span class="op">:</span> Case <span class="op">→</span> Patient</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>    location <span class="op">:</span> Case <span class="op">→</span> Location</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>    pathogen <span class="op">:</span> Case <span class="op">→</span> Pathogen</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>    name <span class="op">:</span> Patient <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>    age_group <span class="op">:</span> Patient <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>    vaccinated <span class="op">:</span> Patient <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>    risk <span class="op">:</span> Patient <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>    severity <span class="op">:</span> Case <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>    onset <span class="op">:</span> Case <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a>    symptoms <span class="op">:</span> Case <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>    loc_name <span class="op">:</span> Location <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a>    loc_type <span class="op">:</span> Location <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a>    path_name <span class="op">:</span> Pathogen <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Epi entities: "</span>, <span class="fu">sort</span>(<span class="fu">collect</span>(Epi.ens)))</span>
+<span id="cb32-25"><a href="#cb32-25" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">length</span>(Epi.fks))</span>
+<span id="cb32-26"><a href="#cb32-26" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Attributes: "</span>, <span class="fu">length</span>(Epi.atts))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Epi entities: [:Case, :Location, :Pathogen, :Patient]
+Foreign keys: 3
+Attributes: 10</code></pre>
+</div>
+</div>
+<p>Note: CSV import (<code>import_csv</code>), <code>constraints</code> + <code>chase</code>, <code>coeval</code>, <code>schema_colimit</code>, and mappings with <code>lambda</code> expressions (used in the delta migration for flat reports) still require the <code>cql"""..."""</code> or <code>run_program</code> syntax. The DSL covers typeside, schema, and instance definitions. Queries for filtering cases (severe, hospital, flu, care home) can be expressed using the <code>@query</code> macro.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

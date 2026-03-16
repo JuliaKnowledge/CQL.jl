@@ -31,6 +31,7 @@ Simon Frost
   Migration](#11-counterfactual-reasoning-via-delta-migration)
 - [Summary: CQL vs SQL for Causal
   Databases](#summary-cql-vs-sql-for-causal-databases)
+- [Julia DSL](#julia-dsl)
 
 ## Introduction
 
@@ -1048,6 +1049,52 @@ is consistent.
 | Version tracking | `UPDATE` / CDC | Transform | Natural transformation |
 | Consistency | Triggers / `CHECK` | Constraints + Chase | EGD saturation |
 | Counterfactual | View rewriting | Query / Delta | Functorial intervention |
+
+## Julia DSL
+
+The examples above use `run_program` with CQL source strings. CQL.jl
+also provides Julia-native macros. Here is how the CausalAtlas schema
+looks using the DSL:
+
+``` julia
+using CQL
+
+Ty = @typeside begin
+    String::Ty
+end
+
+CausalAtlas = @schema Ty begin
+    @entities Node, Edge, EdgeSupport
+    src : Edge → Node
+    dst : Edge → Node
+    edge : EdgeSupport → Edge
+    label : Node ⇒ String
+    deg_out : Node ⇒ String
+    deg_in : Node ⇒ String
+    rel_type : Edge ⇒ String
+    polarity : Edge ⇒ String
+    support_lcms : Edge ⇒ String
+    score_sum : Edge ⇒ String
+    doc_id : EdgeSupport ⇒ String
+    lcm_id : EdgeSupport ⇒ String
+    score_raw : EdgeSupport ⇒ String
+end
+
+println("CausalAtlas entities: ", sort(collect(CausalAtlas.ens)))
+println("Foreign keys: ", length(CausalAtlas.fks))
+println("Attributes: ", length(CausalAtlas.atts))
+```
+
+    CausalAtlas entities: [:Edge, :EdgeSupport, :Node]
+    Foreign keys: 3
+    Attributes: 10
+
+Note: CSV import (`import_csv`), `constraints` + `chase`,
+`schema_colimit`, and mappings with attribute remapping (used in sigma
+migrations for ontology alignment) still require the `cql"""..."""` or
+`run_program` syntax. The DSL covers typeside, schema, and instance
+definitions. Queries for causal hub effects and backbone extraction can
+be expressed using the `@query` macro.
 
 **The key insight is that CQL doesn’t replace SQL — it operates at a
 higher level of abstraction.** SQL is the workhorse for flat queries

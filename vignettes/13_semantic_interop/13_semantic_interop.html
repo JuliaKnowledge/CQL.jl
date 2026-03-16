@@ -134,7 +134,8 @@ window.Quarto = {
   <li><a href="#combined-schema" id="toc-combined-schema" class="nav-link" data-scroll-target="#combined-schema">Combined Schema</a></li>
   <li><a href="#cross-ontology-query-tenant-billing" id="toc-cross-ontology-query-tenant-billing" class="nav-link" data-scroll-target="#cross-ontology-query-tenant-billing">Cross-Ontology Query: Tenant Billing</a></li>
   </ul></li>
-  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a>
   <ul class="collapse">
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul></li>
@@ -881,6 +882,48 @@ PersonE     R460    area_17_12  rent_350  AC_R460     kwh_125   TUC_R460    temp
 </tbody>
 </table>
 <p>The key advantage is <strong>compositional scaling</strong>: adding a new schema (e.g., REC) requires only one mapping into the colimit, not separate mappings to every existing schema. The BRICK–REC relationship emerges automatically through the shared <code>Location</code> entity, enabling cross-ontology queries (like tenant billing) without explicit BRICK–REC integration code.</p>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use <code>run_program</code> with CQL source strings. CQL.jl also provides Julia-native macros. The individual schemas (IFC, BRICK, REC) can be defined using the DSL:</p>
+<div id="24" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>Ty <span class="op">=</span> <span class="pp">@typeside</span> <span class="cf">begin</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    Str<span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    R240<span class="op">::</span><span class="dt">Str</span>; R260<span class="op">::</span><span class="dt">Str</span>; R200<span class="op">::</span><span class="dt">Str</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    AC_R240<span class="op">::</span><span class="dt">Str</span>; AC_R260<span class="op">::</span><span class="dt">Str</span>; AC_R200<span class="op">::</span><span class="dt">Str</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    TUC_R240<span class="op">::</span><span class="dt">Str</span>; TUC_R260<span class="op">::</span><span class="dt">Str</span>; TUC_R200<span class="op">::</span><span class="dt">Str</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>IFC <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> IfcSpace, IfcElement, IfcSensor, IfcPropertySet</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    elementInSpace <span class="op">:</span> IfcElement <span class="op">→</span> IfcSpace</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    sensorAttachedTo <span class="op">:</span> IfcSensor <span class="op">→</span> IfcElement</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    hasPropertySet <span class="op">:</span> IfcSensor <span class="op">→</span> IfcPropertySet</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    spaceName <span class="op">:</span> IfcSpace <span class="op">⇒</span> Str</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    spaceArea <span class="op">:</span> IfcSpace <span class="op">⇒</span> Str</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    elementName <span class="op">:</span> IfcElement <span class="op">⇒</span> Str</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>    deviceId <span class="op">:</span> IfcPropertySet <span class="op">⇒</span> Str</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>BRICK <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Location, Equipment, Point</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>    hasLocation <span class="op">:</span> Equipment <span class="op">→</span> Location</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>    hasPoint <span class="op">:</span> Equipment <span class="op">→</span> Point</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>    locationName <span class="op">:</span> Location <span class="op">⇒</span> Str</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>    equipmentName <span class="op">:</span> Equipment <span class="op">⇒</span> Str</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>    timeseriesId <span class="op">:</span> Point <span class="op">⇒</span> Str</span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"IFC entities: "</span>, IFC.ens)</span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"BRICK entities: "</span>, BRICK.ens)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>IFC entities: Set([:IfcElement, :IfcSensor, :IfcSpace, :IfcPropertySet])
+BRICK entities: Set([:Point, :Location, :Equipment])</code></pre>
+</div>
+</div>
+<p>Note: The <code>schema_colimit</code>, <code>getSchema</code>, <code>getMapping</code>, <code>coproduct</code>, <code>constraints</code>, and <code>chase</code> operations used for merging IFC and BRICK schemas still require the <code>cql"""..."""</code> or <code>run_program</code> syntax. The DSL covers individual schema and instance definitions.</p>
 <section id="references" class="level3">
 <h3 class="anchored" data-anchor-id="references">References</h3>
 <ul>

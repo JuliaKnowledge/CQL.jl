@@ -139,6 +139,7 @@ window.Quarto = {
   <li><a href="#delta-schema-evolution" id="toc-delta-schema-evolution" class="nav-link" data-scroll-target="#delta-schema-evolution">Delta: Schema Evolution</a></li>
   <li><a href="#handling-union-types" id="toc-handling-union-types" class="nav-link" data-scroll-target="#handling-union-types">Handling Union Types</a></li>
   <li><a href="#apgs-vs-traditional-property-graphs" id="toc-apgs-vs-traditional-property-graphs" class="nav-link" data-scroll-target="#apgs-vs-traditional-property-graphs">APGs vs Traditional Property Graphs</a></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 </nav>
@@ -1047,6 +1048,44 @@ attributes
 </tbody>
 </table>
 <p>The key insight from the APG paper is that property graphs are not a fundamentally different data model from relational databases — they are a <strong>presentation</strong> of the same categorical structure. By giving property graphs algebraic types, we gain all the tools of categorical data integration: composable mappings, adjoint data migration functors (<span class="math inline">\(\Sigma \dashv \Delta \dashv \Pi\)</span>), and provably correct transformations.</p>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros. Here is how the RideShare schema and a delta migration look using the DSL:</p>
+<div id="26" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>Ty <span class="op">=</span> <span class="pp">@typeside</span> <span class="cf">begin</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    Str<span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    Nat<span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    Arthur<span class="op">::</span><span class="dt">Str</span>; Zaphod<span class="op">::</span><span class="dt">Str</span>; Ford<span class="op">::</span><span class="dt">Str</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    v1<span class="op">::</span><span class="dt">Nat</span>; v3<span class="op">::</span><span class="dt">Nat</span>; v4<span class="op">::</span><span class="dt">Nat</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>RideShare <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> User, Trip, Place, PlaceEvent, Driver, Rider, UserName</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>    trip_user1 <span class="op">:</span> Trip <span class="op">→</span> User</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>    trip_user2 <span class="op">:</span> Trip <span class="op">→</span> User</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>    event_place <span class="op">:</span> PlaceEvent <span class="op">→</span> Place</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>    driver_trip <span class="op">:</span> Driver <span class="op">→</span> Trip</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>    driver_user <span class="op">:</span> Driver <span class="op">→</span> User</span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>    rider_trip <span class="op">:</span> Rider <span class="op">→</span> Trip</span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>    rider_user <span class="op">:</span> Rider <span class="op">→</span> User</span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>    name_user <span class="op">:</span> UserName <span class="op">→</span> User</span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>    event_time <span class="op">:</span> PlaceEvent <span class="op">⇒</span> Nat</span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>    name_value <span class="op">:</span> UserName <span class="op">⇒</span> Str</span>
+<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entities: "</span>, RideShare.ens)</span>
+<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">length</span>(RideShare.fks))</span>
+<span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Attributes: "</span>, <span class="fu">length</span>(RideShare.atts))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Entities: Set([:User, :Place, :Rider, :UserName, :PlaceEvent, :Trip, :Driver])
+Foreign keys: 8
+Attributes: 2</code></pre>
+</div>
+</div>
+<p>Note: Mappings with <code>lambda</code> expressions (as used in the <code>PersonToRecord</code> delta and <code>Merge</code> sigma examples) still require the <code>cql"""..."""</code> string syntax. The DSL covers typesides, schemas, and instances.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

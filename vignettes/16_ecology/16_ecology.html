@@ -133,6 +133,7 @@ window.Quarto = {
   <li><a href="#unit-and-counit-round-trip-properties" id="toc-unit-and-counit-round-trip-properties" class="nav-link" data-scroll-target="#unit-and-counit-round-trip-properties">12. Unit and Counit: Round-Trip Properties</a></li>
   <li><a href="#schema-colimit-integrating-monitoring-programmes" id="toc-schema-colimit-integrating-monitoring-programmes" class="nav-link" data-scroll-target="#schema-colimit-integrating-monitoring-programmes">13. Schema Colimit: Integrating Monitoring Programmes</a></li>
   <li><a href="#comparison-with-rdfsparql" id="toc-comparison-with-rdfsparql" class="nav-link" data-scroll-target="#comparison-with-rdfsparql">Comparison with RDF/SPARQL</a></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 <div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="16_ecology.md"><i class="bi bi-file-code"></i>Github (GFM)</a></li><li><a href="../../16_ecology.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
@@ -1129,6 +1130,47 @@ Entity MarineSurvey_MSp (2 records):
 </tbody>
 </table>
 <p>CQL excels at <strong>structural operations</strong>: reshaping data between schemas, composing filters into pipelines, and guaranteeing round-trip migration properties. RDF excels at <strong>graph operations</strong>: transitive food chain traversal, rule-based inference, and flexible many-to-many relationships. Together, they cover the full spectrum of ecological data management needs.</p>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use <code>run_program</code> with CQL source strings. CQL.jl also provides Julia-native macros. Here is how the Ecosystem schema looks using the DSL:</p>
+<div id="34" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>Ty <span class="op">=</span> <span class="pp">@typeside</span> <span class="cf">begin</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">String</span><span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>Ecosystem <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> TrophicLevel, Habitat, Species, FeedingLink, SpeciesHabitat, Observation</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    trophic_level <span class="op">:</span> Species <span class="op">→</span> TrophicLevel</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>    predator <span class="op">:</span> FeedingLink <span class="op">→</span> Species</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>    prey <span class="op">:</span> FeedingLink <span class="op">→</span> Species</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>    species <span class="op">:</span> SpeciesHabitat <span class="op">→</span> Species</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>    habitat <span class="op">:</span> SpeciesHabitat <span class="op">→</span> Habitat</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>    observed_species <span class="op">:</span> Observation <span class="op">→</span> Species</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>    level_name <span class="op">:</span> TrophicLevel <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>    hab_name <span class="op">:</span> Habitat <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>    hab_description <span class="op">:</span> Habitat <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>    common_name <span class="op">:</span> Species <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>    conservation_status <span class="op">:</span> Species <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>    typical_size_cm <span class="op">:</span> Species <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>    site_name <span class="op">:</span> Observation <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a>    count <span class="op">:</span> Observation <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a>    method <span class="op">:</span> Observation <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a>    obs_date <span class="op">:</span> Observation <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-27"><a href="#cb30-27" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Ecosystem entities: "</span>, <span class="fu">sort</span>(<span class="fu">collect</span>(Ecosystem.ens)))</span>
+<span id="cb30-28"><a href="#cb30-28" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">length</span>(Ecosystem.fks))</span>
+<span id="cb30-29"><a href="#cb30-29" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Attributes: "</span>, <span class="fu">length</span>(Ecosystem.atts))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Ecosystem entities: [:FeedingLink, :Habitat, :Observation, :Species, :SpeciesHabitat, :TrophicLevel]
+Foreign keys: 6
+Attributes: 10</code></pre>
+</div>
+</div>
+<p>Note: CSV import (<code>import_csv</code>), <code>constraints</code> + <code>chase</code>, <code>coeval</code>, <code>schema_colimit</code>, and mappings with <code>lambda</code> expressions (used in the delta migration) still require the <code>cql"""..."""</code> or <code>run_program</code> syntax. The DSL covers typeside, schema, and instance definitions. Queries defined via <code>@query</code> can express the site and method filters shown above.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

@@ -511,6 +511,47 @@ CQL and SPARQL are complementary: use CQL for the *structural*
 integration work (schema merging, data migration, constraint
 propagation), then export to RDF for *publication* and SPARQL querying.
 
+## Julia DSL
+
+The examples above use the `cql"""..."""` string macro and
+`run_program`. CQL.jl also provides Julia-native macros. Here is how the
+Employee-Department schema looks using the DSL:
+
+``` julia
+using CQL
+
+Ty = @typeside begin
+    String::Ty
+    Integer::Ty
+    Al::String; Akin::String; Bob::String; Bo::String
+    Carl::String; Cork::String; Math::String; CS::String
+end
+
+S = @schema Ty begin
+    @entities Employee, Department
+    manager : Employee → Employee
+    worksIn : Employee → Department
+    secretary : Department → Employee
+    first : Employee ⇒ String
+    last : Employee ⇒ String
+    name : Department ⇒ String
+    @path_eq Employee  manager.worksIn == worksIn
+    @path_eq Department  secretary.worksIn == Department
+end
+
+println("Entities: ", S.ens)
+println("Path equations: ", length(S.path_eqs))
+```
+
+    Entities: Set([:Department, :Employee])
+    Path equations: 2
+
+Note: RDF import (`import_rdf_all`), export (`export_rdf_instance_xml`),
+and spanify operations use CQL-specific syntax with file paths and
+external type mappings, so they still require the `cql"""..."""` or
+`run_program` approach. The `@schema` macro can define the schema
+structure that RDF data is imported into.
+
 ## Summary
 
 | Concept | CQL Syntax | Description |

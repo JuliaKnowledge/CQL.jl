@@ -95,6 +95,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#how-sigma-computes-the-quotient" id="toc-how-sigma-computes-the-quotient" class="nav-link" data-scroll-target="#how-sigma-computes-the-quotient">How Sigma Computes the Quotient</a></li>
   <li><a href="#why-this-is-hard-in-sql" id="toc-why-this-is-hard-in-sql" class="nav-link" data-scroll-target="#why-this-is-hard-in-sql">Why This Is Hard in SQL</a></li>
   <li><a href="#another-example-deduplication" id="toc-another-example-deduplication" class="nav-link" data-scroll-target="#another-example-deduplication">Another Example: Deduplication</a></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 </nav>
@@ -615,6 +616,39 @@ Person: 5 records
 </div>
 </div>
 <p>The sigma migration merges both sources into a single <code>Person</code> entity. Records with the same name from different sources are <strong>not</strong> automatically identified (they remain distinct unless explicitly equated), but the unified schema allows downstream operations to work on a single entity.</p>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros. Here is how the Likes schema, instance, and sigma-based quotient look using the DSL:</p>
+<div id="20" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>Ty <span class="op">=</span> <span class="pp">@typeside</span> <span class="cf">begin</span> <span class="cf">end</span>  <span class="co"># empty typeside</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>Likes <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Like, Person</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    likee <span class="op">:</span> Like <span class="op">→</span> Person</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    liker <span class="op">:</span> Like <span class="op">→</span> Person</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>SimpsonsLikes <span class="op">=</span> <span class="pp">@instance</span> Likes <span class="cf">begin</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    Ned<span class="op">::</span><span class="dt">Person</span>; Maud<span class="op">::</span><span class="dt">Person</span>; Rodd<span class="op">::</span><span class="dt">Person</span>; Todd<span class="op">::</span><span class="dt">Person</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    MrBurns<span class="op">::</span><span class="dt">Person</span>; Smithers<span class="op">::</span><span class="dt">Person</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    l1<span class="op">::</span><span class="dt">Like</span>; l2<span class="op">::</span><span class="dt">Like</span>; l3<span class="op">::</span><span class="dt">Like</span>; l4<span class="op">::</span><span class="dt">Like</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">liker</span>(l1) <span class="op">==</span> Ned;  <span class="fu">likee</span>(l1) <span class="op">==</span> Maud</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">liker</span>(l2) <span class="op">==</span> Maud; <span class="fu">likee</span>(l2) <span class="op">==</span> Rodd</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">liker</span>(l3) <span class="op">==</span> Rodd; <span class="fu">likee</span>(l3) <span class="op">==</span> Todd</span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">liker</span>(l4) <span class="op">==</span> Smithers; <span class="fu">likee</span>(l4) <span class="op">==</span> MrBurns</span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Persons: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(SimpsonsLikes.algebra, <span class="op">:</span>Person)))</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Likes: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(SimpsonsLikes.algebra, <span class="op">:</span>Like)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Persons: 6
+Likes: 4</code></pre>
+</div>
+</div>
+<p>Note: The sigma migration and mapping with <code>lambda</code> expressions (used for the <code>FindConnections</code> and <code>Merge</code> mappings above) still require the <code>cql"""..."""</code> string syntax. The DSL covers typesides, schemas, and instances.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

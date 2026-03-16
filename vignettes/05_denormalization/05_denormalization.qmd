@@ -342,6 +342,45 @@ println("  Observation equations: ", length(sch_d.obs_eqs))
 println("  To get mother's name: read mother_name directly (no join)")
 ```
 
+## Julia DSL
+
+The examples above use the `cql"""..."""` string macro. CQL.jl also provides Julia-native macros. Here is how the NormalizedSchema and instance look using the DSL:
+
+```{julia}
+using CQL
+
+Ty = @typeside begin
+    String::Ty
+    Albert::String; George::String; Charles::String
+    Elaine::String; Francine::String
+end
+
+NormalizedSchema = @schema Ty begin
+    @entities Male, Female
+    mother : Male → Female
+    female_name : Female ⇒ String
+    male_name : Male ⇒ String
+end
+
+NormalizedData = @instance NormalizedSchema begin
+    Al::Male; Bob::Male; Charlie::Male
+    Ellie::Female; Fran::Female
+    male_name(Al) == Albert; male_name(Bob) == George; male_name(Charlie) == Charles
+    mother(Al) == Ellie; mother(Bob) == Ellie; mother(Charlie) == Fran
+    female_name(Ellie) == Elaine; female_name(Fran) == Francine
+end
+
+alg = NormalizedData.algebra
+for x in carrier(alg, :Male)
+    nm = eval_att(alg, :male_name, x)
+    mom = eval_fk(alg, :mother, x)
+    mom_nm = eval_att(alg, :female_name, mom)
+    println("  $nm: mother = $mom_nm")
+end
+```
+
+Note: The denormalized schema with `observation_equations` and `imports` still requires the `cql"""..."""` syntax, as the DSL does not yet support observation equations or schema imports.
+
 ## Summary
 
 | Concept | Description |

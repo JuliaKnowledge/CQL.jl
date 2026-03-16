@@ -104,6 +104,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#missing-attributes-and-skolem-terms" id="toc-missing-attributes-and-skolem-terms" class="nav-link" data-scroll-target="#missing-attributes-and-skolem-terms">Missing Attributes and Skolem Terms</a></li>
   </ul></li>
   <li><a href="#path-equations-vs.-no-path-equations" id="toc-path-equations-vs.-no-path-equations" class="nav-link" data-scroll-target="#path-equations-vs.-no-path-equations">Path Equations vs.&nbsp;No Path Equations</a></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 </nav>
@@ -646,6 +647,45 @@ Constrained schema:
 </div>
 </div>
 <p>The unconstrained schema accepts <em>any</em> combination of manager, worksIn, and secretary assignments. The constrained schema only accepts data where managers share their employee’s department and secretaries work in their department. This is the difference between a raw relational schema and one with enforced business logic.</p>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros. Here is how the BossDB schema and instance look using the DSL:</p>
+<div id="24" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>Ty <span class="op">=</span> <span class="pp">@typeside</span> <span class="cf">begin</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">String</span><span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    Al<span class="op">::</span><span class="dt">String</span>; Bob<span class="op">::</span><span class="dt">String</span>; Carl<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>BossDB <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Person</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>    boss <span class="op">:</span> Person <span class="op">→</span> Person</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    name <span class="op">:</span> Person <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@path_eq</span> Person  boss.boss <span class="op">==</span> boss</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>I <span class="op">=</span> <span class="pp">@instance</span> BossDB <span class="cf">begin</span></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>    a<span class="op">::</span><span class="dt">Person</span>; b<span class="op">::</span><span class="dt">Person</span>; c<span class="op">::</span><span class="dt">Person</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">name</span>(a) <span class="op">==</span> Al; <span class="fu">name</span>(b) <span class="op">==</span> Bob; <span class="fu">name</span>(c) <span class="op">==</span> Carl</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">boss</span>(a) <span class="op">==</span> b; <span class="fu">boss</span>(b) <span class="op">==</span> b; <span class="fu">boss</span>(c) <span class="op">==</span> c</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>alg <span class="op">=</span> I.algebra</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>Person)</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>    nm <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>name, x)</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>    b <span class="op">=</span> <span class="fu">eval_fk</span>(alg, <span class="op">:</span>boss, x)</span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>    bnm <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>name, b)</span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>nm<span class="st">: boss = </span><span class="sc">$</span>bnm<span class="st">"</span>)</span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  Carl: boss = Carl
+  Al: boss = Bob
+  Bob: boss = Bob</code></pre>
+</div>
+</div>
+<p>The <code>@path_eq</code> macro declares path equations using dot notation and <code>==</code>, directly matching the CQL <code>path_equations</code> syntax.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

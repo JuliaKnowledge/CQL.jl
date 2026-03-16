@@ -381,6 +381,36 @@ end
 
 This query (`p.deptOf.deptName = CompSci`) is a single-hop FK traversal, equivalent to a SQL query with one JOIN. The CQL syntax is identical in structure --- just a shorter path.
 
+## Julia DSL
+
+The examples above use the `cql"""..."""` string macro. CQL.jl also provides Julia-native macros. Here is how the Schools schema looks using the DSL:
+
+```{julia}
+using CQL
+
+Ty = @typeside begin
+    String::Ty
+    Wisnesky::String; Spivak::String; Chlipala::String; Morrisett::String
+    Malecha::String; Gross::String
+    Harvard::String; MIT::String; Mathematics::String; CompSci::String
+end
+
+Schools = @schema Ty begin
+    @entities Person, School, Dept
+    instituteOf : Person → School
+    deptOf : Person → Dept
+    biggestDept : School → Dept
+    lastName : Person ⇒ String
+    schoolName : School ⇒ String
+    deptName : Dept ⇒ String
+end
+
+println("Entities: ", Schools.ens)
+println("Foreign keys: ", collect(keys(Schools.fks)))
+```
+
+The query `BiggestDeptIsMath` with its FK chain navigation (`p.instituteOf.biggestDept.deptName = Mathematics`) can also be defined using the `@query` macro, where the dot notation in `@where` clauses maps directly to CQL's FK dereferencing.
+
 ## Summary
 
 | Concept | Description |

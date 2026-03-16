@@ -129,6 +129,7 @@ window.Quarto = {
   </ul></li>
   <li><a href="#data-migration-with-csv" id="toc-data-migration-with-csv" class="nav-link" data-scroll-target="#data-migration-with-csv">Data Migration with CSV</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a></li>
   </ul>
 </nav>
 </div>
@@ -645,6 +646,32 @@ After sigma: 3 things
 <li>Exported files use <strong>globally unique IDs</strong> across all entities</li>
 <li>Imported data works seamlessly with CQL queries, delta, and sigma operations</li>
 </ul>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use the <code>cql"""..."""</code> string macro for schema and query definitions. CQL.jl also provides Julia-native macros. Here is how the AnimalDB schema and flattening query look using the DSL:</p>
+<div id="22" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>Ty_sql <span class="op">=</span> cql<span class="st">"""typeside Ty = sql"""</span>.Ty  <span class="co"># sql typeside still uses cql syntax</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>AnimalDB <span class="op">=</span> <span class="pp">@schema</span> Ty_sql <span class="cf">begin</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Animal, Habitat</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    livesIn <span class="op">:</span> Animal <span class="op">→</span> Habitat</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    species <span class="op">:</span> Animal <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    legs <span class="op">:</span> Animal <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    name <span class="op">:</span> Habitat <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    climate <span class="op">:</span> Habitat <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"AnimalDB entities: "</span>, AnimalDB.ens)</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(AnimalDB.fks)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>AnimalDB entities: Set([:Animal, :Habitat])
+Foreign keys: [:livesIn]</code></pre>
+</div>
+</div>
+<p>Note: CSV import (<code>import_csv_instance</code>) and export (<code>export_csv_instance</code>) are Julia functions that work with schema objects directly, so they are already “native Julia.” The <code>@schema</code> macro defines the schema structure, while the import/export functions handle the data I/O.</p>
 </section>
 
 </main>

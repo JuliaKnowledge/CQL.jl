@@ -887,6 +887,50 @@ integration: composable mappings, adjoint data migration functors
 ($\Sigma \dashv \Delta \dashv \Pi$), and provably correct
 transformations.
 
+## Julia DSL
+
+The examples above use the `cql"""..."""` string macro. CQL.jl also
+provides Julia-native macros. Here is how the RideShare schema and a
+delta migration look using the DSL:
+
+``` julia
+using CQL
+
+Ty = @typeside begin
+    Str::Ty
+    Nat::Ty
+    Arthur::Str; Zaphod::Str; Ford::Str
+    v1::Nat; v3::Nat; v4::Nat
+end
+
+RideShare = @schema Ty begin
+    @entities User, Trip, Place, PlaceEvent, Driver, Rider, UserName
+    trip_user1 : Trip → User
+    trip_user2 : Trip → User
+    event_place : PlaceEvent → Place
+    driver_trip : Driver → Trip
+    driver_user : Driver → User
+    rider_trip : Rider → Trip
+    rider_user : Rider → User
+    name_user : UserName → User
+    event_time : PlaceEvent ⇒ Nat
+    name_value : UserName ⇒ Str
+end
+
+println("Entities: ", RideShare.ens)
+println("Foreign keys: ", length(RideShare.fks))
+println("Attributes: ", length(RideShare.atts))
+```
+
+    Entities: Set([:User, :Place, :Rider, :UserName, :PlaceEvent, :Trip, :Driver])
+    Foreign keys: 8
+    Attributes: 2
+
+Note: Mappings with `lambda` expressions (as used in the
+`PersonToRecord` delta and `Merge` sigma examples) still require the
+`cql"""..."""` string syntax. The DSL covers typesides, schemas, and
+instances.
+
 ## Summary
 
 | Concept | Description |

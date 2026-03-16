@@ -101,6 +101,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#delta-as-a-query" id="toc-delta-as-a-query" class="nav-link" data-scroll-target="#delta-as-a-query">Delta as a Query</a></li>
   <li><a href="#sigma-as-a-query" id="toc-sigma-as-a-query" class="nav-link" data-scroll-target="#sigma-as-a-query">Sigma as a Query</a></li>
   </ul></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a></li>
   <li><a href="#why-cql-comparing-with-sql-and-sparql" id="toc-why-cql-comparing-with-sql-and-sparql" class="nav-link" data-scroll-target="#why-cql-comparing-with-sql-and-sparql">Why CQL? Comparing with SQL and SPARQL</a>
   <ul class="collapse">
   <li><a href="#cql-vs-sql" id="toc-cql-vs-sql" class="nav-link" data-scroll-target="#cql-vs-sql">CQL vs SQL</a></li>
@@ -800,6 +801,53 @@ Full round-trip: J -&gt; delta -&gt; sigma recovers 3 elements</code></pre>
 </div>
 <p>The sigma query <code>sigmaFAsQuery</code> says: for each <code>n1</code> in <code>N1</code>, create an <code>N</code> element with: - <code>age</code> from <code>age(f(n1))</code> (follow FK <code>f</code> to get the age) - <code>name</code> from <code>name(n1)</code> - <code>salary</code> from <code>salary(n1)</code></p>
 </section>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros that offer a more Julian syntax. Here is how the typeside, schema, instance, and query from this tutorial look using the DSL:</p>
+<div id="20" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>Ty <span class="op">=</span> <span class="pp">@typeside</span> <span class="cf">begin</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">String</span><span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Integer</span><span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    Al<span class="op">::</span><span class="dt">String</span>; Akin<span class="op">::</span><span class="dt">String</span>; Bob<span class="op">::</span><span class="dt">String</span>; Bo<span class="op">::</span><span class="dt">String</span>; Carl<span class="op">::</span><span class="dt">String</span>; Cork<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">Math</span><span class="op">::</span><span class="dt">String</span>; CS<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    zero<span class="op">::</span><span class="dt">Integer</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">succ</span>(<span class="op">::</span><span class="dt">Integer</span>)<span class="op">::</span><span class="dt">Integer</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>S <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Employee, Department</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    manager <span class="op">:</span> Employee <span class="op">→</span> Employee</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>    worksIn <span class="op">:</span> Employee <span class="op">→</span> Department</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>    secretary <span class="op">:</span> Department <span class="op">→</span> Employee</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>    first <span class="op">:</span> Employee <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>    last <span class="op">:</span> Employee <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>    age <span class="op">:</span> Employee <span class="op">⇒</span> <span class="dt">Integer</span></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>    name <span class="op">:</span> Department <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>I <span class="op">=</span> <span class="pp">@instance</span> S <span class="cf">begin</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>    a<span class="op">::</span><span class="dt">Employee</span>; b<span class="op">::</span><span class="dt">Employee</span>; c<span class="op">::</span><span class="dt">Employee</span></span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>    m<span class="op">::</span><span class="dt">Department</span>; s<span class="op">::</span><span class="dt">Department</span></span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">manager</span>(a) <span class="op">==</span> a; <span class="fu">manager</span>(b) <span class="op">==</span> c; <span class="fu">manager</span>(c) <span class="op">==</span> c</span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">worksIn</span>(a) <span class="op">==</span> m; <span class="fu">worksIn</span>(b) <span class="op">==</span> s; <span class="fu">worksIn</span>(c) <span class="op">==</span> s</span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">secretary</span>(m) <span class="op">==</span> a; <span class="fu">secretary</span>(s) <span class="op">==</span> c</span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">first</span>(a) <span class="op">==</span> Al; <span class="fu">first</span>(b) <span class="op">==</span> Bob; <span class="fu">first</span>(c) <span class="op">==</span> Carl</span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">last</span>(a) <span class="op">==</span> Akin; <span class="fu">last</span>(b) <span class="op">==</span> Bo; <span class="fu">last</span>(c) <span class="op">==</span> Cork</span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">age</span>(a) <span class="op">==</span> <span class="fu">succ</span>(zero); <span class="fu">age</span>(c) <span class="op">==</span> <span class="fu">succ</span>(zero)</span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">name</span>(m) <span class="op">==</span> <span class="bu">Math</span>; <span class="fu">name</span>(s) <span class="op">==</span> CS</span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Employee carrier: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(I.algebra, <span class="op">:</span>Employee)))</span>
+<span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Department carrier: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(I.algebra, <span class="op">:</span>Department)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Employee carrier: 3
+Department carrier: 2</code></pre>
+</div>
+</div>
+<p>Note: Mappings with <code>lambda</code> expressions (as used in the Delta/Sigma examples above) still require the <code>cql"""..."""</code> string syntax. The DSL covers typesides, schemas, instances, and queries, but not lambda-based attribute mappings.</p>
 </section>
 <section id="why-cql-comparing-with-sql-and-sparql" class="level2">
 <h2 class="anchored" data-anchor-id="why-cql-comparing-with-sql-and-sparql">Why CQL? Comparing with SQL and SPARQL</h2>
