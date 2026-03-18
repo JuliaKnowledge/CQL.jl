@@ -22,3 +22,4 @@ Extended worked examples demonstrating CQL.jl features. Each vignette is availab
 | 16 | [Ecological Data Integration](https://github.com/JuliaKnowledge/CQL.jl/blob/main/vignettes/16_ecology/16_ecology.md) | Modeling a marine food web with CQL |
 | 17 | [Epidemiological Data Integration](https://github.com/JuliaKnowledge/CQL.jl/blob/main/vignettes/17_epidemiology/17_epidemiology.md) | Schema migration, query composition, and data fusion for outbreak surveillance |
 | 18 | [Causal Databases](https://github.com/JuliaKnowledge/CQL.jl/blob/main/vignettes/18_causal_databases/18_causal_databases.md) | Category theory for causal knowledge representation and reasoning |
+| 19 | [From Causal SQL to Semantic Spacetime](https://github.com/JuliaKnowledge/CQL.jl/blob/main/vignettes/19_causal_spacetime/19_causal_spacetime.md) | Schema morphisms between CSQL and SemanticSpacetime via CQL |

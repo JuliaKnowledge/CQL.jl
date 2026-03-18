@@ -156,8 +156,8 @@ macro typeside(block)
                 # type declaration
                 push!(types, string(lhs))
             elseif lhs isa String || (lhs isa Expr && lhs.head == :string)
-                # constant: "value"::Type
-                push!(constants, (string(lhs), string(rhs)))
+                # constant: "value"::Type — preserve quotes for CQL output
+                push!(constants, ("\"$(string(lhs))\"", string(rhs)))
             elseif lhs isa Symbol
                 # constant: name::Type
                 push!(constants, (string(lhs), string(rhs)))

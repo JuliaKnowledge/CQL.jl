@@ -95,6 +95,7 @@ env.J   # => CQLInstance (query result)
 | 16 | [Ecological Data Integration](vignettes/16_ecology/16_ecology.md) | Modeling a marine food web with CQL |
 | 17 | [Epidemiological Data Integration](vignettes/17_epidemiology/17_epidemiology.md) | Schema migration, query composition, and data fusion for outbreak surveillance |
 | 18 | [Causal Databases](vignettes/18_causal_databases/18_causal_databases.md) | Category theory for causal knowledge representation and reasoning |
+| 19 | [From Causal SQL to Semantic Spacetime](vignettes/19_causal_spacetime/19_causal_spacetime.md) | Schema morphisms between CSQL and SemanticSpacetime via CQL |
 
 ## Formal Verification
 

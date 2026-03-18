@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.28">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Simon Frost">
+
+<title>From Causal SQL to Semantic Spacetime via CQL</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="19_causal_spacetime_files/libs/clipboard/clipboard.min.js"></script>
+<script src="19_causal_spacetime_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="19_causal_spacetime_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="19_causal_spacetime_files/libs/quarto-html/popper.min.js"></script>
+<script src="19_causal_spacetime_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="19_causal_spacetime_files/libs/quarto-html/anchor.min.js"></script>
+<link href="19_causal_spacetime_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="19_causal_spacetime_files/libs/quarto-html/quarto-syntax-highlighting-49e51e44f424ea8c7044b429bdbbbfe2.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="19_causal_spacetime_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="19_causal_spacetime_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="19_causal_spacetime_files/libs/bootstrap/bootstrap-138a6193a3bd40baf1e627da441a4734.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#part-1-csql-as-a-cql-schema" id="toc-part-1-csql-as-a-cql-schema" class="nav-link" data-scroll-target="#part-1-csql-as-a-cql-schema">Part 1: CSQL as a CQL Schema</a>
+  <ul class="collapse">
+  <li><a href="#the-sql-approach" id="toc-the-sql-approach" class="nav-link" data-scroll-target="#the-sql-approach">The SQL Approach</a></li>
+  <li><a href="#the-cql-approach" id="toc-the-cql-approach" class="nav-link" data-scroll-target="#the-cql-approach">The CQL Approach</a></li>
+  <li><a href="#populating-the-cql-instance" id="toc-populating-the-cql-instance" class="nav-link" data-scroll-target="#populating-the-cql-instance">Populating the CQL Instance</a></li>
+  </ul></li>
+  <li><a href="#part-2-semanticspacetime-as-a-cql-schema" id="toc-part-2-semanticspacetime-as-a-cql-schema" class="nav-link" data-scroll-target="#part-2-semanticspacetime-as-a-cql-schema">Part 2: SemanticSpacetime as a CQL Schema</a>
+  <ul class="collapse">
+  <li><a href="#the-four-type-system" id="toc-the-four-type-system" class="nav-link" data-scroll-target="#the-four-type-system">The Four-Type System</a></li>
+  <li><a href="#the-same-data-in-sst-form" id="toc-the-same-data-in-sst-form" class="nav-link" data-scroll-target="#the-same-data-in-sst-form">The Same Data in SST Form</a></li>
+  </ul></li>
+  <li><a href="#part-3-the-mapping-whats-preserved-and-whats-lost" id="toc-part-3-the-mapping-whats-preserved-and-whats-lost" class="nav-link" data-scroll-target="#part-3-the-mapping-whats-preserved-and-whats-lost">Part 3: The Mapping — What’s Preserved and What’s Lost</a>
+  <ul class="collapse">
+  <li><a href="#what-the-mapping-tells-us" id="toc-what-the-mapping-tells-us" class="nav-link" data-scroll-target="#what-the-mapping-tells-us">What the Mapping Tells Us</a></li>
+  </ul></li>
+  <li><a href="#part-4-delta-and-sigma-moving-data-between-worlds" id="toc-part-4-delta-and-sigma-moving-data-between-worlds" class="nav-link" data-scroll-target="#part-4-delta-and-sigma-moving-data-between-worlds">Part 4: Delta and Sigma — Moving Data Between Worlds</a>
+  <ul class="collapse">
+  <li><a href="#delta-pulling-sst-data-into-csql-form" id="toc-delta-pulling-sst-data-into-csql-form" class="nav-link" data-scroll-target="#delta-pulling-sst-data-into-csql-form">Delta: Pulling SST Data into CSQL Form</a></li>
+  </ul></li>
+  <li><a href="#part-5-queries-that-cql-makes-natural" id="toc-part-5-queries-that-cql-makes-natural" class="nav-link" data-scroll-target="#part-5-queries-that-cql-makes-natural">Part 5: Queries That CQL Makes Natural</a>
+  <ul class="collapse">
+  <li><a href="#multi-hop-causal-paths" id="toc-multi-hop-causal-paths" class="nav-link" data-scroll-target="#multi-hop-causal-paths">Multi-Hop Causal Paths</a></li>
+  </ul></li>
+  <li><a href="#part-6-a-hybrid-schema" id="toc-part-6-a-hybrid-schema" class="nav-link" data-scroll-target="#part-6-a-hybrid-schema">Part 6: A Hybrid Schema</a>
+  <ul class="collapse">
+  <li><a href="#querying-across-channels" id="toc-querying-across-channels" class="nav-link" data-scroll-target="#querying-across-channels">Querying Across Channels</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="19_causal_spacetime.md"><i class="bi bi-file-code"></i>Github (GFM)</a></li></ul></div></nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">From Causal SQL to Semantic Spacetime via CQL</h1>
+<p class="subtitle lead">Schema morphisms reveal what causality models are really saying</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Simon Frost </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Two Julia packages model causal and semantic relationships in fundamentally different ways:</p>
+<ul>
+<li><strong>CSQL.jl</strong> (<a href="https://arxiv.org/abs/2601.08109">arXiv:2601.08109</a>) builds SQL-queryable causal databases from extracted causal triples (subject, relation, object), with 20 relation types, polarity tracking, and provenance</li>
+<li><strong>SemanticSpacetime.jl</strong> models knowledge as a typed graph with exactly 4 fundamental relationship types arranged on a signed spectrum inspired by physics: <strong>LEADSTO</strong> (causality), <strong>CONTAINS</strong> (composition), <strong>EXPRESS</strong> (description), and <strong>NEAR</strong> (proximity)</li>
+</ul>
+<p>Both represent directed graphs with typed edges, but they make very different choices about <strong>what the types mean</strong> and <strong>how structure is encoded</strong>. In this vignette, we use the Categorical Query Language (CQL) to:</p>
+<ol type="1">
+<li>Express both data models as CQL schemas</li>
+<li>Construct a <strong>mapping</strong> (schema morphism) between them</li>
+<li>Use <strong>delta</strong> and <strong>sigma</strong> migrations to move data between the two representations</li>
+<li>Discover what the morphism reveals about the structure of causal knowledge</li>
+</ol>
+<p>The key insight: a CQL mapping between schemas is not just a translation — it’s a <strong>statement about what information is preserved, lost, or gained</strong> in the translation. The delta-sigma adjunction makes this precise.</p>
+<div id="2" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="part-1-csql-as-a-cql-schema" class="level2">
+<h2 class="anchored" data-anchor-id="part-1-csql-as-a-cql-schema">Part 1: CSQL as a CQL Schema</h2>
+<section id="the-sql-approach" class="level3">
+<h3 class="anchored" data-anchor-id="the-sql-approach">The SQL Approach</h3>
+<p>In CSQL.jl, causal knowledge is stored in four SQL tables:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Table</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>atlas_nodes</code></td>
+<td>Canonical causal concepts</td>
+</tr>
+<tr class="even">
+<td><code>atlas_edges</code></td>
+<td>Aggregated causal relationships</td>
+</tr>
+<tr class="odd">
+<td><code>atlas_edge_support</code></td>
+<td>Provenance (links edges to source documents)</td>
+</tr>
+<tr class="even">
+<td><code>atlas_scc</code></td>
+<td>Strongly connected components (feedback loops)</td>
+</tr>
+</tbody>
+</table>
+<p>The SQL schema uses integer foreign keys (<code>src_id</code>, <code>dst_id</code>, <code>edge_id</code>) and string-typed relation labels (<code>CAUSES</code>, <code>INCREASES</code>, <code>REDUCES</code>, etc.).</p>
+</section>
+<section id="the-cql-approach" class="level3">
+<h3 class="anchored" data-anchor-id="the-cql-approach">The CQL Approach</h3>
+<p>In CQL, we model the same structure using <strong>entities</strong> (tables), <strong>foreign keys</strong> (typed references), and <strong>attributes</strong> (data values). Foreign keys are first-class — they are functions between entities, not integer columns.</p>
+<div id="4" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Real Int</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="st">        CAUSES INCREASES REDUCES PREVENTS LEADS_TO ENABLES</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="st">        AFFECTS TREATS TARGETS INHIBITS ACTIVATES</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="st">        ASSOCIATED_WITH COOCCURS_WITH INTERACTS_WITH : String</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="st">        inc dec unk : String</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="st">        "0.0" "0.5" "0.85" "0.88" "0.92" "0.95" : Real</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="st">schema CausalAtlas = literal : Ty {</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="st">        Node Edge EdgeSupport</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="st">        src : Edge -&gt; Node</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="st">        dst : Edge -&gt; Node</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="st">        evidence : EdgeSupport -&gt; Edge</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="st">        label : Node -&gt; String</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="st">        rel_type : Edge -&gt; String</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="st">        polarity : Edge -&gt; String</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="st">        score : Edge -&gt; Real</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="st">        doc_id : EdgeSupport -&gt; String</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="st">        evidence_score : EdgeSupport -&gt; Real</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"CausalAtlas entities: "</span>, env.CausalAtlas.ens)</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(env.CausalAtlas.fks)))</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Attributes: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(env.CausalAtlas.atts)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>CausalAtlas entities: Set([:EdgeSupport, :Node, :Edge])
+Foreign keys: [:src, :dst, :evidence]
+Attributes: [:rel_type, :polarity, :doc_id, :label, :evidence_score, :score]</code></pre>
+</div>
+</div>
+<p>Notice what CQL gives us that SQL does not:</p>
+<ul>
+<li><strong><code>src</code> and <code>dst</code> are typed functions</strong>, not integer columns. You cannot accidentally join on the wrong column.</li>
+<li><strong>Path expressions</strong> like <code>e.src.label</code> follow foreign keys with guaranteed type safety. No <code>JOIN</code> clause needed.</li>
+<li><strong>The schema is a category</strong>: entities are objects, foreign keys are morphisms, and path equations enforce constraints.</li>
+</ul>
+</section>
+<section id="populating-the-cql-instance" class="level3">
+<h3 class="anchored" data-anchor-id="populating-the-cql-instance">Populating the CQL Instance</h3>
+<div id="6" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Real</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="st">        Vaccination Susceptibility Transmission : String</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="st">        PopulationImmunity ContactRate OutbreakSeverity : String</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="st">        REDUCES INCREASES : String</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="st">        inc dec : String</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="st">        smith2023 jones2024 : String</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="st">        "0.92" "0.88" "0.85" "0.95" : Real</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="st">schema CausalAtlas = literal : Ty {</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="st">        Node Edge EdgeSupport</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="st">        src : Edge -&gt; Node</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="st">        dst : Edge -&gt; Node</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="st">        evidence : EdgeSupport -&gt; Edge</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="st">        label : Node -&gt; String</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="st">        rel_type : Edge -&gt; String</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="st">        polarity : Edge -&gt; String</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="st">        score : Edge -&gt; Real</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="st">        doc_id : EdgeSupport -&gt; String</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="st">instance EpiAtlas = literal : CausalAtlas {</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="st">    generators</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="st">        vaccination susceptibility transmission : Node</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="st">        pop_immunity contact_rate outbreak_sev : Node</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="st">        e1 e2 e3 e4 : Edge</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="st">        s1 s2 s3 s4 : EdgeSupport</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="st">    equations</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="st">        src(e1) = vaccination    dst(e1) = susceptibility</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="st">        src(e2) = vaccination    dst(e2) = pop_immunity</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="st">        src(e3) = contact_rate   dst(e3) = transmission</span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="st">        src(e4) = transmission   dst(e4) = outbreak_sev</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a><span class="st">        rel_type(e1) = REDUCES    polarity(e1) = dec</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a><span class="st">        rel_type(e2) = INCREASES  polarity(e2) = inc</span></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a><span class="st">        rel_type(e3) = INCREASES  polarity(e3) = inc</span></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="st">        rel_type(e4) = INCREASES  polarity(e4) = inc</span></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a><span class="st">        score(e1) = "0.92"  score(e2) = "0.88"</span></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a><span class="st">        score(e3) = "0.85"  score(e4) = "0.95"</span></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a><span class="st">        evidence(s1) = e1  doc_id(s1) = smith2023</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a><span class="st">        evidence(s2) = e2  doc_id(s2) = smith2023</span></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a><span class="st">        evidence(s3) = e3  doc_id(s3) = jones2024</span></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a><span class="st">        evidence(s4) = e4  doc_id(s4) = jones2024</span></span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a><span class="st">        label(vaccination) = Vaccination</span></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a><span class="st">        label(susceptibility) = Susceptibility</span></span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a><span class="st">        label(transmission) = Transmission</span></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a><span class="st">        label(pop_immunity) = PopulationImmunity</span></span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a><span class="st">        label(contact_rate) = ContactRate</span></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a><span class="st">        label(outbreak_sev) = OutbreakSeverity</span></span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>alg <span class="op">=</span> env.EpiAtlas.algebra</span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Nodes: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>Node)))</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Edges: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>Edge)))</span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Evidence records: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>EdgeSupport)))</span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Causal edges:"</span>)</span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>Edge)</span>
+<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>label, <span class="fu">eval_fk</span>(alg, <span class="op">:</span>src, x))</span>
+<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>label, <span class="fu">eval_fk</span>(alg, <span class="op">:</span>dst, x))</span>
+<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>rel_type, x)</span>
+<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>s<span class="st"> --[</span><span class="sc">$</span>r<span class="st">]--&gt; </span><span class="sc">$</span>d<span class="st">"</span>)</span>
+<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Nodes: 6
+Edges: 4
+Evidence records: 4
+
+Causal edges:
+  ContactRate --[INCREASES]--&gt; Transmission
+  Vaccination --[REDUCES]--&gt; Susceptibility
+  Vaccination --[INCREASES]--&gt; PopulationImmunity
+  Transmission --[INCREASES]--&gt; OutbreakSeverity</code></pre>
+</div>
+</div>
+<p>Compare this with SQL: in CQL, we write <code>eval_fk(alg, :src, x)</code> to follow a foreign key — this is a <strong>function application</strong>, not a join. The path <code>src(e).label</code> is a composition of morphisms in the schema category.</p>
+</section>
+</section>
+<section id="part-2-semanticspacetime-as-a-cql-schema" class="level2">
+<h2 class="anchored" data-anchor-id="part-2-semanticspacetime-as-a-cql-schema">Part 2: SemanticSpacetime as a CQL Schema</h2>
+<section id="the-four-type-system" class="level3">
+<h3 class="anchored" data-anchor-id="the-four-type-system">The Four-Type System</h3>
+<p>SemanticSpacetime classifies all relationships along a signed spectrum:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 22%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 27%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>STType</th>
+<th>Channel</th>
+<th>Meaning</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>+1</td>
+<td>LEADSTO</td>
+<td>Causal/temporal forward</td>
+<td>“causes”, “leads to”, “enables”</td>
+</tr>
+<tr class="even">
+<td>-1</td>
+<td>-LEADSTO</td>
+<td>Causal/temporal backward</td>
+<td>“caused by”, “preceded by”</td>
+</tr>
+<tr class="odd">
+<td>+2</td>
+<td>CONTAINS</td>
+<td>Compositional forward</td>
+<td>“has part”, “contains”</td>
+</tr>
+<tr class="even">
+<td>-2</td>
+<td>-CONTAINS</td>
+<td>Compositional backward</td>
+<td>“is part of”, “belongs to”</td>
+</tr>
+<tr class="odd">
+<td>+3</td>
+<td>EXPRESS</td>
+<td>Descriptive forward</td>
+<td>“has property”, “expresses”</td>
+</tr>
+<tr class="even">
+<td>-3</td>
+<td>-EXPRESS</td>
+<td>Descriptive backward</td>
+<td>“is property of”</td>
+</tr>
+<tr class="odd">
+<td>0</td>
+<td>NEAR</td>
+<td>Proximity/similarity</td>
+<td>“co-occurs with”, “similar to”</td>
+</tr>
+</tbody>
+</table>
+<p>This is a much coarser type system than CSQL’s 20 relations, but it carries <strong>structural meaning</strong>: the sign encodes direction, and the magnitude encodes the semantic category.</p>
+<div id="8" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Real Int</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="st">        LEADSTO CONTAINS EXPRESS NEAR : String</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="st">        "1" "2" "3" "0" : Int</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="st">        "1.0" : Real</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="st">schema SemanticST = literal : Ty {</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="st">        Concept Link Arrow Context</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="st">        link_src : Link -&gt; Concept</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="st">        link_dst : Link -&gt; Concept</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="st">        link_arrow : Link -&gt; Arrow</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="st">        link_context : Link -&gt; Context</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="st">        text : Concept -&gt; String</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="st">        chapter : Concept -&gt; String</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="st">        arrow_name : Arrow -&gt; String</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="st">        stindex : Arrow -&gt; Int</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="st">        weight : Link -&gt; Real</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="st">        ctx_label : Context -&gt; String</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"SemanticST entities: "</span>, env.SemanticST.ens)</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Foreign keys: "</span>, <span class="fu">collect</span>(<span class="fu">keys</span>(env.SemanticST.fks)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>SemanticST entities: Set([:Context, :Concept, :Link, :Arrow])
+Foreign keys: [:link_context, :link_dst, :link_arrow, :link_src]</code></pre>
+</div>
+</div>
+</section>
+<section id="the-same-data-in-sst-form" class="level3">
+<h3 class="anchored" data-anchor-id="the-same-data-in-sst-form">The Same Data in SST Form</h3>
+<div id="10" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Real Int</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="st">        LEADSTO NEAR : String</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="st">        FwdCausal InhibCausal Proximity : String</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="st">        "1" "0" : Int</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="st">        epi : String</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="st">        Vaccination Susceptibility Transmission : String</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="st">        PopulationImmunity ContactRate OutbreakSeverity : String</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="st">        "0.92" "0.88" "0.85" "0.95" : Real</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="st">schema SemanticST = literal : Ty {</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="st">        Concept Link Arrow Context</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="st">        link_src : Link -&gt; Concept</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="st">        link_dst : Link -&gt; Concept</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="st">        link_arrow : Link -&gt; Arrow</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="st">        link_context : Link -&gt; Context</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="st">        text : Concept -&gt; String</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="st">        chapter : Concept -&gt; String</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="st">        arrow_name : Arrow -&gt; String</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="st">        stindex : Arrow -&gt; Int</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="st">        weight : Link -&gt; Real</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="st">        ctx_label : Context -&gt; String</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="st">instance EpiSST = literal : SemanticST {</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="st">    generators</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="st">        vaccination susceptibility transmission : Concept</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="st">        pop_immunity contact_rate outbreak_sev : Concept</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="st">        fwd_causal inhib_causal proximity_arrow : Arrow</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="st">        epi_ctx : Context</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="st">        l1 l2 l3 l4 : Link</span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="st">    equations</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="st">        text(vaccination) = Vaccination</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="st">        text(susceptibility) = Susceptibility</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a><span class="st">        text(transmission) = Transmission</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a><span class="st">        text(pop_immunity) = PopulationImmunity</span></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a><span class="st">        text(contact_rate) = ContactRate</span></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a><span class="st">        text(outbreak_sev) = OutbreakSeverity</span></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a><span class="st">        chapter(vaccination) = epi  chapter(susceptibility) = epi</span></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a><span class="st">        chapter(transmission) = epi  chapter(pop_immunity) = epi</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a><span class="st">        chapter(contact_rate) = epi  chapter(outbreak_sev) = epi</span></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a><span class="st">        arrow_name(fwd_causal) = LEADSTO   stindex(fwd_causal) = "1"</span></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a><span class="st">        arrow_name(inhib_causal) = LEADSTO  stindex(inhib_causal) = "1"</span></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a><span class="st">        arrow_name(proximity_arrow) = NEAR  stindex(proximity_arrow) = "0"</span></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a><span class="st">        ctx_label(epi_ctx) = epi</span></span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a><span class="st">        link_src(l1) = vaccination    link_dst(l1) = susceptibility</span></span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a><span class="st">        link_src(l2) = vaccination    link_dst(l2) = pop_immunity</span></span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a><span class="st">        link_src(l3) = contact_rate   link_dst(l3) = transmission</span></span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a><span class="st">        link_src(l4) = transmission   link_dst(l4) = outbreak_sev</span></span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a><span class="st">        link_arrow(l1) = inhib_causal   weight(l1) = "0.92"</span></span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a><span class="st">        link_arrow(l2) = fwd_causal     weight(l2) = "0.88"</span></span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a><span class="st">        link_arrow(l3) = fwd_causal     weight(l3) = "0.85"</span></span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a><span class="st">        link_arrow(l4) = fwd_causal     weight(l4) = "0.95"</span></span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a><span class="st">        link_context(l1) = epi_ctx  link_context(l2) = epi_ctx</span></span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a><span class="st">        link_context(l3) = epi_ctx  link_context(l4) = epi_ctx</span></span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a>alg <span class="op">=</span> env.EpiSST.algebra</span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Concepts: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>Concept)))</span>
+<span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Links: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>Link)))</span>
+<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Arrows: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>Arrow)))</span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">SST links:"</span>)</span>
+<span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>Link)</span>
+<span id="cb8-78"><a href="#cb8-78" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>text, <span class="fu">eval_fk</span>(alg, <span class="op">:</span>link_src, x))</span>
+<span id="cb8-79"><a href="#cb8-79" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>text, <span class="fu">eval_fk</span>(alg, <span class="op">:</span>link_dst, x))</span>
+<span id="cb8-80"><a href="#cb8-80" aria-hidden="true" tabindex="-1"></a>    a <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>arrow_name, <span class="fu">eval_fk</span>(alg, <span class="op">:</span>link_arrow, x))</span>
+<span id="cb8-81"><a href="#cb8-81" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>weight, x)</span>
+<span id="cb8-82"><a href="#cb8-82" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>s<span class="st"> --[</span><span class="sc">$</span>a<span class="st">]--&gt; </span><span class="sc">$</span>d<span class="st">  (weight=</span><span class="sc">$</span>w<span class="st">)"</span>)</span>
+<span id="cb8-83"><a href="#cb8-83" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Concepts: 6
+Links: 4
+Arrows: 3
+
+SST links:
+  Vaccination --[LEADSTO]--&gt; Susceptibility  (weight=0.92)
+  ContactRate --[LEADSTO]--&gt; Transmission  (weight=0.85)
+  Transmission --[LEADSTO]--&gt; OutbreakSeverity  (weight=0.95)
+  Vaccination --[LEADSTO]--&gt; PopulationImmunity  (weight=0.88)</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="part-3-the-mapping-whats-preserved-and-whats-lost" class="level2">
+<h2 class="anchored" data-anchor-id="part-3-the-mapping-whats-preserved-and-whats-lost">Part 3: The Mapping — What’s Preserved and What’s Lost</h2>
+<p>A CQL <strong>mapping</strong> <code>F : CausalAtlas → SemanticST</code> tells us exactly how the CSQL world-view translates into the SST world-view.</p>
+<div id="12" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Real Int</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="st">        REDUCES INCREASES CAUSES PREVENTS LEADS_TO ENABLES</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="st">        AFFECTS TREATS TARGETS INHIBITS ACTIVATES</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="st">        ASSOCIATED_WITH COOCCURS_WITH INTERACTS_WITH : String</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="st">        inc dec unk : String</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="st">        LEADSTO NEAR : String</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="st">        "1" "0" : Int</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="st">        unknown_ctx : String</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="st">schema CausalAtlas = literal : Ty {</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="st">        Node Edge EdgeSupport</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="st">        src : Edge -&gt; Node</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="st">        dst : Edge -&gt; Node</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="st">        evidence : EdgeSupport -&gt; Edge</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="st">        label : Node -&gt; String</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="st">        rel_type : Edge -&gt; String</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="st">        polarity : Edge -&gt; String</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="st">        score : Edge -&gt; Real</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="st">        doc_id : EdgeSupport -&gt; String</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a><span class="st">schema SemanticST = literal : Ty {</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a><span class="st">        Concept Link Arrow Context</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a><span class="st">        link_src : Link -&gt; Concept</span></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a><span class="st">        link_dst : Link -&gt; Concept</span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a><span class="st">        link_arrow : Link -&gt; Arrow</span></span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a><span class="st">        link_context : Link -&gt; Context</span></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a><span class="st">        text : Concept -&gt; String</span></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a><span class="st">        arrow_name : Arrow -&gt; String</span></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a><span class="st">        stindex : Arrow -&gt; Int</span></span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a><span class="st">        weight : Link -&gt; Real</span></span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a><span class="st">        ctx_label : Context -&gt; String</span></span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a><span class="st">mapping F = literal : CausalAtlas -&gt; SemanticST {</span></span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a><span class="st">    entity</span></span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a><span class="st">        Node -&gt; Concept</span></span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a><span class="st">        attributes</span></span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a><span class="st">            label -&gt; text</span></span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a><span class="st">    entity</span></span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a><span class="st">        Edge -&gt; Link</span></span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a><span class="st">        foreign_keys</span></span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a><span class="st">            src -&gt; link_src</span></span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a><span class="st">            dst -&gt; link_dst</span></span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a><span class="st">        attributes</span></span>
+<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a><span class="st">            score -&gt; weight</span></span>
+<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a><span class="st">    entity</span></span>
+<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a><span class="st">        EdgeSupport -&gt; Link</span></span>
+<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a><span class="st">        foreign_keys</span></span>
+<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a><span class="st">            evidence -&gt; identity</span></span>
+<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> env.F</span>
+<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Mapping F: CausalAtlas -&gt; SemanticST"</span>)</span>
+<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Entity mappings:"</span>)</span>
+<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (src_en, tgt_en) <span class="kw">in</span> m.ens</span>
+<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>src_en<span class="st"> -&gt; </span><span class="sc">$</span>tgt_en<span class="st">"</span>)</span>
+<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Mapping F: CausalAtlas -&gt; SemanticST
+Entity mappings:
+  EdgeSupport -&gt; Link
+  Node -&gt; Concept
+  Edge -&gt; Link</code></pre>
+</div>
+</div>
+<section id="what-the-mapping-tells-us" class="level3">
+<h3 class="anchored" data-anchor-id="what-the-mapping-tells-us">What the Mapping Tells Us</h3>
+<p>Let’s unpack what this mapping says:</p>
+<p><strong>1. Node → Concept</strong>: Every causal concept in CSQL becomes a semantic concept in SST. The <code>label</code> attribute maps to <code>text</code>. This is a clean, information-preserving translation.</p>
+<p><strong>2. Edge → Link</strong>: Every causal edge becomes a semantic link. Source and destination are preserved. But notice what happens to the attributes:</p>
+<ul>
+<li><code>score → weight</code>: Evidence strength is preserved</li>
+<li><code>rel_type</code>: Has <strong>no image</strong> in SemanticST’s Link attributes — it must go through the <code>Arrow</code> entity</li>
+<li><code>polarity</code>: Also has no direct image — it’s encoded in the sign of the arrow’s <code>stindex</code></li>
+</ul>
+<p>This means <strong>the mapping loses the fine-grained relation type</strong>. CSQL distinguishes INCREASES from CAUSES from ENABLES — SemanticSpacetime collapses all of these into <code>+LEADSTO</code>.</p>
+<p><strong>3. EdgeSupport → Link</strong>: Provenance records collapse into the link itself. Multiple evidence records for the same edge become <strong>the same link</strong>. This is the most significant information loss: SST doesn’t track how many documents support a claim.</p>
+</section>
+</section>
+<section id="part-4-delta-and-sigma-moving-data-between-worlds" class="level2">
+<h2 class="anchored" data-anchor-id="part-4-delta-and-sigma-moving-data-between-worlds">Part 4: Delta and Sigma — Moving Data Between Worlds</h2>
+<section id="delta-pulling-sst-data-into-csql-form" class="level3">
+<h3 class="anchored" data-anchor-id="delta-pulling-sst-data-into-csql-form">Delta: Pulling SST Data into CSQL Form</h3>
+<p>Delta (pullback) restructures SST data into CSQL’s schema. Since the mapping sends both <code>Edge</code> and <code>EdgeSupport</code> to <code>Link</code>, delta will create <strong>copies</strong> of each SST link — one as an Edge, one as an EdgeSupport.</p>
+<div id="14" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Using our mapping F and the EpiSST instance from earlier</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Delta pulls data backward: SST → CausalAtlas</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>env2 <span class="op">=</span> cql<span class="st">"""</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="st">        String Real Int</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="st">        Vaccination Susceptibility Transmission : String</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="st">        PopulationImmunity ContactRate OutbreakSeverity : String</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="st">        LEADSTO NEAR : String</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="st">        FwdCausal InhibCausal : String</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="st">        epi : String</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="st">        "1" "0" : Int</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="st">        "0.92" "0.88" "0.85" "0.95" : Real</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="st">schema SemanticST = literal : Ty {</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="st">        Concept Link Arrow Context</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="st">        link_src : Link -&gt; Concept</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="st">        link_dst : Link -&gt; Concept</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="st">        link_arrow : Link -&gt; Arrow</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="st">        link_context : Link -&gt; Context</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="st">        text : Concept -&gt; String</span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a><span class="st">        arrow_name : Arrow -&gt; String</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a><span class="st">        stindex : Arrow -&gt; Int</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="st">        weight : Link -&gt; Real</span></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a><span class="st">        ctx_label : Context -&gt; String</span></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a><span class="st">schema CausalAtlas = literal : Ty {</span></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a><span class="st">        Node Edge EdgeSupport</span></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a><span class="st">        src : Edge -&gt; Node</span></span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a><span class="st">        dst : Edge -&gt; Node</span></span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a><span class="st">        evidence : EdgeSupport -&gt; Edge</span></span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a><span class="st">        label : Node -&gt; String</span></span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a><span class="st">        score : Edge -&gt; Real</span></span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a><span class="st">        doc_id : EdgeSupport -&gt; String</span></span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a><span class="st">instance EpiSST = literal : SemanticST {</span></span>
+<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a><span class="st">    generators</span></span>
+<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a><span class="st">        vaccination susceptibility transmission : Concept</span></span>
+<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a><span class="st">        pop_immunity contact_rate outbreak_sev : Concept</span></span>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a><span class="st">        fwd_causal inhib_causal : Arrow</span></span>
+<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a><span class="st">        epi_ctx : Context</span></span>
+<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a><span class="st">        l1 l2 l3 l4 : Link</span></span>
+<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a><span class="st">    equations</span></span>
+<span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a><span class="st">        text(vaccination) = Vaccination  text(susceptibility) = Susceptibility</span></span>
+<span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a><span class="st">        text(transmission) = Transmission  text(pop_immunity) = PopulationImmunity</span></span>
+<span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a><span class="st">        text(contact_rate) = ContactRate  text(outbreak_sev) = OutbreakSeverity</span></span>
+<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a><span class="st">        arrow_name(fwd_causal) = LEADSTO  stindex(fwd_causal) = "1"</span></span>
+<span id="cb12-59"><a href="#cb12-59" aria-hidden="true" tabindex="-1"></a><span class="st">        arrow_name(inhib_causal) = LEADSTO  stindex(inhib_causal) = "1"</span></span>
+<span id="cb12-60"><a href="#cb12-60" aria-hidden="true" tabindex="-1"></a><span class="st">        ctx_label(epi_ctx) = epi</span></span>
+<span id="cb12-61"><a href="#cb12-61" aria-hidden="true" tabindex="-1"></a><span class="st">        link_src(l1) = vaccination  link_dst(l1) = susceptibility</span></span>
+<span id="cb12-62"><a href="#cb12-62" aria-hidden="true" tabindex="-1"></a><span class="st">        link_src(l2) = vaccination  link_dst(l2) = pop_immunity</span></span>
+<span id="cb12-63"><a href="#cb12-63" aria-hidden="true" tabindex="-1"></a><span class="st">        link_src(l3) = contact_rate  link_dst(l3) = transmission</span></span>
+<span id="cb12-64"><a href="#cb12-64" aria-hidden="true" tabindex="-1"></a><span class="st">        link_src(l4) = transmission  link_dst(l4) = outbreak_sev</span></span>
+<span id="cb12-65"><a href="#cb12-65" aria-hidden="true" tabindex="-1"></a><span class="st">        link_arrow(l1) = inhib_causal  weight(l1) = "0.92"</span></span>
+<span id="cb12-66"><a href="#cb12-66" aria-hidden="true" tabindex="-1"></a><span class="st">        link_arrow(l2) = fwd_causal  weight(l2) = "0.88"</span></span>
+<span id="cb12-67"><a href="#cb12-67" aria-hidden="true" tabindex="-1"></a><span class="st">        link_arrow(l3) = fwd_causal  weight(l3) = "0.85"</span></span>
+<span id="cb12-68"><a href="#cb12-68" aria-hidden="true" tabindex="-1"></a><span class="st">        link_arrow(l4) = fwd_causal  weight(l4) = "0.95"</span></span>
+<span id="cb12-69"><a href="#cb12-69" aria-hidden="true" tabindex="-1"></a><span class="st">        link_context(l1) = epi_ctx  link_context(l2) = epi_ctx</span></span>
+<span id="cb12-70"><a href="#cb12-70" aria-hidden="true" tabindex="-1"></a><span class="st">        link_context(l3) = epi_ctx  link_context(l4) = epi_ctx</span></span>
+<span id="cb12-71"><a href="#cb12-71" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb12-72"><a href="#cb12-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-73"><a href="#cb12-73" aria-hidden="true" tabindex="-1"></a><span class="st">schema SimpleAtlas = literal : Ty {</span></span>
+<span id="cb12-74"><a href="#cb12-74" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb12-75"><a href="#cb12-75" aria-hidden="true" tabindex="-1"></a><span class="st">        Node Edge</span></span>
+<span id="cb12-76"><a href="#cb12-76" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb12-77"><a href="#cb12-77" aria-hidden="true" tabindex="-1"></a><span class="st">        src : Edge -&gt; Node</span></span>
+<span id="cb12-78"><a href="#cb12-78" aria-hidden="true" tabindex="-1"></a><span class="st">        dst : Edge -&gt; Node</span></span>
+<span id="cb12-79"><a href="#cb12-79" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb12-80"><a href="#cb12-80" aria-hidden="true" tabindex="-1"></a><span class="st">        label : Node -&gt; String</span></span>
+<span id="cb12-81"><a href="#cb12-81" aria-hidden="true" tabindex="-1"></a><span class="st">        score : Edge -&gt; Real</span></span>
+<span id="cb12-82"><a href="#cb12-82" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb12-83"><a href="#cb12-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-84"><a href="#cb12-84" aria-hidden="true" tabindex="-1"></a><span class="st">query DeltaQ = literal : SemanticST -&gt; SimpleAtlas {</span></span>
+<span id="cb12-85"><a href="#cb12-85" aria-hidden="true" tabindex="-1"></a><span class="st">    entity Node -&gt; {</span></span>
+<span id="cb12-86"><a href="#cb12-86" aria-hidden="true" tabindex="-1"></a><span class="st">        from c : Concept</span></span>
+<span id="cb12-87"><a href="#cb12-87" aria-hidden="true" tabindex="-1"></a><span class="st">        attributes label -&gt; text(c)</span></span>
+<span id="cb12-88"><a href="#cb12-88" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb12-89"><a href="#cb12-89" aria-hidden="true" tabindex="-1"></a><span class="st">    entity Edge -&gt; {</span></span>
+<span id="cb12-90"><a href="#cb12-90" aria-hidden="true" tabindex="-1"></a><span class="st">        from l : Link</span></span>
+<span id="cb12-91"><a href="#cb12-91" aria-hidden="true" tabindex="-1"></a><span class="st">        attributes score -&gt; weight(l)</span></span>
+<span id="cb12-92"><a href="#cb12-92" aria-hidden="true" tabindex="-1"></a><span class="st">        foreign_keys</span></span>
+<span id="cb12-93"><a href="#cb12-93" aria-hidden="true" tabindex="-1"></a><span class="st">            src -&gt; {c -&gt; link_src(l)}</span></span>
+<span id="cb12-94"><a href="#cb12-94" aria-hidden="true" tabindex="-1"></a><span class="st">            dst -&gt; {c -&gt; link_dst(l)}</span></span>
+<span id="cb12-95"><a href="#cb12-95" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb12-96"><a href="#cb12-96" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb12-97"><a href="#cb12-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-98"><a href="#cb12-98" aria-hidden="true" tabindex="-1"></a><span class="st">instance DeltaResult = eval DeltaQ EpiSST</span></span>
+<span id="cb12-99"><a href="#cb12-99" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb12-100"><a href="#cb12-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-101"><a href="#cb12-101" aria-hidden="true" tabindex="-1"></a>alg <span class="op">=</span> env2.DeltaResult.algebra</span>
+<span id="cb12-102"><a href="#cb12-102" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Delta: SST -&gt; SimpleAtlas ==="</span>)</span>
+<span id="cb12-103"><a href="#cb12-103" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Nodes: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>Node)))</span>
+<span id="cb12-104"><a href="#cb12-104" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Edges: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>Edge)))</span>
+<span id="cb12-105"><a href="#cb12-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-106"><a href="#cb12-106" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Reconstructed causal edges:"</span>)</span>
+<span id="cb12-107"><a href="#cb12-107" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>Edge)</span>
+<span id="cb12-108"><a href="#cb12-108" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>label, <span class="fu">eval_fk</span>(alg, <span class="op">:</span>src, x))</span>
+<span id="cb12-109"><a href="#cb12-109" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>label, <span class="fu">eval_fk</span>(alg, <span class="op">:</span>dst, x))</span>
+<span id="cb12-110"><a href="#cb12-110" aria-hidden="true" tabindex="-1"></a>    sc <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>score, x)</span>
+<span id="cb12-111"><a href="#cb12-111" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>s<span class="st"> --&gt; </span><span class="sc">$</span>d<span class="st">  (score=</span><span class="sc">$</span>sc<span class="st">)"</span>)</span>
+<span id="cb12-112"><a href="#cb12-112" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Delta: SST -&gt; SimpleAtlas ===
+Nodes: 6
+Edges: 4
+
+Reconstructed causal edges:
+  Vaccination --&gt; Susceptibility  (score=0.92)
+  ContactRate --&gt; Transmission  (score=0.85)
+  Vaccination --&gt; PopulationImmunity  (score=0.88)
+  Transmission --&gt; OutbreakSeverity  (score=0.95)</code></pre>
+</div>
+</div>
+<p>Notice that the delta migration:</p>
+<ul>
+<li><strong>Preserves concepts</strong> (Node ↔︎ Concept are 1:1)</li>
+<li><strong>Preserves edges</strong> (Edge ↔︎ Link are 1:1)</li>
+<li><strong>Creates evidence records</strong> from context labels (each link generates one evidence record)</li>
+</ul>
+<p>But the <code>rel_type</code> and <code>polarity</code> attributes are missing from the result — they were lost in the mapping because SST doesn’t distinguish them at the Link level. This is the <strong>information loss</strong> made precise by the adjunction.</p>
+</section>
+</section>
+<section id="part-5-queries-that-cql-makes-natural" class="level2">
+<h2 class="anchored" data-anchor-id="part-5-queries-that-cql-makes-natural">Part 5: Queries That CQL Makes Natural</h2>
+<section id="multi-hop-causal-paths" class="level3">
+<h3 class="anchored" data-anchor-id="multi-hop-causal-paths">Multi-Hop Causal Paths</h3>
+<p>In SQL, finding 3-hop causal paths requires a triple self-join with explicit ON clauses. In CQL, it’s a single uber-flower:</p>
+<div id="16" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Real</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="st">        Vaccination Susceptibility Transmission : String</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="st">        PopulationImmunity ContactRate OutbreakSeverity : String</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="st">        REDUCES INCREASES : String</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="st">        "0.92" "0.88" "0.85" "0.95" : Real</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="st">schema CausalAtlas = literal : Ty {</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="st">        Node Edge</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="st">        src : Edge -&gt; Node</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="st">        dst : Edge -&gt; Node</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="st">        label : Node -&gt; String</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="st">        rel_type : Edge -&gt; String</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="st">        score : Edge -&gt; Real</span></span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a><span class="st">schema PathResult = literal : Ty {</span></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a><span class="st">        Path</span></span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a><span class="st">        step1 : Path -&gt; String</span></span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a><span class="st">        rel1 : Path -&gt; String</span></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a><span class="st">        step2 : Path -&gt; String</span></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a><span class="st">        rel2 : Path -&gt; String</span></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a><span class="st">        step3 : Path -&gt; String</span></span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a><span class="st">query CausalPath2 = literal : CausalAtlas -&gt; PathResult {</span></span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a><span class="st">    entity Path -&gt; {</span></span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a><span class="st">        from e1:Edge e2:Edge</span></span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a><span class="st">        where dst(e1) = src(e2)</span></span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a><span class="st">        attributes</span></span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a><span class="st">            step1 -&gt; label(src(e1))</span></span>
+<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a><span class="st">            rel1 -&gt; rel_type(e1)</span></span>
+<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a><span class="st">            step2 -&gt; label(dst(e1))</span></span>
+<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a><span class="st">            rel2 -&gt; rel_type(e2)</span></span>
+<span id="cb14-44"><a href="#cb14-44" aria-hidden="true" tabindex="-1"></a><span class="st">            step3 -&gt; label(dst(e2))</span></span>
+<span id="cb14-45"><a href="#cb14-45" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb14-46"><a href="#cb14-46" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb14-47"><a href="#cb14-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-48"><a href="#cb14-48" aria-hidden="true" tabindex="-1"></a><span class="st">instance EpiAtlas = literal : CausalAtlas {</span></span>
+<span id="cb14-49"><a href="#cb14-49" aria-hidden="true" tabindex="-1"></a><span class="st">    generators</span></span>
+<span id="cb14-50"><a href="#cb14-50" aria-hidden="true" tabindex="-1"></a><span class="st">        vaccination susceptibility transmission : Node</span></span>
+<span id="cb14-51"><a href="#cb14-51" aria-hidden="true" tabindex="-1"></a><span class="st">        pop_immunity contact_rate outbreak_sev : Node</span></span>
+<span id="cb14-52"><a href="#cb14-52" aria-hidden="true" tabindex="-1"></a><span class="st">        e1 e2 e3 e4 : Edge</span></span>
+<span id="cb14-53"><a href="#cb14-53" aria-hidden="true" tabindex="-1"></a><span class="st">    equations</span></span>
+<span id="cb14-54"><a href="#cb14-54" aria-hidden="true" tabindex="-1"></a><span class="st">        src(e1) = vaccination    dst(e1) = susceptibility</span></span>
+<span id="cb14-55"><a href="#cb14-55" aria-hidden="true" tabindex="-1"></a><span class="st">        src(e2) = vaccination    dst(e2) = pop_immunity</span></span>
+<span id="cb14-56"><a href="#cb14-56" aria-hidden="true" tabindex="-1"></a><span class="st">        src(e3) = contact_rate   dst(e3) = transmission</span></span>
+<span id="cb14-57"><a href="#cb14-57" aria-hidden="true" tabindex="-1"></a><span class="st">        src(e4) = transmission   dst(e4) = outbreak_sev</span></span>
+<span id="cb14-58"><a href="#cb14-58" aria-hidden="true" tabindex="-1"></a><span class="st">        rel_type(e1) = REDUCES   rel_type(e2) = INCREASES</span></span>
+<span id="cb14-59"><a href="#cb14-59" aria-hidden="true" tabindex="-1"></a><span class="st">        rel_type(e3) = INCREASES rel_type(e4) = INCREASES</span></span>
+<span id="cb14-60"><a href="#cb14-60" aria-hidden="true" tabindex="-1"></a><span class="st">        score(e1) = "0.92"  score(e2) = "0.88"</span></span>
+<span id="cb14-61"><a href="#cb14-61" aria-hidden="true" tabindex="-1"></a><span class="st">        score(e3) = "0.85"  score(e4) = "0.95"</span></span>
+<span id="cb14-62"><a href="#cb14-62" aria-hidden="true" tabindex="-1"></a><span class="st">        label(vaccination) = Vaccination</span></span>
+<span id="cb14-63"><a href="#cb14-63" aria-hidden="true" tabindex="-1"></a><span class="st">        label(susceptibility) = Susceptibility</span></span>
+<span id="cb14-64"><a href="#cb14-64" aria-hidden="true" tabindex="-1"></a><span class="st">        label(transmission) = Transmission</span></span>
+<span id="cb14-65"><a href="#cb14-65" aria-hidden="true" tabindex="-1"></a><span class="st">        label(pop_immunity) = PopulationImmunity</span></span>
+<span id="cb14-66"><a href="#cb14-66" aria-hidden="true" tabindex="-1"></a><span class="st">        label(contact_rate) = ContactRate</span></span>
+<span id="cb14-67"><a href="#cb14-67" aria-hidden="true" tabindex="-1"></a><span class="st">        label(outbreak_sev) = OutbreakSeverity</span></span>
+<span id="cb14-68"><a href="#cb14-68" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb14-69"><a href="#cb14-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-70"><a href="#cb14-70" aria-hidden="true" tabindex="-1"></a><span class="st">instance Paths = eval CausalPath2 EpiAtlas</span></span>
+<span id="cb14-71"><a href="#cb14-71" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb14-72"><a href="#cb14-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-73"><a href="#cb14-73" aria-hidden="true" tabindex="-1"></a>alg <span class="op">=</span> env.Paths.algebra</span>
+<span id="cb14-74"><a href="#cb14-74" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== 2-Hop Causal Paths ==="</span>)</span>
+<span id="cb14-75"><a href="#cb14-75" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>Path)</span>
+<span id="cb14-76"><a href="#cb14-76" aria-hidden="true" tabindex="-1"></a>    s1 <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>step1, x)</span>
+<span id="cb14-77"><a href="#cb14-77" aria-hidden="true" tabindex="-1"></a>    r1 <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>rel1, x)</span>
+<span id="cb14-78"><a href="#cb14-78" aria-hidden="true" tabindex="-1"></a>    s2 <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>step2, x)</span>
+<span id="cb14-79"><a href="#cb14-79" aria-hidden="true" tabindex="-1"></a>    r2 <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>rel2, x)</span>
+<span id="cb14-80"><a href="#cb14-80" aria-hidden="true" tabindex="-1"></a>    s3 <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>step3, x)</span>
+<span id="cb14-81"><a href="#cb14-81" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>s1<span class="st"> --[</span><span class="sc">$</span>r1<span class="st">]--&gt; </span><span class="sc">$</span>s2<span class="st"> --[</span><span class="sc">$</span>r2<span class="st">]--&gt; </span><span class="sc">$</span>s3<span class="st">"</span>)</span>
+<span id="cb14-82"><a href="#cb14-82" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== 2-Hop Causal Paths ===
+  ContactRate --[INCREASES]--&gt; Transmission --[INCREASES]--&gt; OutbreakSeverity</code></pre>
+</div>
+</div>
+<p>The CQL query <code>CausalPath2</code> says: “for each pair of edges <code>(e1, e2)</code> where the destination of <code>e1</code> equals the source of <code>e2</code>, create a path record.” This is:</p>
+<ul>
+<li><strong>Type-safe</strong>: the <code>where dst(e1) = src(e2)</code> constraint is checked against the schema</li>
+<li><strong>Composable</strong>: we could compose this query with itself to get 4-hop paths</li>
+<li><strong>Functorial</strong>: the result is guaranteed to be a valid instance on the <code>PathResult</code> schema</li>
+</ul>
+<p>The equivalent SQL would be:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> n1.<span class="kw">label</span> <span class="kw">AS</span> step1, e1.rel_type <span class="kw">AS</span> rel1,</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>       n2.<span class="kw">label</span> <span class="kw">AS</span> step2, e2.rel_type <span class="kw">AS</span> rel2,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>       n3.<span class="kw">label</span> <span class="kw">AS</span> step3</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> edges e1</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> edges e2 <span class="kw">ON</span> e1.dst_id <span class="op">=</span> e2.src_id</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> nodes n1 <span class="kw">ON</span> e1.src_id <span class="op">=</span> n1.node_id</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> nodes n2 <span class="kw">ON</span> e1.dst_id <span class="op">=</span> n2.node_id</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> nodes n3 <span class="kw">ON</span> e2.dst_id <span class="op">=</span> n3.node_id</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The CQL version is more concise, type-safe, and composable.</p>
+</section>
+</section>
+<section id="part-6-a-hybrid-schema" class="level2">
+<h2 class="anchored" data-anchor-id="part-6-a-hybrid-schema">Part 6: A Hybrid Schema</h2>
+<p>The morphism analysis reveals that an ideal causal knowledge representation would combine:</p>
+<ul>
+<li><strong>CSQL’s provenance tracking</strong> (separate Evidence entity)</li>
+<li><strong>SST’s typed channels</strong> (separate entities for causal, compositional, descriptive links)</li>
+<li><strong>CQL’s path equations</strong> (enforcing structural constraints)</li>
+</ul>
+<div id="18" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> cql<span class="st">"""</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Real</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="st">        Vaccination mRNADose Adjuvant : String</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="st">        WHORecommended TwoDoseSchedule : String</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="st">        Susceptibility Transmission : String</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="st">        PopulationImmunity ContactRate OutbreakSeverity : String</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="st">        inc dec : String</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="st">        smith2023 jones2024 : String</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="st">        "0.92" "0.88" "0.85" "0.95" "1.0" : Real</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a><span class="st">schema CausalSpacetime = literal : Ty {</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="st">        Concept</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a><span class="st">        CausalLink</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a><span class="st">        ContainsLink</span></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a><span class="st">        PropertyLink</span></span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a><span class="st">        Evidence</span></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a><span class="st">        cause : CausalLink -&gt; Concept</span></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a><span class="st">        effect : CausalLink -&gt; Concept</span></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a><span class="st">        whole : ContainsLink -&gt; Concept</span></span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a><span class="st">        part : ContainsLink -&gt; Concept</span></span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a><span class="st">        subject : PropertyLink -&gt; Concept</span></span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a><span class="st">        property : PropertyLink -&gt; Concept</span></span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a><span class="st">        causal_evidence : Evidence -&gt; CausalLink</span></span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a><span class="st">        name : Concept -&gt; String</span></span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a><span class="st">        causal_weight : CausalLink -&gt; Real</span></span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a><span class="st">        polarity : CausalLink -&gt; String</span></span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a><span class="st">        contains_weight : ContainsLink -&gt; Real</span></span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a><span class="st">        property_weight : PropertyLink -&gt; Real</span></span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a><span class="st">        doc_id : Evidence -&gt; String</span></span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a><span class="st">        evidence_score : Evidence -&gt; Real</span></span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb17-39"><a href="#cb17-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-40"><a href="#cb17-40" aria-hidden="true" tabindex="-1"></a><span class="st">instance EpiHybrid = literal : CausalSpacetime {</span></span>
+<span id="cb17-41"><a href="#cb17-41" aria-hidden="true" tabindex="-1"></a><span class="st">    generators</span></span>
+<span id="cb17-42"><a href="#cb17-42" aria-hidden="true" tabindex="-1"></a><span class="st">        vaccination susceptibility transmission : Concept</span></span>
+<span id="cb17-43"><a href="#cb17-43" aria-hidden="true" tabindex="-1"></a><span class="st">        pop_immunity contact_rate outbreak_sev : Concept</span></span>
+<span id="cb17-44"><a href="#cb17-44" aria-hidden="true" tabindex="-1"></a><span class="st">        mRNA_dose adjuvant : Concept</span></span>
+<span id="cb17-45"><a href="#cb17-45" aria-hidden="true" tabindex="-1"></a><span class="st">        who_rec two_dose : Concept</span></span>
+<span id="cb17-46"><a href="#cb17-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-47"><a href="#cb17-47" aria-hidden="true" tabindex="-1"></a><span class="st">        cl1 cl2 cl3 cl4 : CausalLink</span></span>
+<span id="cb17-48"><a href="#cb17-48" aria-hidden="true" tabindex="-1"></a><span class="st">        part1 part2 : ContainsLink</span></span>
+<span id="cb17-49"><a href="#cb17-49" aria-hidden="true" tabindex="-1"></a><span class="st">        prop1 prop2 : PropertyLink</span></span>
+<span id="cb17-50"><a href="#cb17-50" aria-hidden="true" tabindex="-1"></a><span class="st">        ev1 ev2 ev3 ev4 : Evidence</span></span>
+<span id="cb17-51"><a href="#cb17-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-52"><a href="#cb17-52" aria-hidden="true" tabindex="-1"></a><span class="st">    equations</span></span>
+<span id="cb17-53"><a href="#cb17-53" aria-hidden="true" tabindex="-1"></a><span class="st">        name(vaccination) = Vaccination</span></span>
+<span id="cb17-54"><a href="#cb17-54" aria-hidden="true" tabindex="-1"></a><span class="st">        name(susceptibility) = Susceptibility</span></span>
+<span id="cb17-55"><a href="#cb17-55" aria-hidden="true" tabindex="-1"></a><span class="st">        name(transmission) = Transmission</span></span>
+<span id="cb17-56"><a href="#cb17-56" aria-hidden="true" tabindex="-1"></a><span class="st">        name(pop_immunity) = PopulationImmunity</span></span>
+<span id="cb17-57"><a href="#cb17-57" aria-hidden="true" tabindex="-1"></a><span class="st">        name(contact_rate) = ContactRate</span></span>
+<span id="cb17-58"><a href="#cb17-58" aria-hidden="true" tabindex="-1"></a><span class="st">        name(outbreak_sev) = OutbreakSeverity</span></span>
+<span id="cb17-59"><a href="#cb17-59" aria-hidden="true" tabindex="-1"></a><span class="st">        name(mRNA_dose) = mRNADose</span></span>
+<span id="cb17-60"><a href="#cb17-60" aria-hidden="true" tabindex="-1"></a><span class="st">        name(adjuvant) = Adjuvant</span></span>
+<span id="cb17-61"><a href="#cb17-61" aria-hidden="true" tabindex="-1"></a><span class="st">        name(who_rec) = WHORecommended</span></span>
+<span id="cb17-62"><a href="#cb17-62" aria-hidden="true" tabindex="-1"></a><span class="st">        name(two_dose) = TwoDoseSchedule</span></span>
+<span id="cb17-63"><a href="#cb17-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-64"><a href="#cb17-64" aria-hidden="true" tabindex="-1"></a><span class="st">        cause(cl1) = vaccination    effect(cl1) = susceptibility</span></span>
+<span id="cb17-65"><a href="#cb17-65" aria-hidden="true" tabindex="-1"></a><span class="st">        cause(cl2) = vaccination    effect(cl2) = pop_immunity</span></span>
+<span id="cb17-66"><a href="#cb17-66" aria-hidden="true" tabindex="-1"></a><span class="st">        cause(cl3) = contact_rate   effect(cl3) = transmission</span></span>
+<span id="cb17-67"><a href="#cb17-67" aria-hidden="true" tabindex="-1"></a><span class="st">        cause(cl4) = transmission   effect(cl4) = outbreak_sev</span></span>
+<span id="cb17-68"><a href="#cb17-68" aria-hidden="true" tabindex="-1"></a><span class="st">        causal_weight(cl1) = "0.92"  polarity(cl1) = dec</span></span>
+<span id="cb17-69"><a href="#cb17-69" aria-hidden="true" tabindex="-1"></a><span class="st">        causal_weight(cl2) = "0.88"  polarity(cl2) = inc</span></span>
+<span id="cb17-70"><a href="#cb17-70" aria-hidden="true" tabindex="-1"></a><span class="st">        causal_weight(cl3) = "0.85"  polarity(cl3) = inc</span></span>
+<span id="cb17-71"><a href="#cb17-71" aria-hidden="true" tabindex="-1"></a><span class="st">        causal_weight(cl4) = "0.95"  polarity(cl4) = inc</span></span>
+<span id="cb17-72"><a href="#cb17-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-73"><a href="#cb17-73" aria-hidden="true" tabindex="-1"></a><span class="st">        whole(part1) = vaccination  part(part1) = mRNA_dose</span></span>
+<span id="cb17-74"><a href="#cb17-74" aria-hidden="true" tabindex="-1"></a><span class="st">        whole(part2) = vaccination  part(part2) = adjuvant</span></span>
+<span id="cb17-75"><a href="#cb17-75" aria-hidden="true" tabindex="-1"></a><span class="st">        contains_weight(part1) = "1.0"</span></span>
+<span id="cb17-76"><a href="#cb17-76" aria-hidden="true" tabindex="-1"></a><span class="st">        contains_weight(part2) = "1.0"</span></span>
+<span id="cb17-77"><a href="#cb17-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-78"><a href="#cb17-78" aria-hidden="true" tabindex="-1"></a><span class="st">        subject(prop1) = vaccination  property(prop1) = who_rec</span></span>
+<span id="cb17-79"><a href="#cb17-79" aria-hidden="true" tabindex="-1"></a><span class="st">        subject(prop2) = vaccination  property(prop2) = two_dose</span></span>
+<span id="cb17-80"><a href="#cb17-80" aria-hidden="true" tabindex="-1"></a><span class="st">        property_weight(prop1) = "1.0"</span></span>
+<span id="cb17-81"><a href="#cb17-81" aria-hidden="true" tabindex="-1"></a><span class="st">        property_weight(prop2) = "1.0"</span></span>
+<span id="cb17-82"><a href="#cb17-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-83"><a href="#cb17-83" aria-hidden="true" tabindex="-1"></a><span class="st">        causal_evidence(ev1) = cl1  doc_id(ev1) = smith2023  evidence_score(ev1) = "0.92"</span></span>
+<span id="cb17-84"><a href="#cb17-84" aria-hidden="true" tabindex="-1"></a><span class="st">        causal_evidence(ev2) = cl2  doc_id(ev2) = smith2023  evidence_score(ev2) = "0.88"</span></span>
+<span id="cb17-85"><a href="#cb17-85" aria-hidden="true" tabindex="-1"></a><span class="st">        causal_evidence(ev3) = cl3  doc_id(ev3) = jones2024  evidence_score(ev3) = "0.85"</span></span>
+<span id="cb17-86"><a href="#cb17-86" aria-hidden="true" tabindex="-1"></a><span class="st">        causal_evidence(ev4) = cl4  doc_id(ev4) = jones2024  evidence_score(ev4) = "0.95"</span></span>
+<span id="cb17-87"><a href="#cb17-87" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb17-88"><a href="#cb17-88" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb17-89"><a href="#cb17-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-90"><a href="#cb17-90" aria-hidden="true" tabindex="-1"></a>alg <span class="op">=</span> env.EpiHybrid.algebra</span>
+<span id="cb17-91"><a href="#cb17-91" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== CausalSpacetime: Hybrid Schema ==="</span>)</span>
+<span id="cb17-92"><a href="#cb17-92" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Concepts: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>Concept)))</span>
+<span id="cb17-93"><a href="#cb17-93" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Causal links: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>CausalLink)))</span>
+<span id="cb17-94"><a href="#cb17-94" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Containment links: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>ContainsLink)))</span>
+<span id="cb17-95"><a href="#cb17-95" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Property links: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>PropertyLink)))</span>
+<span id="cb17-96"><a href="#cb17-96" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Evidence records: "</span>, <span class="fu">length</span>(<span class="fu">carrier</span>(alg, <span class="op">:</span>Evidence)))</span>
+<span id="cb17-97"><a href="#cb17-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-98"><a href="#cb17-98" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Causal links:"</span>)</span>
+<span id="cb17-99"><a href="#cb17-99" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>CausalLink)</span>
+<span id="cb17-100"><a href="#cb17-100" aria-hidden="true" tabindex="-1"></a>    c <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>name, <span class="fu">eval_fk</span>(alg, <span class="op">:</span>cause, x))</span>
+<span id="cb17-101"><a href="#cb17-101" aria-hidden="true" tabindex="-1"></a>    <span class="cn">e</span> <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>name, <span class="fu">eval_fk</span>(alg, <span class="op">:</span>effect, x))</span>
+<span id="cb17-102"><a href="#cb17-102" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>polarity, x)</span>
+<span id="cb17-103"><a href="#cb17-103" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>causal_weight, x)</span>
+<span id="cb17-104"><a href="#cb17-104" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>c<span class="st"> --[</span><span class="sc">$</span>p<span class="st">,</span><span class="sc">$</span>w<span class="st">]--&gt; </span><span class="sc">$</span>e<span class="st">"</span>)</span>
+<span id="cb17-105"><a href="#cb17-105" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb17-106"><a href="#cb17-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-107"><a href="#cb17-107" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Containment (parts of Vaccination):"</span>)</span>
+<span id="cb17-108"><a href="#cb17-108" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>ContainsLink)</span>
+<span id="cb17-109"><a href="#cb17-109" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>name, <span class="fu">eval_fk</span>(alg, <span class="op">:</span>whole, x))</span>
+<span id="cb17-110"><a href="#cb17-110" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>name, <span class="fu">eval_fk</span>(alg, <span class="op">:</span>part, x))</span>
+<span id="cb17-111"><a href="#cb17-111" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>w<span class="st"> contains </span><span class="sc">$</span>p<span class="st">"</span>)</span>
+<span id="cb17-112"><a href="#cb17-112" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb17-113"><a href="#cb17-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-114"><a href="#cb17-114" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Properties of Vaccination:"</span>)</span>
+<span id="cb17-115"><a href="#cb17-115" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>PropertyLink)</span>
+<span id="cb17-116"><a href="#cb17-116" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>name, <span class="fu">eval_fk</span>(alg, <span class="op">:</span>subject, x))</span>
+<span id="cb17-117"><a href="#cb17-117" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>name, <span class="fu">eval_fk</span>(alg, <span class="op">:</span>property, x))</span>
+<span id="cb17-118"><a href="#cb17-118" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>s<span class="st"> has property </span><span class="sc">$</span>p<span class="st">"</span>)</span>
+<span id="cb17-119"><a href="#cb17-119" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== CausalSpacetime: Hybrid Schema ===
+Concepts: 10
+Causal links: 4
+Containment links: 2
+Property links: 2
+Evidence records: 4
+
+Causal links:
+  Transmission --[inc,0.95]--&gt; OutbreakSeverity
+  Vaccination --[dec,0.92]--&gt; Susceptibility
+  ContactRate --[inc,0.85]--&gt; Transmission
+  Vaccination --[inc,0.88]--&gt; PopulationImmunity
+
+Containment (parts of Vaccination):
+  Vaccination contains mRNADose
+  Vaccination contains Adjuvant
+
+Properties of Vaccination:
+  Vaccination has property TwoDoseSchedule
+  Vaccination has property WHORecommended</code></pre>
+</div>
+</div>
+<section id="querying-across-channels" class="level3">
+<h3 class="anchored" data-anchor-id="querying-across-channels">Querying Across Channels</h3>
+<p>The hybrid schema enables queries that <strong>neither CSQL nor SST can express alone</strong>. For example: “What are the causal effects of each component of vaccination?”</p>
+<div id="20" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>env2 <span class="op">=</span> cql<span class="st">"""</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="st">typeside Ty = literal {</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="st">    types</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="st">        String Real</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="st">    constants</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="st">        Vaccination mRNADose Adjuvant : String</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="st">        Susceptibility PopulationImmunity : String</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="st">        inc dec : String</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="st">        "0.92" "0.88" "1.0" : Real</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a><span class="st">schema CausalSpacetime = literal : Ty {</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a><span class="st">        Concept CausalLink ContainsLink</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a><span class="st">    foreign_keys</span></span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a><span class="st">        cause : CausalLink -&gt; Concept</span></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a><span class="st">        effect : CausalLink -&gt; Concept</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a><span class="st">        whole : ContainsLink -&gt; Concept</span></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a><span class="st">        part : ContainsLink -&gt; Concept</span></span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a><span class="st">        name : Concept -&gt; String</span></span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a><span class="st">        causal_weight : CausalLink -&gt; Real</span></span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a><span class="st">        polarity : CausalLink -&gt; String</span></span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a><span class="st">        contains_weight : ContainsLink -&gt; Real</span></span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a><span class="st">schema ComponentEffects = literal : Ty {</span></span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a><span class="st">    entities</span></span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a><span class="st">        Result</span></span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a><span class="st">    attributes</span></span>
+<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a><span class="st">        whole_name : Result -&gt; String</span></span>
+<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a><span class="st">        part_name : Result -&gt; String</span></span>
+<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a><span class="st">        effect_name : Result -&gt; String</span></span>
+<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a><span class="st">        effect_polarity : Result -&gt; String</span></span>
+<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb19-36"><a href="#cb19-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-37"><a href="#cb19-37" aria-hidden="true" tabindex="-1"></a><span class="st">query CrossChannelQ = literal : CausalSpacetime -&gt; ComponentEffects {</span></span>
+<span id="cb19-38"><a href="#cb19-38" aria-hidden="true" tabindex="-1"></a><span class="st">    entity Result -&gt; {</span></span>
+<span id="cb19-39"><a href="#cb19-39" aria-hidden="true" tabindex="-1"></a><span class="st">        from</span></span>
+<span id="cb19-40"><a href="#cb19-40" aria-hidden="true" tabindex="-1"></a><span class="st">            cont : ContainsLink</span></span>
+<span id="cb19-41"><a href="#cb19-41" aria-hidden="true" tabindex="-1"></a><span class="st">            causal : CausalLink</span></span>
+<span id="cb19-42"><a href="#cb19-42" aria-hidden="true" tabindex="-1"></a><span class="st">        where</span></span>
+<span id="cb19-43"><a href="#cb19-43" aria-hidden="true" tabindex="-1"></a><span class="st">            whole(cont) = cause(causal)</span></span>
+<span id="cb19-44"><a href="#cb19-44" aria-hidden="true" tabindex="-1"></a><span class="st">        attributes</span></span>
+<span id="cb19-45"><a href="#cb19-45" aria-hidden="true" tabindex="-1"></a><span class="st">            whole_name -&gt; name(whole(cont))</span></span>
+<span id="cb19-46"><a href="#cb19-46" aria-hidden="true" tabindex="-1"></a><span class="st">            part_name -&gt; name(part(cont))</span></span>
+<span id="cb19-47"><a href="#cb19-47" aria-hidden="true" tabindex="-1"></a><span class="st">            effect_name -&gt; name(effect(causal))</span></span>
+<span id="cb19-48"><a href="#cb19-48" aria-hidden="true" tabindex="-1"></a><span class="st">            effect_polarity -&gt; polarity(causal)</span></span>
+<span id="cb19-49"><a href="#cb19-49" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb19-50"><a href="#cb19-50" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb19-51"><a href="#cb19-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-52"><a href="#cb19-52" aria-hidden="true" tabindex="-1"></a><span class="st">instance Hybrid = literal : CausalSpacetime {</span></span>
+<span id="cb19-53"><a href="#cb19-53" aria-hidden="true" tabindex="-1"></a><span class="st">    generators</span></span>
+<span id="cb19-54"><a href="#cb19-54" aria-hidden="true" tabindex="-1"></a><span class="st">        vaccination mRNA_dose adjuvant : Concept</span></span>
+<span id="cb19-55"><a href="#cb19-55" aria-hidden="true" tabindex="-1"></a><span class="st">        susceptibility pop_immunity : Concept</span></span>
+<span id="cb19-56"><a href="#cb19-56" aria-hidden="true" tabindex="-1"></a><span class="st">        cl1 cl2 : CausalLink</span></span>
+<span id="cb19-57"><a href="#cb19-57" aria-hidden="true" tabindex="-1"></a><span class="st">        p1 p2 : ContainsLink</span></span>
+<span id="cb19-58"><a href="#cb19-58" aria-hidden="true" tabindex="-1"></a><span class="st">    equations</span></span>
+<span id="cb19-59"><a href="#cb19-59" aria-hidden="true" tabindex="-1"></a><span class="st">        name(vaccination) = Vaccination</span></span>
+<span id="cb19-60"><a href="#cb19-60" aria-hidden="true" tabindex="-1"></a><span class="st">        name(mRNA_dose) = mRNADose</span></span>
+<span id="cb19-61"><a href="#cb19-61" aria-hidden="true" tabindex="-1"></a><span class="st">        name(adjuvant) = Adjuvant</span></span>
+<span id="cb19-62"><a href="#cb19-62" aria-hidden="true" tabindex="-1"></a><span class="st">        name(susceptibility) = Susceptibility</span></span>
+<span id="cb19-63"><a href="#cb19-63" aria-hidden="true" tabindex="-1"></a><span class="st">        name(pop_immunity) = PopulationImmunity</span></span>
+<span id="cb19-64"><a href="#cb19-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-65"><a href="#cb19-65" aria-hidden="true" tabindex="-1"></a><span class="st">        cause(cl1) = vaccination    effect(cl1) = susceptibility</span></span>
+<span id="cb19-66"><a href="#cb19-66" aria-hidden="true" tabindex="-1"></a><span class="st">        cause(cl2) = vaccination    effect(cl2) = pop_immunity</span></span>
+<span id="cb19-67"><a href="#cb19-67" aria-hidden="true" tabindex="-1"></a><span class="st">        causal_weight(cl1) = "0.92"  polarity(cl1) = dec</span></span>
+<span id="cb19-68"><a href="#cb19-68" aria-hidden="true" tabindex="-1"></a><span class="st">        causal_weight(cl2) = "0.88"  polarity(cl2) = inc</span></span>
+<span id="cb19-69"><a href="#cb19-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-70"><a href="#cb19-70" aria-hidden="true" tabindex="-1"></a><span class="st">        whole(p1) = vaccination  part(p1) = mRNA_dose</span></span>
+<span id="cb19-71"><a href="#cb19-71" aria-hidden="true" tabindex="-1"></a><span class="st">        whole(p2) = vaccination  part(p2) = adjuvant</span></span>
+<span id="cb19-72"><a href="#cb19-72" aria-hidden="true" tabindex="-1"></a><span class="st">        contains_weight(p1) = "1.0"  contains_weight(p2) = "1.0"</span></span>
+<span id="cb19-73"><a href="#cb19-73" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb19-74"><a href="#cb19-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-75"><a href="#cb19-75" aria-hidden="true" tabindex="-1"></a><span class="st">instance Results = eval CrossChannelQ Hybrid</span></span>
+<span id="cb19-76"><a href="#cb19-76" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb19-77"><a href="#cb19-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-78"><a href="#cb19-78" aria-hidden="true" tabindex="-1"></a>alg <span class="op">=</span> env2.Results.algebra</span>
+<span id="cb19-79"><a href="#cb19-79" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"=== Cross-Channel Query: Component Effects ==="</span>)</span>
+<span id="cb19-80"><a href="#cb19-80" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="fu">carrier</span>(alg, <span class="op">:</span>Result)</span>
+<span id="cb19-81"><a href="#cb19-81" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>whole_name, x)</span>
+<span id="cb19-82"><a href="#cb19-82" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>part_name, x)</span>
+<span id="cb19-83"><a href="#cb19-83" aria-hidden="true" tabindex="-1"></a>    <span class="cn">e</span> <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>effect_name, x)</span>
+<span id="cb19-84"><a href="#cb19-84" aria-hidden="true" tabindex="-1"></a>    pol <span class="op">=</span> <span class="fu">eval_att</span>(alg, <span class="op">:</span>effect_polarity, x)</span>
+<span id="cb19-85"><a href="#cb19-85" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"  </span><span class="sc">$</span>w<span class="st"> (contains </span><span class="sc">$</span>p<span class="st">) --[</span><span class="sc">$</span>pol<span class="st">]--&gt; </span><span class="sc">$</span>e<span class="st">"</span>)</span>
+<span id="cb19-86"><a href="#cb19-86" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>=== Cross-Channel Query: Component Effects ===
+  Vaccination (contains Adjuvant) --[inc]--&gt; PopulationImmunity
+  Vaccination (contains mRNADose) --[inc]--&gt; PopulationImmunity
+  Vaccination (contains mRNADose) --[dec]--&gt; Susceptibility
+  Vaccination (contains Adjuvant) --[dec]--&gt; Susceptibility</code></pre>
+</div>
+</div>
+<p>This query joins across <strong>two different relationship types</strong> (containment and causation) in a single uber-flower. In SQL, this would require knowing which tables hold which relationship types and writing explicit joins. In CQL, the foreign keys make the join implicit and type-safe.</p>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 29%">
+<col style="width: 35%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Aspect</th>
+<th>CSQL (SQL)</th>
+<th>SST (Graph)</th>
+<th>CQL</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Edge types</strong></td>
+<td>20 string labels</td>
+<td>4 signed channels</td>
+<td>Separate entities per channel</td>
+</tr>
+<tr class="even">
+<td><strong>Provenance</strong></td>
+<td>Separate table</td>
+<td>Context label</td>
+<td>Separate entity with FK</td>
+</tr>
+<tr class="odd">
+<td><strong>Path queries</strong></td>
+<td>Self-join chains</td>
+<td>Cone traversal</td>
+<td>Uber-flower composition</td>
+</tr>
+<tr class="even">
+<td><strong>Type safety</strong></td>
+<td>Integer FK columns</td>
+<td>NodePtr structs</td>
+<td>Typed morphisms</td>
+</tr>
+<tr class="odd">
+<td><strong>Hierarchy</strong></td>
+<td>Not modeled</td>
+<td>CONTAINS channel</td>
+<td>ContainsLink entity</td>
+</tr>
+<tr class="even">
+<td><strong>Properties</strong></td>
+<td>Not modeled</td>
+<td>EXPRESS channel</td>
+<td>PropertyLink entity</td>
+</tr>
+<tr class="odd">
+<td><strong>Round-trips</strong></td>
+<td>No guarantee</td>
+<td>No guarantee</td>
+<td>Delta-sigma adjunction</td>
+</tr>
+<tr class="even">
+<td><strong>Schema merging</strong></td>
+<td>Manual ETL</td>
+<td>Not supported</td>
+<td>Schema colimit</td>
+</tr>
+</tbody>
+</table>
+<p>The CQL approach reveals that <strong>causality is not a single relationship type</strong> — it exists within a richer semantic space that includes composition, description, and proximity. By making each channel a separate entity, CQL enables queries that cross these channels while maintaining formal guarantees about data integrity.</p>
+<p>The mapping <code>F : CausalAtlas → SemanticST</code> makes the information loss precise: CSQL’s 20 relation types collapse to 4 channels, and provenance records merge into links. Going the other direction, delta <code>Δ(F)</code> reconstructs the CSQL structure from SST data, but cannot recover the lost fine-grained types. This asymmetry — quantified by the adjunction unit and counit — tells us exactly what each representation can and cannot express.</p>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use the <code>cql"""..."""</code> string macro. Here is how the CausalAtlas schema and a causal path query look using the Julia DSL macros:</p>
+<div id="22" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>Ty <span class="op">=</span> <span class="pp">@typeside</span> <span class="cf">begin</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">String</span><span class="op">::</span><span class="dt">Ty</span>; <span class="dt">Real</span><span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    Vaccination<span class="op">::</span><span class="dt">String</span>; Susceptibility<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    Transmission<span class="op">::</span><span class="dt">String</span>; OutbreakSeverity<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    ContactRate<span class="op">::</span><span class="dt">String</span>; PopulationImmunity<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    REDUCES<span class="op">::</span><span class="dt">String</span>; INCREASES<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"0.92"</span><span class="op">::</span><span class="dt">Real</span>; <span class="st">"0.88"</span><span class="op">::</span><span class="dt">Real</span>; <span class="st">"0.85"</span><span class="op">::</span><span class="dt">Real</span>; <span class="st">"0.95"</span><span class="op">::</span><span class="dt">Real</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>CausalAtlas <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Node, Edge</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    src <span class="op">:</span> Edge <span class="op">→</span> Node</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>    dst <span class="op">:</span> Edge <span class="op">→</span> Node</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>    label <span class="op">:</span> Node <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>    rel_type <span class="op">:</span> Edge <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>    score <span class="op">:</span> Edge <span class="op">⇒</span> <span class="dt">Real</span></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>PathResult <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Path</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>    step1 <span class="op">:</span> Path <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>    rel1 <span class="op">:</span> Path <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>    step2 <span class="op">:</span> Path <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>    rel2 <span class="op">:</span> Path <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>    step3 <span class="op">:</span> Path <span class="op">⇒</span> <span class="dt">String</span></span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>CausalPath2 <span class="op">=</span> <span class="pp">@query</span> CausalAtlas <span class="op">→</span> PathResult <span class="cf">begin</span></span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entity</span> Path <span class="cf">begin</span></span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@from</span> e1<span class="op">::</span><span class="dt">Edge</span>, e2<span class="op">::</span><span class="dt">Edge</span></span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@where</span> <span class="fu">dst</span>(e1) <span class="op">==</span> <span class="fu">src</span>(e2)</span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@return</span> step1 <span class="op">=&gt;</span> e1.src.label,</span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>                rel1 <span class="op">=&gt;</span> <span class="fu">rel_type</span>(e1),</span>
+<span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a>                step2 <span class="op">=&gt;</span> e1.dst.label,</span>
+<span id="cb21-37"><a href="#cb21-37" aria-hidden="true" tabindex="-1"></a>                rel2 <span class="op">=&gt;</span> <span class="fu">rel_type</span>(e2),</span>
+<span id="cb21-38"><a href="#cb21-38" aria-hidden="true" tabindex="-1"></a>                step3 <span class="op">=&gt;</span> e2.dst.label</span>
+<span id="cb21-39"><a href="#cb21-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb21-40"><a href="#cb21-40" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The functional API operators (<code>Δ</code>, <code>Σ</code>, <code>Q(I)</code>, <code>∘</code>, <code>⊔</code>) work directly with schema and instance objects constructed by either the DSL macros or the <code>cql"""..."""</code> syntax — they are fully interoperable.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
