@@ -58,4 +58,53 @@ env.I</code></pre><pre class="documenter-example-output"><code class="nohighligh
       e2: worksIn=d1, name=Bob
   }
 }
-</code></pre></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="tutorial/">Tutorial »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Wednesday 18 March 2026 11:58">Wednesday 18 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</code></pre><h3 id="Julia-DSL"><a class="docs-heading-anchor" href="#Julia-DSL">Julia DSL</a><a id="Julia-DSL-1"></a><a class="docs-heading-anchor-permalink" href="#Julia-DSL" title="Permalink"></a></h3><p>The same example using Julia-native macros with Unicode operators:</p><pre><code class="language-julia hljs">Ty = @typeside begin
+    String::Ty
+    Int::Ty
+    Alice::String; Bob::String
+    &quot;100&quot;::Int; &quot;250&quot;::Int
+end
+
+S = @schema Ty begin
+    @entities Employee, Department
+    worksIn : Employee → Department
+    name : Employee ⇒ String
+    budget : Department ⇒ Int
+end
+
+I = @instance S begin
+    e1::Employee; e2::Employee; d1::Department
+    worksIn(e1) == d1
+    worksIn(e2) == d1
+    name(e1) == Alice
+    name(e2) == Bob
+    budget(d1) == &quot;250&quot;
+end
+
+I</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">instance {
+  presentation {
+  generators
+    e1 : Employee
+    e2 : Employee
+    d1 : Department
+  equations
+    e1.name = Alice
+    e2.name = Bob
+    d1.budget = 250
+    e1.worksIn = d1
+    e2.worksIn = d1
+}
+
+  algebra {
+    Department (1 rows)
+      d1: budget=250
+    Employee (2 rows)
+      e1: worksIn=d1, name=Alice
+      e2: worksIn=d1, name=Bob
+  }
+}
+</code></pre><p>Both approaches produce identical results. The DSL also provides Unicode operators for data migration:</p><pre><code class="language-julia hljs">Δ(F)(J)       # delta (pullback)
+Σ(F)(I)       # sigma (pushforward)
+Q(I)          # query evaluation
+Q1 ∘ Q2       # composition
+I1 ⊔ I2       # coproduct</code></pre></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="tutorial/">Tutorial »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Wednesday 18 March 2026 12:28">Wednesday 18 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
