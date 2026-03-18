@@ -65,3 +65,44 @@ instance I = literal : S {
 
 env.I
 ```
+
+### Julia DSL
+
+The same example using Julia-native macros with Unicode operators:
+
+```@example quickstart
+Ty = @typeside begin
+    String::Ty
+    Int::Ty
+    Alice::String; Bob::String
+    "100"::Int; "250"::Int
+end
+
+S = @schema Ty begin
+    @entities Employee, Department
+    worksIn : Employee → Department
+    name : Employee ⇒ String
+    budget : Department ⇒ Int
+end
+
+I = @instance S begin
+    e1::Employee; e2::Employee; d1::Department
+    worksIn(e1) == d1
+    worksIn(e2) == d1
+    name(e1) == Alice
+    name(e2) == Bob
+    budget(d1) == "250"
+end
+
+I
+```
+
+Both approaches produce identical results. The DSL also provides Unicode operators for data migration:
+
+```julia
+Δ(F)(J)       # delta (pullback)
+Σ(F)(I)       # sigma (pushforward)
+Q(I)          # query evaluation
+Q1 ∘ Q2       # composition
+I1 ⊔ I2       # coproduct
+```
