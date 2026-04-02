@@ -16,10 +16,22 @@ import XML as XMLParser
 import JSON as JSONParser
 import Base: collect
 import Random
-import JavaCall
-import JDBC
-import ODBC
-import ODBC: Tables
+
+const _jdbc_packages_loaded = Ref(false)
+const _odbc_package_loaded = Ref(false)
+
+function _ensure_jdbc_packages_loaded!()
+    _jdbc_packages_loaded[] && return
+    @eval import JavaCall
+    @eval import JDBC
+    _jdbc_packages_loaded[] = true
+end
+
+function _ensure_odbc_package_loaded!()
+    _odbc_package_loaded[] && return
+    @eval import ODBC
+    _odbc_package_loaded[] = true
+end
 
 # Common utilities
 include("Common.jl")

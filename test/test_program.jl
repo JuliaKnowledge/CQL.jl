@@ -98,4 +98,110 @@ using CQL
         @test haskey(env.instances, "I")
         @test isempty(carrier(env.instances["I"].algebra, :E))
     end
+
+    @testset "Unsupported operations fail explicitly" begin
+        pivot_src = """
+        typeside T = literal {
+            types String
+            constants Alice : String
+        }
+
+        schema S = literal : T {
+            entities Person
+            attributes name : Person -> String
+        }
+
+        instance I = literal : S {
+            generators p : Person
+            equations name(p) = Alice
+        }
+
+        instance P = pivot I
+        """
+        err = try
+            run_program(pivot_src)
+            nothing
+        catch e
+            e
+        end
+        @test err isa CQLException
+        @test occursin("Pivot instances are not yet supported", sprint(showerror, err))
+
+        pi_instance_src = """
+        typeside T = literal {
+            types String
+            constants Alice : String
+        }
+
+        schema S = literal : T {
+            entities Person
+            attributes name : Person -> String
+        }
+
+        schema Tgt = literal : T {
+            entities PersonT
+        }
+
+        instance I = literal : S {
+            generators p : Person
+            equations name(p) = Alice
+        }
+
+        mapping F = literal : S -> Tgt {
+            entity Person -> PersonT
+            attributes
+                name -> Alice
+        }
+
+        instance P = pi F I
+        """
+        err = try
+            run_program(pi_instance_src)
+            nothing
+        catch e
+            e
+        end
+        @test err isa CQLException
+        @test occursin("pi instances for non-identity mappings are not yet supported",
+                       sprint(showerror, err))
+
+        pi_transform_src = """
+        typeside T = literal {
+            types String
+            constants Alice : String
+        }
+
+        schema S = literal : T {
+            entities Person
+            attributes name : Person -> String
+        }
+
+        schema Tgt = literal : T {
+            entities PersonT
+        }
+
+        instance I = literal : S {
+            generators p : Person
+            equations name(p) = Alice
+        }
+
+        mapping F = literal : S -> Tgt {
+            entity Person -> PersonT
+            attributes
+                name -> Alice
+        }
+
+        transform Tid = identity I
+        transform PT = pi F Tid
+        """
+        err = try
+            run_program(pi_transform_src)
+            nothing
+        catch e
+            e
+        end
+        @test err isa CQLException
+        @test occursin("pi transforms for non-identity mappings are not yet supported",
+                       sprint(showerror, err))
+    end
 end

@@ -21,4 +21,53 @@ using CQL
         @test haskey(q.fks, :f)
         @test haskey(q.atts, :a)
     end
+
+    @testset "Unsupported rext attribute case fails explicitly" begin
+        src = """
+        typeside T = literal {
+            types String
+            constants Alice : String
+        }
+
+        schema A = literal : T {
+            entities Person
+            attributes name : Person -> String
+        }
+
+        schema B = literal : T {
+            entities PersonB
+        }
+
+        schema C = literal : T {
+            entities PersonC
+            attributes display : PersonC -> String
+        }
+
+        query Q1 = literal : A -> B {
+            entity PersonB -> {
+                from p:Person
+            }
+        }
+
+        query Q2 = literal : A -> C {
+            entity PersonC -> {
+                from p:Person
+                attributes
+                    display -> name(p)
+            }
+        }
+
+        query QR = rext Q1 Q2
+        """
+
+        err = try
+            run_program(src)
+            nothing
+        catch e
+            e
+        end
+        @test err isa CQLException
+        @test occursin("rext with attributes for non-identity Q1 is not yet supported",
+                       sprint(showerror, err))
+    end
 end

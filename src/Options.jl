@@ -90,6 +90,19 @@ const INT_OPTION_NAMES = Dict{String,IntOption}(
 const STRING_OPTION_NAMES = Dict{String,StringOption}(
     lowercase(string(o)) => o for o in instances(StringOption)
 )
+const PASSTHROUGH_OPTION_NAMES = Set([
+    "random_seed",
+    "simple_query_entity",
+    "simplify_names",
+])
+const WARNED_UNKNOWN_OPTIONS = Set{String}()
+
+function _warn_unknown_option(key::String)
+    normalized = lowercase(key)
+    normalized in WARNED_UNKNOWN_OPTIONS && return
+    push!(WARNED_UNKNOWN_OPTIONS, normalized)
+    @warn "Unrecognized CQL option: $key"
+end
 
 """Parse key-value option pairs into a CQLOptions, starting from base options."""
 function to_options(base::CQLOptions, pairs::Vector{Tuple{String,String}})
@@ -110,8 +123,10 @@ function to_options(base::CQLOptions, pairs::Vector{Tuple{String,String}})
             end
         elseif haskey(STRING_OPTION_NAMES, kl)
             opts.str_ops[STRING_OPTION_NAMES[kl]] = v
+        elseif kl in PASSTHROUGH_OPTION_NAMES
+            continue
         else
-            # Silently ignore unknown options (Java CQL has many IDE-specific options)
+            _warn_unknown_option(k)
         end
     end
     opts

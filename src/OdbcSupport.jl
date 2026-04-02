@@ -13,6 +13,7 @@ const _odbc_initialized = Ref(false)
 """Initialize ODBC driver manager. On macOS, defaults to unixODBC for MariaDB compatibility."""
 function _ensure_odbc!()
     _odbc_initialized[] && return
+    _ensure_odbc_package_loaded!()
     @static if Sys.isapple()
         ODBC.setunixODBC()
     end

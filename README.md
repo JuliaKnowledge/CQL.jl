@@ -17,6 +17,18 @@ A Julia implementation of the **Categorical Query Language** (CQL) — a data in
 - **CoEval**: Right adjoint to query evaluation for backward data migration
 - **Import/export**: CSV, JDBC, ODBC, RDF, and XML data sources
 
+## Current Limitations
+
+- `pivot` is currently supported for **schemas** and **mappings**, but not for
+  materializing a pivoted **instance** directly. Use `pivot I` to derive a
+  schema or mapping, then populate the corresponding literal instance manually.
+- `pi` / `pi_transform` currently support only **identity mappings**. A
+  non-identity mapping currently raises an explicit runtime error instead of
+  silently producing an incorrect result.
+- `rext` currently supports attribute-bearing targets only when the left query
+  is essentially the identity query. Non-identity `Q₁` with attributes on the
+  target of `Q₂` raises an explicit runtime error.
+
 ## Quick Start
 
 ```julia

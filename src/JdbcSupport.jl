@@ -13,6 +13,8 @@ const _jvm_initialized = Ref(false)
 """Initialize the JVM with JDBC drivers on the classpath."""
 function _ensure_jvm!(classpaths::Vector{String}=String[])
     _jvm_initialized[] && return
+    ENV["JULIA_COPY_STACKS"] = "yes"
+    _ensure_jdbc_packages_loaded!()
     # Set JAVA_HOME if not already set or pointing to a valid JDK
     if !haskey(ENV, "JAVA_HOME") || !isfile(joinpath(ENV["JAVA_HOME"], "lib", "server", "libjvm.dylib"))
         candidates = String[]
@@ -34,7 +36,6 @@ function _ensure_jvm!(classpaths::Vector{String}=String[])
             end
         end
     end
-    ENV["JULIA_COPY_STACKS"] = "yes"
     # Find H2 jar in common locations
     for cp in classpaths
         isfile(cp) && JavaCall.addClassPath(cp)

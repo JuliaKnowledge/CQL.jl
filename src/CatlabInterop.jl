@@ -11,8 +11,54 @@ Convert a CQL schema to a Catlab BasicSchema.
 
 Returns a NamedTuple with:
 - `schema`: the Catlab BasicSchema
-- `type_assignment`: Dict mapping type symbols to Julia types (all String by default)
+- `type_assignment`: Dict mapping type symbols to Julia types
 """
+const _CATLAB_INT_TYPES = Set([
+    "bigint", "int", "integer", "smallint", "tinyint",
+])
+
+const _CATLAB_FLOAT_TYPES = Set([
+    "decimal", "double", "doubleprecision", "float", "numeric", "real",
+])
+
+const _CATLAB_BOOL_TYPES = Set([
+    "bit", "bool", "boolean",
+])
+
+function _catlab_julia_type(ty::Symbol)::Type
+    normalized = lowercase(String(ty))
+    if normalized in _CATLAB_INT_TYPES
+        Int
+    elseif normalized in _CATLAB_FLOAT_TYPES
+        Float64
+    elseif normalized in _CATLAB_BOOL_TYPES
+        Bool
+    else
+        String
+    end
+end
+
+function _coerce_catlab_value(term::CQLTerm, ty::Symbol, ts::Typeside)
+    target = _catlab_julia_type(ty)
+    target === String && return string(term)
+
+    concrete = _extract_concrete_value(eval_typeside_term(ts, term), ts)
+    concrete === nothing && throw(CQLException(
+        "Cannot convert symbolic attribute value $term of type $ty to Catlab type $target"))
+
+    if target === Int
+        concrete isa Integer && return Int(concrete)
+        concrete isa AbstractFloat && isinteger(concrete) && return Int(round(concrete))
+    elseif target === Float64
+        concrete isa Number && return Float64(concrete)
+    elseif target === Bool
+        concrete isa Bool && return concrete
+    end
+
+    throw(CQLException(
+        "Cannot convert attribute value $term of type $ty to Catlab type $target"))
+end
+
 function cql_schema_to_catlab(sch::CQLSchema)
     ob_names = Symbol[en for en in sch.ens]
 
@@ -30,8 +76,7 @@ function cql_schema_to_catlab(sch::CQLSchema)
 
     schema_desc = BasicSchema(ob_names, homs, unique_types, attrs)
 
-    # Default type assignment: everything is String
-    type_assignment = Dict{Symbol,Type}(ty => String for ty in unique_types)
+    type_assignment = Dict{Symbol,Type}(ty => _catlab_julia_type(ty) for ty in unique_types)
 
     (schema=schema_desc, type_assignment=type_assignment)
 end
@@ -42,7 +87,7 @@ Convert a CQL instance to a Catlab DynamicACSet.
 Populates the ACSet with:
 - One row per carrier element per entity
 - FK values from the algebra
-- Attribute values (as string representations)
+ - Attribute values converted to matching Julia scalars where possible
 """
 function cql_instance_to_acset(inst::CQLInstance)
     catlab_info = cql_schema_to_catlab(inst.schema)
@@ -77,7 +122,7 @@ function cql_instance_to_acset(inst::CQLInstance)
         for x in carrier(alg, src)
             val = eval_att(alg, att, x)
             src_id = elem_to_id[(src, x)]
-            set_subpart!(acs, src_id, att, string(val))
+            set_subpart!(acs, src_id, att, _coerce_catlab_value(val, ty, inst.schema.typeside))
         end
     end
 
