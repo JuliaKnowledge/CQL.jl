@@ -6,6 +6,7 @@ authors = ["Simon Frost"]
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 Catlab = "134e5e36-593f-5add-ad60-77f754baafbe"
+DuckDB = "d2f5444f-75bc-4fdf-ac35-56f514c445e1"
 JDBC = "6042db11-3c3d-5e84-8dba-9cbf74c9ba48"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 JavaCall = "494afd89-becb-516b-aafa-70d2670c0337"
@@ -17,6 +18,7 @@ XML = "72c71f33-b9b6-44de-8c94-c961784809e2"
 [compat]
 CSV = "0.10"
 Catlab = "0.17"
+DuckDB = "1.5.2"
 JDBC = "0.5"
 JSON = "0.21.4"
 JavaCall = "0.7, 0.8"

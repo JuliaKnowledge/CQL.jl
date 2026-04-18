@@ -26,6 +26,9 @@ This example is adapted from the [CQL JDBC tutorial](https://categoricaldata.net
 
 ```{julia}
 #| output: false
+using Pkg
+Pkg.activate(joinpath(@__DIR__, "..", ".."))
+get(Pkg.project().dependencies, "DuckDB", nothing) === nothing && Pkg.add("DuckDB")
 using CQL, DuckDB
 ```
 
