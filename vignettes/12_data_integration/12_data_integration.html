@@ -90,6 +90,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#direct-query-source-to-target" id="toc-direct-query-source-to-target" class="nav-link" data-scroll-target="#direct-query-source-to-target">Direct Query: Source to Target</a></li>
   <li><a href="#correcting-and-deduplicating" id="toc-correcting-and-deduplicating" class="nav-link" data-scroll-target="#correcting-and-deduplicating">Correcting and Deduplicating</a></li>
   <li><a href="#decomposed-pipeline-query-mapping-sigma" id="toc-decomposed-pipeline-query-mapping-sigma" class="nav-link" data-scroll-target="#decomposed-pipeline-query-mapping-sigma">Decomposed Pipeline: Query + Mapping + Sigma</a></li>
+  <li><a href="#julia-dsl" id="toc-julia-dsl" class="nav-link" data-scroll-target="#julia-dsl">Julia DSL</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 </nav>
@@ -802,6 +803,67 @@ Readers:
 </div>
 </div>
 <p>The 3 original authors (Mann, Kakfa, Kafka) have unknown <code>born</code> values (Skolem terms). The 3 cascade-generated authors have unknown names and unknown birth years. The <code>chapter_page_start</code> attributes are similarly Skolem terms for all 4 chapters.</p>
+</section>
+<section id="julia-dsl" class="level2">
+<h2 class="anchored" data-anchor-id="julia-dsl">Julia DSL</h2>
+<p>The examples above use the <code>cql"""..."""</code> string macro. CQL.jl also provides Julia-native macros. Here is how the Source and Target schemas, plus the integration query, look using the DSL:</p>
+<div id="34" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CQL</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>Ty <span class="op">=</span> <span class="pp">@typeside</span> <span class="cf">begin</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    Str<span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Bool</span><span class="op">::</span><span class="dt">Ty</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    Mann<span class="op">::</span><span class="dt">Str</span>; Kakfa<span class="op">::</span><span class="dt">Str</span>; Kafka<span class="op">::</span><span class="dt">Str</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    Magic<span class="op">::</span><span class="dt">Str</span>; <span class="bu">Meta</span><span class="op">::</span><span class="dt">Str</span>; Castle<span class="op">::</span><span class="dt">Str</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    KSB<span class="op">::</span><span class="dt">Str</span>; BR<span class="op">::</span><span class="dt">Str</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    strue<span class="op">::</span><span class="dt">Bool</span>; sfalse<span class="op">::</span><span class="dt">Bool</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">contains</span>(<span class="op">::</span><span class="dt">Str</span>, <span class="op">::</span><span class="dt">Str</span>)<span class="op">::</span><span class="dt">Bool</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">count_words</span>(<span class="op">::</span><span class="dt">Str</span>)<span class="op">::</span><span class="dt">Str</span></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>Source <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Book, Chapter, Reader</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>    chapter_book <span class="op">:</span> Chapter <span class="op">→</span> Book</span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>    reader_fav <span class="op">:</span> Reader <span class="op">→</span> Book</span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>    author_name <span class="op">:</span> Book <span class="op">⇒</span> Str</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>    title <span class="op">:</span> Book <span class="op">⇒</span> Str</span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>    year <span class="op">:</span> Book <span class="op">⇒</span> Str</span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>    chapter_num <span class="op">:</span> Chapter <span class="op">⇒</span> Str</span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>    chapter_text <span class="op">:</span> Chapter <span class="op">⇒</span> Str</span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a>    reader_name <span class="op">:</span> Reader <span class="op">⇒</span> Str</span>
+<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a>    borrowed <span class="op">:</span> Reader <span class="op">⇒</span> Str</span>
+<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a>Target <span class="op">=</span> <span class="pp">@schema</span> Ty <span class="cf">begin</span></span>
+<span id="cb27-28"><a href="#cb27-28" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@entities</span> Novel, Chapter, Author, Reader, Borrow</span>
+<span id="cb27-29"><a href="#cb27-29" aria-hidden="true" tabindex="-1"></a>    chapter_novel <span class="op">:</span> Chapter <span class="op">→</span> Novel</span>
+<span id="cb27-30"><a href="#cb27-30" aria-hidden="true" tabindex="-1"></a>    novel_author <span class="op">:</span> Novel <span class="op">→</span> Author</span>
+<span id="cb27-31"><a href="#cb27-31" aria-hidden="true" tabindex="-1"></a>    reader_fav <span class="op">:</span> Reader <span class="op">→</span> Novel</span>
+<span id="cb27-32"><a href="#cb27-32" aria-hidden="true" tabindex="-1"></a>    borrow_reader <span class="op">:</span> Borrow <span class="op">→</span> Reader</span>
+<span id="cb27-33"><a href="#cb27-33" aria-hidden="true" tabindex="-1"></a>    borrow_novel <span class="op">:</span> Borrow <span class="op">→</span> Novel</span>
+<span id="cb27-34"><a href="#cb27-34" aria-hidden="true" tabindex="-1"></a>    novel_title <span class="op">:</span> Novel <span class="op">⇒</span> Str</span>
+<span id="cb27-35"><a href="#cb27-35" aria-hidden="true" tabindex="-1"></a>    chapter_num <span class="op">:</span> Chapter <span class="op">⇒</span> Str</span>
+<span id="cb27-36"><a href="#cb27-36" aria-hidden="true" tabindex="-1"></a>    chapter_nwords <span class="op">:</span> Chapter <span class="op">⇒</span> Str</span>
+<span id="cb27-37"><a href="#cb27-37" aria-hidden="true" tabindex="-1"></a>    author_name <span class="op">:</span> Author <span class="op">⇒</span> Str</span>
+<span id="cb27-38"><a href="#cb27-38" aria-hidden="true" tabindex="-1"></a>    reader_name <span class="op">:</span> Reader <span class="op">⇒</span> Str</span>
+<span id="cb27-39"><a href="#cb27-39" aria-hidden="true" tabindex="-1"></a>    total_len <span class="op">:</span> Borrow <span class="op">⇒</span> Str</span>
+<span id="cb27-40"><a href="#cb27-40" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb27-41"><a href="#cb27-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-42"><a href="#cb27-42" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Source entities: "</span>, Source.ens)</span>
+<span id="cb27-43"><a href="#cb27-43" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Target entities: "</span>, Target.ens)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Source entities: Set([:Book, :Reader, :Chapter])
+Target entities: Set([:Novel, :Chapter, :Reader, :Borrow, :Author])</code></pre>
+</div>
+</div>
+<p>The <code>@query</code> macro can express the integration query, including the multi-variable <code>Borrow</code> entity with its <code>contains</code>-based where-clause. Once the query and mapping are evaluated, the functional API provides concise coproduct and distinct operations:</p>
+<div id="36" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># After obtaining instances I1 and I2 on the same schema:</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   merged = coproduct(I1, I2)    # disjoint union</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   deduped = distinct(merged)     # merge provably equal elements</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="co"># These are useful for the deduplication step of the pipeline.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Note: The computed attributes in queries (e.g., <code>count_words(c.chapter_text)</code>) and the <code>contains</code>-based where-clause with typeside ground equations still require the <code>cql"""..."""</code> syntax for full program evaluation. The <code>@schema</code> and <code>@typeside</code> macros handle structural definitions. The functional API (<code>coproduct</code>, <code>distinct</code>) works with any instance objects.</p>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

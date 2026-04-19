@@ -223,7 +223,7 @@ macro typeside(block)
     if !isempty(functions)
         push!(lines, "    functions")
         for (fname, argtypes, rettype) in functions
-            arg_str = join(argtypes, " ")
+            arg_str = join(argtypes, ", ")
             push!(lines, "        $fname : $arg_str -> $rettype")
         end
     end

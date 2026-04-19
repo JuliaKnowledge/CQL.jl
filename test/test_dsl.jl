@@ -85,6 +85,17 @@ using Test
         @test Ty.syms == ref.Ty.syms
     end
 
+    @testset "@typeside multi-arg functions (vignette 12 regression)" begin
+        Ty = @typeside begin
+            Str::Ty
+            Bool::Ty
+            contains(::Str, ::Str)::Bool
+            count_words(::Str)::Str
+        end
+        @test Ty.syms[:contains] == ([:Str, :Str], :Bool)
+        @test Ty.syms[:count_words] == ([:Str], :Str)
+    end
+
     # ─── @schema ─────────────────────────────────────────────────────────────
     @testset "@schema" begin
         Ty = ref.Ty

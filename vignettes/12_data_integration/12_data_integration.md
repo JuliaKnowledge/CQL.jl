@@ -778,6 +778,80 @@ The 3 original authors (Mann, Kakfa, Kafka) have unknown `born` values
 unknown birth years. The `chapter_page_start` attributes are similarly
 Skolem terms for all 4 chapters.
 
+## Julia DSL
+
+The examples above use the `cql"""..."""` string macro. CQL.jl also
+provides Julia-native macros. Here is how the Source and Target schemas,
+plus the integration query, look using the DSL:
+
+``` julia
+using CQL
+
+Ty = @typeside begin
+    Str::Ty
+    Bool::Ty
+    Mann::Str; Kakfa::Str; Kafka::Str
+    Magic::Str; Meta::Str; Castle::Str
+    KSB::Str; BR::Str
+    strue::Bool; sfalse::Bool
+    contains(::Str, ::Str)::Bool
+    count_words(::Str)::Str
+end
+
+Source = @schema Ty begin
+    @entities Book, Chapter, Reader
+    chapter_book : Chapter → Book
+    reader_fav : Reader → Book
+    author_name : Book ⇒ Str
+    title : Book ⇒ Str
+    year : Book ⇒ Str
+    chapter_num : Chapter ⇒ Str
+    chapter_text : Chapter ⇒ Str
+    reader_name : Reader ⇒ Str
+    borrowed : Reader ⇒ Str
+end
+
+Target = @schema Ty begin
+    @entities Novel, Chapter, Author, Reader, Borrow
+    chapter_novel : Chapter → Novel
+    novel_author : Novel → Author
+    reader_fav : Reader → Novel
+    borrow_reader : Borrow → Reader
+    borrow_novel : Borrow → Novel
+    novel_title : Novel ⇒ Str
+    chapter_num : Chapter ⇒ Str
+    chapter_nwords : Chapter ⇒ Str
+    author_name : Author ⇒ Str
+    reader_name : Reader ⇒ Str
+    total_len : Borrow ⇒ Str
+end
+
+println("Source entities: ", Source.ens)
+println("Target entities: ", Target.ens)
+```
+
+    Source entities: Set([:Book, :Reader, :Chapter])
+    Target entities: Set([:Novel, :Chapter, :Reader, :Borrow, :Author])
+
+The `@query` macro can express the integration query, including the
+multi-variable `Borrow` entity with its `contains`-based where-clause.
+Once the query and mapping are evaluated, the functional API provides
+concise coproduct and distinct operations:
+
+``` julia
+# After obtaining instances I1 and I2 on the same schema:
+#   merged = coproduct(I1, I2)    # disjoint union
+#   deduped = distinct(merged)     # merge provably equal elements
+# These are useful for the deduplication step of the pipeline.
+```
+
+Note: The computed attributes in queries (e.g.,
+`count_words(c.chapter_text)`) and the `contains`-based where-clause
+with typeside ground equations still require the `cql"""..."""` syntax
+for full program evaluation. The `@schema` and `@typeside` macros handle
+structural definitions. The functional API (`coproduct`, `distinct`)
+works with any instance objects.
+
 ## Summary
 
 This vignette demonstrated the key ideas from [Brown, Spivak & Wisnesky
